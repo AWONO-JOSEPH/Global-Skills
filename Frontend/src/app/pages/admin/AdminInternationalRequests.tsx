@@ -1,0 +1,457 @@
+import { useState, useEffect } from "react";
+import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
+import { Badge } from "../../components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog";
+import { 
+  Eye, 
+  Phone, 
+  Mail, 
+  Edit,
+  Trash2,
+  RefreshCw,
+  Globe,
+  Users,
+  Calendar,
+  ArrowLeft
+} from "lucide-react";
+import { Link } from "react-router";
+import { toast } from "sonner";
+
+interface InternationalRequest {
+  id: number;
+  full_name: string;
+  phone: string;
+  email: string;
+  profession?: string;
+  status: string;
+  status_label: string;
+  created_at: string;
+}
+
+interface RequestDetail extends InternationalRequest {
+  first_name: string;
+  last_name: string;
+  description: string;
+  updated_at: string;
+}
+
+export default function AdminInternationalRequests() {
+  const [requests, setRequests] = useState<InternationalRequest[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<RequestDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [updatingStatus, setUpdatingStatus] = useState<number | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const statusOptions = [
+    { value: "all", label: "Tous les statuts" },
+    { value: "new", label: "Nouveau" },
+    { value: "in_progress", label: "En cours" },
+    { value: "contacted", label: "Contacté" },
+    { value: "completed", label: "Terminé" },
+    { value: "cancelled", label: "Annulé" },
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "new": return "bg-red-100 text-red-800";
+      case "in_progress": return "bg-blue-100 text-blue-800";
+      case "contacted": return "bg-yellow-100 text-yellow-800";
+      case "completed": return "bg-green-100 text-green-800";
+      case "cancelled": return "bg-gray-100 text-gray-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, [statusFilter]);
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/admin/international-requests");
+      if (response.ok) {
+        const data = await response.json();
+        const filteredRequests = statusFilter === "all" 
+          ? data.requests 
+          : data.requests.filter((req: InternationalRequest) => req.status === statusFilter);
+        setRequests(filteredRequests);
+      } else {
+        toast.error("Erreur lors du chargement des demandes");
+      }
+    } catch (error) {
+      toast.error("Erreur de connexion");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRequestDetail = async (id: number) => {
+    try {
+      setSelectedRequest(null);
+      const response = await fetch(`/api/admin/international-requests/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedRequest(data.request);
+      } else {
+        toast.error("Erreur lors du chargement des détails");
+      }
+    } catch (error) {
+      toast.error("Erreur de connexion");
+    }
+  };
+
+  const updateStatus = async (id: number, newStatus: string) => {
+    try {
+      setUpdatingStatus(id);
+      const response = await fetch(`/api/admin/international-requests/${id}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        toast.success("Statut mis à jour avec succès");
+        fetchRequests();
+        if (selectedRequest && selectedRequest.id === id) {
+          await fetchRequestDetail(id);
+        }
+      } else {
+        toast.error("Erreur lors de la mise à jour du statut");
+      }
+    } catch (error) {
+      toast.error("Erreur de connexion");
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
+  const deleteRequest = async (id: number) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette demande ?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/international-requests/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Demande supprimée avec succès");
+        fetchRequests();
+        if (selectedRequest && selectedRequest.id === id) {
+          setSelectedRequest(null);
+        }
+      } else {
+        toast.error("Erreur lors de la suppression");
+      }
+    } catch (error) {
+      toast.error("Erreur de connexion");
+    }
+  };
+
+  const handleContact = (type: "phone" | "email", value: string) => {
+    if (type === "phone") {
+      window.open(`tel:${value}`, "_blank");
+    } else {
+      window.open(`mailto:${value}`, "_blank");
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link to="/admin">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Retour au Dashboard
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Globe className="h-8 w-8 text-primary" />
+              Demandes Internationales
+            </h1>
+            <p className="text-muted-foreground">
+              Gérez les demandes de projets d'études à l'étranger
+            </p>
+          </div>
+        </div>
+        <Button onClick={fetchRequests} variant="outline" disabled={loading}>
+          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          Actualiser
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold">{requests.length}</p>
+              </div>
+              <Users className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Nouvelles</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {requests.filter(r => r.status === "new").length}
+                </p>
+              </div>
+              <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center">
+                <span className="text-red-600 text-sm font-bold">!</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">En cours</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {requests.filter(r => r.status === "in_progress").length}
+                </p>
+              </div>
+              <RefreshCw className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Terminées</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {requests.filter(r => r.status === "completed").length}
+                </p>
+              </div>
+              <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                <span className="text-green-600">✓</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filter */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Filtrer par statut</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
+      {/* Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Liste des demandes</CardTitle>
+          <CardDescription>
+            {requests.length} demande{requests.length > 1 ? "s" : ""} trouvée{requests.length > 1 ? "s" : ""}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
+              <p>Chargement...</p>
+            </div>
+          ) : requests.length === 0 ? (
+            <div className="text-center py-8">
+              <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+              <p className="text-muted-foreground">Aucune demande trouvée</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nom</TableHead>
+                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Projet</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {requests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell className="font-medium">{request.full_name}</TableCell>
+                    <TableCell>{request.phone}</TableCell>
+                    <TableCell>
+                      <div className="max-w-[200px] truncate">
+                        {request.profession || "Non spécifié"}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(request.status)}>
+                        {request.status_label}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{request.created_at}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            fetchRequestDetail(request.id);
+                            setIsDialogOpen(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleContact("phone", request.phone)}
+                        >
+                          <Phone className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleContact("email", request.email)}
+                        >
+                          <Mail className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          {selectedRequest ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Détails de la demande</DialogTitle>
+                <DialogDescription>
+                  Informations complètes sur la demande de {selectedRequest.full_name}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Nom complet</label>
+                    <p>{selectedRequest.full_name}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Email</label>
+                    <p>{selectedRequest.email}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Téléphone</label>
+                    <p>{selectedRequest.phone}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Profession</label>
+                    <p>{selectedRequest.profession || "Non spécifié"}</p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Description du projet</label>
+                  <p className="bg-muted p-3 rounded-md mt-1">
+                    {selectedRequest.description}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Date de soumission</label>
+                    <p>{selectedRequest.created_at}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Dernière mise à jour</label>
+                    <p>{selectedRequest.updated_at}</p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Changer le statut</label>
+                  <Select
+                    value={selectedRequest.status}
+                    onValueChange={(value) => updateStatus(selectedRequest.id, value)}
+                    disabled={updatingStatus === selectedRequest.id}
+                  >
+                    <SelectTrigger className="w-full mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusOptions.slice(1).map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    onClick={() => handleContact("phone", selectedRequest.phone)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Phone className="mr-2 h-4 w-4" />
+                    Appeler
+                  </Button>
+                  <Button
+                    onClick={() => handleContact("email", selectedRequest.email)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    Email
+                  </Button>
+                  <Button
+                    onClick={() => deleteRequest(selectedRequest.id)}
+                    variant="destructive"
+                    size="sm"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="py-12 flex flex-col items-center justify-center space-y-4">
+              <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-muted-foreground">Chargement des détails...</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
