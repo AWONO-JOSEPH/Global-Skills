@@ -10,12 +10,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
+use App\Models\ProgramTracking;
+use Illuminate\Http\JsonResponse;
+
 class ReportController extends Controller
 {
     public function generateAnnualReport(): JsonResponse|\Symfony\Component\HttpFoundation\StreamedResponse
     {
         try {
-            // Stats de base
+            // ... (reste du code)
             $totalStudents = User::where('role', 'student')->count();
             $totalTeachers = User::where('role', 'teacher')->count();
             $totalFormations = Formation::count();
@@ -24,9 +27,12 @@ class ReportController extends Controller
 
             // Liste des formations avec leurs stats
             $formations = Formation::withCount(['students'])->get();
-            
-            // On va utiliser un format HTML pour générer le document si PHPWord n'est pas dispo
-            // Mais pour répondre à la demande, on simule la logique TemplateProcessor
+
+            // Inclure les rapports de suivi récents
+            $trackings = ProgramTracking::with(['user', 'formation'])
+                ->orderByDesc('date')
+                ->limit(20)
+                ->get();
             
             $data = [
                 'center_name' => 'Global Skills',
@@ -41,17 +47,38 @@ class ReportController extends Controller
                 'conclusion' => 'L\'année se clôture sur un bilan positif avec une croissance constante du nombre d\'apprenants.'
             ];
 
-            // Pour l'instant, on renvoie les données pour que le front puisse les afficher ou on génère un PDF simple
-            // Comme PHPWord pose problème d'installation (extensions zip/gd manquantes),
-            // On va proposer une alternative : générer un fichier texte structuré ou CSV pour le moment
-            // OU renvoyer les données au front qui peut imprimer en PDF
-            
             return response()->json([
                 'message' => 'Données du rapport prêtes',
                 'report_data' => $data,
-                'formations' => $formations
+                'formations' => $formations,
+                'trackings' => $trackings
             ]);
 
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Erreur: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function generateTrackingReport(Request $request): JsonResponse
+    {
+        try {
+            $query = ProgramTracking::with(['user', 'formation']);
+
+            if ($request->has('formation_id')) {
+                $query->where('formation_id', $request->formation_id);
+            }
+
+            if ($request->has('user_id')) {
+                $query->where('user_id', $request->user_id);
+            }
+
+            $trackings = $query->orderByDesc('date')->get();
+
+            return response()->json([
+                'message' => 'Rapport de suivi généré',
+                'trackings' => $trackings,
+                'generated_at' => Carbon::now()->toDateTimeString()
+            ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Erreur: ' . $e->getMessage()], 500);
         }

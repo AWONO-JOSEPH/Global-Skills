@@ -381,11 +381,11 @@ export default function StudentDashboard() {
                 <CardDescription>Suivez l'état de vos paiements</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
+                <Table className="min-w-[520px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Date</TableHead>
-                      <TableHead>Type</TableHead>
+                      <TableHead className="hidden sm:table-cell">Type</TableHead>
                       <TableHead>Montant</TableHead>
                       <TableHead>Statut</TableHead>
                     </TableRow>
@@ -394,7 +394,7 @@ export default function StudentDashboard() {
                     {paiements.map((paiement, index) => (
                       <TableRow key={index}>
                         <TableCell>{paiement.date}</TableCell>
-                        <TableCell>{paiement.type}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{paiement.type}</TableCell>
                         <TableCell className="font-semibold">{paiement.montant}</TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-1">

@@ -290,14 +290,14 @@ export default function AdminInternationalRequests() {
               <p className="text-muted-foreground">Aucune demande trouvée</p>
             </div>
           ) : (
-            <Table>
+            <Table className="min-w-[860px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Téléphone</TableHead>
+                  <TableHead className="hidden md:table-cell">Téléphone</TableHead>
                   <TableHead>Projet</TableHead>
                   <TableHead>Statut</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead className="hidden lg:table-cell">Date</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -305,7 +305,7 @@ export default function AdminInternationalRequests() {
                 {requests.map((request) => (
                   <TableRow key={request.id}>
                     <TableCell className="font-medium">{request.full_name}</TableCell>
-                    <TableCell>{request.phone}</TableCell>
+                    <TableCell className="hidden md:table-cell">{request.phone}</TableCell>
                     <TableCell>
                       <div className="max-w-[200px] truncate">
                         {request.profession || "Non spécifié"}
@@ -316,9 +316,9 @@ export default function AdminInternationalRequests() {
                         {request.status_label}
                       </Badge>
                     </TableCell>
-                    <TableCell>{request.created_at}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{request.created_at}</TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Button
                           variant="outline"
                           size="sm"

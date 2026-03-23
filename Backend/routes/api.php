@@ -67,6 +67,13 @@ Route::post('/login', function (Request $request) {
 
 Route::apiResource('news', NewsController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
 
+// Program tracking routes
+Route::get('/program-trackings', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'index']);
+Route::post('/program-trackings', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'store']);
+Route::put('/program-trackings/{programTracking}', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'update']);
+Route::delete('/program-trackings/{programTracking}', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'destroy']);
+Route::post('/program-trackings/{programTracking}/sign', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'sign']);
+
 Route::get('/profile', [ProfileController::class, 'show']);
 Route::put('/profile', [ProfileController::class, 'update']);
 Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto']);
@@ -125,6 +132,7 @@ Route::post('/change-password', [UserManagementController::class, 'changePasswor
 Route::get('/admin/overview', AdminOverviewController::class);
 Route::get('/admin/notifications/count', [AdminOverviewController::class, 'getNotificationsCount']);
 Route::get('/admin/reports/annual', [ReportController::class, 'generateAnnualReport']);
+Route::get('/admin/reports/tracking', [ReportController::class, 'generateTrackingReport']);
 
 Route::get('/admin/formations', [FormationController::class, 'index']);
 Route::post('/admin/formations', [FormationController::class, 'store']);

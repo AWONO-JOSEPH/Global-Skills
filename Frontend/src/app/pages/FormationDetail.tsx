@@ -1,195 +1,17 @@
 import { useParams, Link } from "react-router";
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import { 
-  Clock, 
-  Award, 
-  BookOpen, 
-  Briefcase, 
+import {
+  Clock,
+  Award,
+  BookOpen,
+  Briefcase,
   CheckCircle,
   ArrowLeft,
   Calendar,
   DollarSign,
-  Users,
-  FileText
+  FileText,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
-
-const formationsDetail = [
-  {
-    id: 8,
-    title: "Marketing Digital",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
-    price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
-    image:
-      "https://images.unsplash.com/photo-1569653402334-2e98fbaa80ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nJTIwZGlnaXRhbCUyMHNraWxsc3xlbnwxfHx8fDE3NzI1MzAxNDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    description:
-      "Maîtrisez les stratégies et outils du marketing digital pour développer la présence en ligne des entreprises et booster leur croissance.",
-    objectifs: [
-      "Comprendre les fondamentaux du marketing digital",
-      "Maîtriser les réseaux sociaux professionnels",
-      "Créer et gérer des campagnes publicitaires en ligne",
-      "Analyser les performances et optimiser les stratégies",
-      "Développer une présence digitale efficace",
-    ],
-    programme: [
-      {
-        phase: "Tronc Commun (3 mois)",
-        modules: [
-          "Introduction au marketing digital",
-          "Outils bureautiques professionnels",
-          "Communication digitale",
-          "Gestion de projet",
-        ],
-      },
-      {
-        phase: "Spécialité (3 mois)",
-        modules: [
-          "SEO et référencement naturel",
-          "Social Media Marketing",
-          "Google Ads et publicité en ligne",
-          "Email Marketing",
-          "Analytics et mesure de performance",
-          "Content Marketing",
-        ],
-      },
-      {
-        phase: "Stage en Entreprise (2 mois)",
-        modules: [
-          "Application pratique en entreprise",
-          "Gestion de projets réels",
-          "Encadrement professionnel",
-        ],
-      },
-      {
-        phase: "Mémoire et Examen (6 mois)",
-        modules: [
-          "Rédaction du mémoire professionnel",
-          "Période de rattrapage",
-          "Examen final et certification",
-        ],
-      },
-    ],
-    prerequis: [
-      "Niveau Baccalauréat ou équivalent",
-      "Maîtrise de base de l'outil informatique",
-      "Motivation et engagement",
-    ],
-    debouches: [
-      "Community Manager",
-      "Chef de projet digital",
-      "Consultant en marketing digital",
-      "Traffic Manager",
-      "Content Manager",
-      "Entrepreneur digital",
-    ],
-  },
-  {
-    id: 12,
-    title: "Développeur d'Application",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
-    price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
-    image:
-      "https://images.unsplash.com/photo-1569653402334-2e98fbaa80ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nJTIwZGlnaXRhbCUyMHNraWxsc3xlbnwxfHx8fDE3NzI1MzAxNDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    description:
-      "Apprenez à concevoir et développer des applications web et mobiles modernes adaptées aux besoins des entreprises.",
-    objectifs: [
-      "Maîtriser les langages de base du développement",
-      "Comprendre les architectures web modernes",
-      "Développer des APIs et interfaces utilisateur",
-      "Assurer la qualité et la maintenance des applications",
-    ],
-    programme: [
-      {
-        phase: "Tronc Commun (3 mois)",
-        modules: ["Algorithmique", "Bureautique", "Bases de la programmation", "Git & outils de travail collaboratif"],
-      },
-      {
-        phase: "Spécialité (3 mois)",
-        modules: [
-          "Développement front-end",
-          "Développement back-end",
-          "Bases de données",
-          "Projet fil rouge",
-        ],
-      },
-      {
-        phase: "Stage en Entreprise (2 mois)",
-        modules: ["Intégration en équipe", "Développement de fonctionnalités réelles"],
-      },
-      {
-        phase: "Mémoire et Examen (6 mois)",
-        modules: ["Projet de fin d’études", "Soutenance", "Examen final"],
-      },
-    ],
-    prerequis: ["Niveau Baccalauréat ou équivalent", "Goût pour la logique et la résolution de problèmes"],
-    debouches: [
-      "Développeur web",
-      "Développeur mobile",
-      "Intégrateur d’applications",
-      "Technicien en développement",
-    ],
-  },
-  {
-    id: 101,
-    title: "Langues Internationales",
-    category: "Formation Courte Durée 4 mois",
-    duration: "4 mois",
-    price: "À partir de 50,000 FCFA",
-    level: "Tous niveaux",
-    image:
-      "https://images.unsplash.com/photo-1558443957-d056622df610?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsYW5ndWFnZSUyMGxlYXJuaW5nJTIwY2xhc3Nyb29tfGVufDF8fHx8MTc3MjUzMDE0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
-    description:
-      "Perfectionnez votre niveau de langues étrangères (allemand, anglais, arabe, chinois, français, espagnol, italien, russe).",
-    objectifs: [
-      "Améliorer la compréhension orale et écrite",
-      "Renforcer l’expression orale",
-      "Acquérir le vocabulaire professionnel de base",
-    ],
-    programme: [
-      {
-        phase: "Modules principaux",
-        modules: ["Compréhension orale", "Expression orale", "Lecture et compréhension", "Écriture"],
-      },
-    ],
-    prerequis: ["Aucun prérequis, tous niveaux acceptés"],
-    debouches: ["Assistant bilingue", "Emplois nécessitant la maîtrise d’une langue étrangère"],
-  },
-  {
-    id: 102,
-    title: "Auto-École",
-    category: "Formation Courte Durée 2 mois",
-    duration: "2 mois",
-    price: "À partir de 80,000 FCFA",
-    level: "Débutant",
-    image:
-      "https://images.unsplash.com/photo-1764547169175-9b7d2736324e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkcml2aW5nJTIwc2Nob29sJTIwaW5zdHJ1Y3RvcnxlbnwxfHx8fDE3NzI2MTU2MDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    description:
-      "Préparez-vous efficacement à l’examen du permis de conduire avec des cours théoriques et pratiques.",
-    objectifs: [
-      "Maîtriser le code de la route",
-      "Acquérir les bases de la conduite",
-      "Préparer l'examen théorique et pratique",
-    ],
-    programme: [
-      {
-        phase: "Théorie",
-        modules: ["Code de la route", "Signalisation", "Sécurité routière"],
-      },
-      {
-        phase: "Pratique",
-        modules: ["Conduite en ville", "Conduite sur route", "Manoeuvres d’examen"],
-      },
-    ],
-    prerequis: ["Âge minimum requis pour l’inscription à l’examen", "Dossier administratif complet"],
-    debouches: ["Obtention du permis de conduire", "Meilleure employabilité dans les métiers nécessitant la conduite"],
-  },
-] as const;
+import { formationsDetail } from "../data/formationsDetail";
 
 export default function FormationDetail() {
   const { id } = useParams();
@@ -198,242 +20,269 @@ export default function FormationDetail() {
 
   if (!formation) {
     return (
-      <div className="flex flex-col">
-        <div className="bg-muted py-4">
-          <div className="container mx-auto px-4">
-            <Link to="/formations">
-              <Button variant="ghost">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Retour aux formations
-              </Button>
-            </Link>
-          </div>
+      <div className="min-h-screen bg-[#f1f5f9] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-[#64748b]">
+            Cette formation n'existe pas ou n'a pas encore de page de détail configurée.
+          </p>
+          <Link to="/formations">
+            <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#1e3a8a] text-white text-sm font-medium hover:bg-[#1e3a8a]/90 transition-colors duration-150">
+              <ArrowLeft className="h-4 w-4" />
+              Retour aux formations
+            </button>
+          </Link>
         </div>
-        <section className="py-16">
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-lg text-muted-foreground">
-              Cette formation n'existe pas ou n'a pas encore de page de détail configurée.
-            </p>
-          </div>
-        </section>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col">
-      {/* Back Button */}
-      <div className="bg-muted py-4">
-        <div className="container mx-auto px-4">
-          <Link to="/formations">
-            <Button variant="ghost">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour aux formations
-            </Button>
-          </Link>
-        </div>
-      </div>
+    <div className="flex flex-col min-h-screen bg-[#f1f5f9]">
 
-      {/* Header Section */}
-      <section className="py-12 bg-gradient-to-br from-primary to-secondary text-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div>
-              <Badge className="mb-4 bg-accent text-white">
-                {formation.category}
-              </Badge>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                {formation.title}
-              </h1>
-              <p className="text-lg text-white/90 mb-6">
-                {formation.description}
-              </p>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-accent" />
-                  <div>
-                    <p className="text-sm text-white/80">Durée</p>
-                    <p className="font-semibold">{formation.duration}</p>
+      {/* ── Hero Header ── */}
+      <section className="relative bg-[#1e3a8a] overflow-hidden">
+        {/* subtle diagonal stripe */}
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(135deg, #3b82f6 0px, #3b82f6 1px, transparent 1px, transparent 60px)",
+          }}
+        />
+        {/* orange accent bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#f97316]" />
+
+        <div className="relative container mx-auto px-4 py-14">
+          <div className="max-w-5xl mx-auto">
+            {/* Back link */}
+            <Link
+              to="/formations"
+              className="inline-flex items-center gap-1.5 text-white/60 hover:text-white text-sm mb-8 transition-colors duration-200"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Retour aux formations
+            </Link>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+              {/* Left: text */}
+              <div>
+                {/* Category pill */}
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-[#f97316] text-white tracking-wide uppercase mb-5">
+                  {formation.category}
+                </span>
+
+                <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-4">
+                  {formation.title}
+                </h1>
+
+                <p className="text-base text-white/75 leading-relaxed mb-8">
+                  {formation.description}
+                </p>
+
+                {/* Stats grid */}
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="flex items-start gap-3">
+                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
+                      <Clock className="h-4 w-4 text-[#f97316]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-white/50 mb-0.5">Durée</p>
+                      <p className="text-sm font-semibold text-white">{formation.duration}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
+                      <Award className="h-4 w-4 text-[#f97316]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-white/50 mb-0.5">Niveau</p>
+                      <p className="text-sm font-semibold text-white">{formation.level}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
+                      <DollarSign className="h-4 w-4 text-[#f97316]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-white/50 mb-0.5">Prix</p>
+                      <p className="text-sm font-semibold text-white">{formation.price}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
+                      <Calendar className="h-4 w-4 text-[#f97316]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-white/50 mb-0.5">Prochaine session</p>
+                      <p className="text-sm font-semibold text-white">Avril 2026</p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-accent" />
-                  <div>
-                    <p className="text-sm text-white/80">Niveau</p>
-                    <p className="font-semibold">{formation.level}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-accent" />
-                  <div>
-                    <p className="text-sm text-white/80">Prix</p>
-                    <p className="font-semibold">{formation.price}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-accent" />
-                  <div>
-                    <p className="text-sm text-white/80">Prochaine session</p>
-                    <p className="font-semibold">Avril 2026</p>
-                  </div>
+
+                <Link to="/contact">
+                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-[#f97316] hover:bg-[#f97316]/90 text-white text-sm font-semibold transition-colors duration-150">
+                    S'inscrire Maintenant
+                  </button>
+                </Link>
+              </div>
+
+              {/* Right: image */}
+              <div className="hidden lg:block">
+                <div className="rounded-2xl overflow-hidden shadow-2xl">
+                  <ImageWithFallback
+                    src={formation.image}
+                    alt={formation.title}
+                    className="w-full h-72 object-cover"
+                  />
                 </div>
               </div>
-              <Link to="/contact">
-                <Button size="lg" className="bg-accent hover:bg-accent/90 text-white">
-                  S'inscrire Maintenant
-                </Button>
-              </Link>
-            </div>
-            <div className="hidden lg:block">
-              <ImageWithFallback
-                src={formation.image}
-                alt={formation.title}
-                className="rounded-lg shadow-2xl w-full h-auto"
-              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Content Section */}
-      <section className="py-16">
+      {/* ── Body ── */}
+      <section className="py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Objectifs */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="h-6 w-6 text-accent" />
-                    Objectifs de la Formation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+              {/* ── Main column ── */}
+              <div className="lg:col-span-2 space-y-6">
+
+                {/* Objectifs */}
+                <div className="rounded-2xl bg-white shadow-sm p-8">
+                  <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-[#f1f5f9]">
+                    <CheckCircle className="h-5 w-5 text-[#f97316] shrink-0" />
+                    <h2 className="text-lg font-semibold text-[#1e3a8a]">Objectifs de la Formation</h2>
+                  </div>
                   <ul className="space-y-3">
                     {formation.objectifs.map((objectif, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
-                        <span>{objectif}</span>
+                      <li key={index} className="flex items-start gap-3">
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#f97316]/10 shrink-0 mt-0.5">
+                          <CheckCircle className="h-3 w-3 text-[#f97316]" />
+                        </span>
+                        <span className="text-sm text-[#1a1a1a] leading-relaxed">{objectif}</span>
                       </li>
                     ))}
                   </ul>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Programme */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="h-6 w-6 text-accent" />
-                    Programme de Formation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                {/* Programme */}
+                <div className="rounded-2xl bg-white shadow-sm p-8">
+                  <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-[#f1f5f9]">
+                    <BookOpen className="h-5 w-5 text-[#f97316] shrink-0" />
+                    <h2 className="text-lg font-semibold text-[#1e3a8a]">Programme de Formation</h2>
+                  </div>
                   <div className="space-y-6">
                     {formation.programme.map((phase, index) => (
                       <div key={index}>
-                        <h4 className="font-bold text-lg text-primary mb-3">
-                          {phase.phase}
-                        </h4>
-                        <ul className="space-y-2 ml-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#1e3a8a] text-white text-xs font-bold shrink-0">
+                            {index + 1}
+                          </span>
+                          <h4 className="font-semibold text-[#1e3a8a] text-sm">{phase.phase}</h4>
+                        </div>
+                        <ul className="ml-8 space-y-2">
                           {phase.modules.map((module, idx) => (
                             <li key={idx} className="flex items-start gap-2">
-                              <div className="h-2 w-2 rounded-full bg-accent flex-shrink-0 mt-2"></div>
-                              <span className="text-muted-foreground">{module}</span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#f97316] shrink-0 mt-2" />
+                              <span className="text-sm text-[#64748b] leading-relaxed">{module}</span>
                             </li>
                           ))}
                         </ul>
+                        {index < formation.programme.length - 1 && (
+                          <div className="ml-3 mt-4 border-l-2 border-dashed border-[#f1f5f9] h-4" />
+                        )}
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Débouchés */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Briefcase className="h-6 w-6 text-accent" />
-                    Débouchés Professionnels
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                {/* Débouchés */}
+                <div className="rounded-2xl bg-white shadow-sm p-8">
+                  <div className="flex items-center gap-2.5 mb-5 pb-3 border-b border-[#f1f5f9]">
+                    <Briefcase className="h-5 w-5 text-[#f97316] shrink-0" />
+                    <h2 className="text-lg font-semibold text-[#1e3a8a]">Débouchés Professionnels</h2>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {formation.debouches.map((debouche, index) => (
-                      <Badge key={index} variant="secondary" className="text-sm py-1 px-3">
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-[#1e3a8a]/5 text-[#1e3a8a] border border-[#1e3a8a]/10"
+                      >
                         {debouche}
-                      </Badge>
+                      </span>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </div>
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Prérequis */}
-              <Card className="border-accent/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <FileText className="h-5 w-5 text-accent" />
-                    Conditions d'Admission
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
+              {/* ── Sidebar ── */}
+              <div className="space-y-5">
+
+                {/* Conditions d'admission */}
+                <div className="rounded-2xl bg-white shadow-sm p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileText className="h-4 w-4 text-[#f97316] shrink-0" />
+                    <h3 className="text-sm font-semibold text-[#1e3a8a] uppercase tracking-wider">
+                      Conditions d'Admission
+                    </h3>
+                  </div>
+                  <ul className="space-y-3">
                     {formation.prerequis.map((prerequis, index) => (
-                      <li key={index} className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
-                        <span>{prerequis}</span>
+                      <li key={index} className="flex items-start gap-2.5">
+                        <CheckCircle className="h-4 w-4 text-[#f97316] shrink-0 mt-0.5" />
+                        <span className="text-sm text-[#1a1a1a] leading-relaxed">{prerequis}</span>
                       </li>
                     ))}
                   </ul>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Informations */}
-              <Card className="bg-gradient-to-br from-primary to-secondary text-white">
-                <CardHeader>
-                  <CardTitle className="text-lg">Informations Pratiques</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <p className="text-sm text-white/80 mb-1">Horaires</p>
-                    <p className="font-semibold">Cours du jour et du soir</p>
+                {/* Informations pratiques */}
+                <div className="rounded-2xl bg-[#1e3a8a] p-6">
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">
+                    Informations Pratiques
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="border-b border-white/10 pb-3">
+                      <p className="text-xs text-white/50 mb-1">Horaires</p>
+                      <p className="text-sm font-semibold text-white">Cours du jour et du soir</p>
+                    </div>
+                    <div className="border-b border-white/10 pb-3">
+                      <p className="text-xs text-white/50 mb-1">Certification</p>
+                      <p className="text-sm font-semibold text-white">Attestation reconnue</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-white/50 mb-1">Effectif</p>
+                      <p className="text-sm font-semibold text-white">Maximum 20 étudiants/classe</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-white/80 mb-1">Certification</p>
-                    <p className="font-semibold">Attestation reconnue</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-white/80 mb-1">Effectif</p>
-                    <p className="font-semibold">Maximum 20 étudiants/classe</p>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* CTA Card */}
-              <Card className="bg-accent text-white">
-                <CardHeader>
-                  <CardTitle className="text-lg">Prêt à Commencer ?</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-white/90">
-                    Inscrivez-vous dès maintenant ou contactez-nous pour plus d'informations.
-                  </p>
-                  <Link to="/contact">
-                    <Button className="w-full bg-white text-accent hover:bg-white/90">
-                      S'inscrire Maintenant
-                    </Button>
-                  </Link>
-                  <Link to="/contact">
-                    <Button variant="outline" className="w-full border-white text-white hover:bg-white/10">
-                      Nous Contacter
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+                {/* CTA */}
+                <div className="rounded-2xl overflow-hidden shadow-sm">
+                  <div className="bg-[#f97316] px-6 pt-6 pb-5">
+                    <h3 className="text-sm font-semibold text-white mb-1">Prêt à Commencer ?</h3>
+                    <p className="text-xs text-white/80 leading-relaxed">
+                      Inscrivez-vous dès maintenant ou contactez-nous pour plus d'informations.
+                    </p>
+                  </div>
+                  <div className="bg-white px-6 py-4 space-y-2">
+                    <Link to="/contact">
+                      <button className="w-full py-2.5 rounded-lg bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white text-sm font-semibold transition-colors duration-150">
+                        S'inscrire Maintenant
+                      </button>
+                    </Link>
+                    <Link to="/contact">
+                      <button className="w-full py-2.5 rounded-lg border border-[#1e3a8a]/20 text-[#1e3a8a] text-sm font-medium hover:bg-[#1e3a8a]/5 transition-colors duration-150">
+                        Nous Contacter
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
         </div>

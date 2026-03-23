@@ -13,12 +13,13 @@ import {
   FileText,
   Upload,
   LogOut,
-  CheckCircle,
   X,
   Edit,
   Settings,
   Plus,
   Camera,
+  ClipboardList,
+  CheckCircle,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { getCurrentAuth, logout } from "../../auth";
@@ -66,6 +67,24 @@ type NoteRecord = {
   subject?: string;
 };
 
+type ProgramTracking = {
+  id: number;
+  user_id: number;
+  formation_id: number;
+  subject: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  report_content: string;
+  teacher_signed_at?: string;
+  admin_signed_at?: string;
+  week_range?: string;
+  formation?: {
+    id: number;
+    name: string;
+  };
+};
+
 export default function TeacherDashboard() {
   const navigate = useNavigate();
   const [teacherInfo, setTeacherInfo] = useState<TeacherInfo | null>(null);
@@ -77,6 +96,17 @@ export default function TeacherDashboard() {
   const [editedStudent, setEditedStudent] = useState<Student | null>(null);
   const [presenceRecords, setPresenceRecords] = useState<PresenceRecord[]>([]);
   const [noteRecords, setNoteRecords] = useState<NoteRecord[]>([]);
+  const [trackings, setTrackings] = useState<ProgramTracking[]>([]);
+  const [isTrackingDialogOpen, setIsTrackingDialogOpen] = useState(false);
+  const [newTracking, setNewTracking] = useState({
+    formation_id: "",
+    subject: "",
+    date: new Date().toISOString().split('T')[0],
+    start_time: "09:00",
+    end_time: "13:00",
+    report_content: "",
+    week_range: "",
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -119,6 +149,16 @@ export default function TeacherDashboard() {
 
         // Charger les étudiants des formations du formateur
         loadStudentsForFormations(formationsData, auth.email);
+      }
+
+      // Charger les fiches de suivi
+      const trackingsResponse = await fetch(apiUrl(`/api/program-trackings?email=${encodeURIComponent(auth.email)}`), {
+        headers: { Accept: "application/json" },
+      });
+      
+      if (trackingsResponse.ok) {
+        const trackingsData = await trackingsResponse.json();
+        setTrackings(trackingsData);
       }
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error);
@@ -293,6 +333,46 @@ export default function TeacherDashboard() {
     }
   };
 
+  const handleSaveTracking = async () => {
+    try {
+      const auth = getCurrentAuth();
+      if (!auth) return;
+
+      const response = await fetch(apiUrl("/api/program-trackings"), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          ...newTracking,
+          email: auth.email,
+        }),
+      });
+
+      if (response.ok) {
+        const saved = await response.json();
+        setTrackings([saved, ...trackings]);
+        setIsTrackingDialogOpen(false);
+        setNewTracking({
+          formation_id: "",
+          subject: "",
+          date: new Date().toISOString().split('T')[0],
+          start_time: "09:00",
+          end_time: "13:00",
+          report_content: "",
+          week_range: "",
+        });
+        toast.success("Fiche de suivi enregistrée avec succès");
+      } else {
+        const err = await response.json();
+        toast.error(err.message || "Erreur lors de l'enregistrement");
+      }
+    } catch (error) {
+      toast.error("Erreur de connexion");
+    }
+  };
+
   const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !teacherInfo) return;
@@ -345,7 +425,7 @@ export default function TeacherDashboard() {
                 <p className="text-xs text-white/80">Espace Formateur</p>
               </div>
             </Link>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <Link to="/settings">
                 <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
                   <Settings className="h-4 w-4 mr-2" />
@@ -373,7 +453,7 @@ export default function TeacherDashboard() {
         {/* Teacher Info Card */}
         <Card className="mb-8">
           <CardContent className="p-6">
-            <div className="flex items-center gap-6">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="relative group">
                 <img 
                   src={teacherInfo.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(teacherInfo.name)}&background=f97316&color=fff`} 
@@ -411,7 +491,7 @@ export default function TeacherDashboard() {
                   onChange={handlePhotoUpload}
                 />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 text-center sm:text-left">
                 <h2 className="text-2xl font-bold mb-1">{teacherInfo.name}</h2>
                 <p className="text-muted-foreground mb-2">Formateur</p>
                 {teacherInfo.specialite && (
@@ -423,11 +503,12 @@ export default function TeacherDashboard() {
         </Card>
 
         <Tabs defaultValue="students">
-          <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
             <TabsTrigger value="students">Étudiants</TabsTrigger>
             <TabsTrigger value="presence">Présences</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
             <TabsTrigger value="courses">Mes Cours</TabsTrigger>
+            <TabsTrigger value="tracking">Suivi Programme</TabsTrigger>
           </TabsList>
 
           <TabsContent value="students">
@@ -445,47 +526,49 @@ export default function TeacherDashboard() {
                     Aucun étudiant inscrit dans vos formations pour le moment.
                   </p>
                 ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nom</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Matricule</TableHead>
-                        <TableHead>Formation</TableHead>
-                        <TableHead>Présence</TableHead>
-                        <TableHead>Note Moyenne</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {students.map((student) => (
-                        <TableRow key={student.id}>
-                          <TableCell className="font-medium">{student.name}</TableCell>
-                          <TableCell>{student.email}</TableCell>
-                          <TableCell>{student.matricule}</TableCell>
-                          <TableCell>{student.formation_name}</TableCell>
-                          <TableCell>
-                            <Badge variant={student.presence_count / student.total_sessions >= 0.9 ? "default" : "secondary"}>
-                              {student.presence_count}/{student.total_sessions}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-semibold">
-                            {student.average_note ? `${student.average_note}/20` : 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleEditStudent(student)}
-                            >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Modifier
-                            </Button>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table className="min-w-[800px]">
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="hidden sm:table-cell">Nom</TableHead>
+                          <TableHead className="hidden md:table-cell">Email</TableHead>
+                          <TableHead>Matricule</TableHead>
+                          <TableHead className="hidden lg:table-cell">Formation</TableHead>
+                          <TableHead>Présence</TableHead>
+                          <TableHead className="hidden md:table-cell">Note Moyenne</TableHead>
+                          <TableHead>Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {students.map((student) => (
+                          <TableRow key={student.id}>
+                            <TableCell className="font-medium sm:table-cell">{student.name}</TableCell>
+                            <TableCell className="hidden md:table-cell">{student.email}</TableCell>
+                            <TableCell>{student.matricule}</TableCell>
+                            <TableCell className="hidden lg:table-cell">{student.formation_name}</TableCell>
+                            <TableCell>
+                              <Badge variant={student.presence_count / student.total_sessions >= 0.9 ? "default" : "secondary"}>
+                                {student.presence_count}/{student.total_sessions}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell font-semibold">
+                              {student.average_note ? `${student.average_note}/20` : 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleEditStudent(student)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Modifier
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -512,49 +595,51 @@ export default function TeacherDashboard() {
                   </p>
                 ) : (
                   <>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Étudiant</TableHead>
-                          <TableHead>Matricule</TableHead>
-                          <TableHead>Formation</TableHead>
-                          <TableHead className="text-center">Présent</TableHead>
-                          <TableHead className="text-center">Absent</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {students.map((student) => {
-                          const record = presenceRecords.find(r => r.student_id === student.id);
-                          return (
-                            <TableRow key={student.id}>
-                              <TableCell className="font-medium">{student.name}</TableCell>
-                              <TableCell>{student.matricule}</TableCell>
-                              <TableCell>{student.formation_name}</TableCell>
-                              <TableCell className="text-center">
-                                <Button 
-                                  variant={record?.is_present ? "default" : "outline"} 
-                                  size="sm" 
-                                  className={record?.is_present ? "text-green-600 border-green-600" : ""}
-                                  onClick={() => handlePresenceChange(student.id, true)}
-                                >
-                                  <CheckCircle className="h-4 w-4" />
-                                </Button>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <Button 
-                                  variant={!record?.is_present ? "default" : "outline"} 
-                                  size="sm" 
-                                  className={!record?.is_present ? "text-red-600 border-red-600" : ""}
-                                  onClick={() => handlePresenceChange(student.id, false)}
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[600px]">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="hidden sm:table-cell">Étudiant</TableHead>
+                            <TableHead>Matricule</TableHead>
+                            <TableHead className="hidden md:table-cell">Formation</TableHead>
+                            <TableHead className="text-center">Présent</TableHead>
+                            <TableHead className="text-center">Absent</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {students.map((student) => {
+                            const record = presenceRecords.find(r => r.student_id === student.id);
+                            return (
+                              <TableRow key={student.id}>
+                                <TableCell className="font-medium sm:table-cell">{student.name}</TableCell>
+                                <TableCell>{student.matricule}</TableCell>
+                                <TableCell className="hidden md:table-cell">{student.formation_name}</TableCell>
+                                <TableCell className="text-center">
+                                  <Button 
+                                    variant={record?.is_present ? "default" : "outline"} 
+                                    size="sm" 
+                                    className={record?.is_present ? "text-green-600 border-green-600" : ""}
+                                    onClick={() => handlePresenceChange(student.id, true)}
+                                  >
+                                    <CheckCircle className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <Button 
+                                    variant={!record?.is_present ? "default" : "outline"} 
+                                    size="sm" 
+                                    className={!record?.is_present ? "text-red-600 border-red-600" : ""}
+                                    onClick={() => handlePresenceChange(student.id, false)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
                     <div className="mt-4">
                       <Button 
                         className="bg-primary hover:bg-primary/90"
@@ -586,49 +671,51 @@ export default function TeacherDashboard() {
                   </p>
                 ) : (
                   <>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Étudiant</TableHead>
-                          <TableHead>Matricule</TableHead>
-                          <TableHead>Formation</TableHead>
-                          <TableHead>Note /20</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {students.map((student) => {
-                          const record = noteRecords.find(r => r.student_id === student.id);
-                          return (
-                            <TableRow key={student.id}>
-                              <TableCell className="font-medium">{student.name}</TableCell>
-                              <TableCell>{student.matricule}</TableCell>
-                              <TableCell>{student.formation_name}</TableCell>
-                              <TableCell>
-                                <Input 
-                                  type="number" 
-                                  placeholder="Note" 
-                                  className="w-24" 
-                                  value={record?.note || ''}
-                                  onChange={(e) => handleNoteChange(student.id, parseFloat(e.target.value) || 0)}
-                                  min="0" 
-                                  max="20" 
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={handleSaveNotes}
-                                >
-                                  Enregistrer
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                    <div className="overflow-x-auto">
+                      <Table className="min-w-[600px]">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="hidden sm:table-cell">Étudiant</TableHead>
+                            <TableHead>Matricule</TableHead>
+                            <TableHead className="hidden md:table-cell">Formation</TableHead>
+                            <TableHead>Note /20</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {students.map((student) => {
+                            const record = noteRecords.find(r => r.student_id === student.id);
+                            return (
+                              <TableRow key={student.id}>
+                                <TableCell className="font-medium sm:table-cell">{student.name}</TableCell>
+                                <TableCell>{student.matricule}</TableCell>
+                                <TableCell className="hidden md:table-cell">{student.formation_name}</TableCell>
+                                <TableCell>
+                                  <Input 
+                                    type="number" 
+                                    placeholder="Note" 
+                                    className="w-24" 
+                                    value={record?.note || ''}
+                                    onChange={(e) => handleNoteChange(student.id, parseFloat(e.target.value) || 0)}
+                                    min="0" 
+                                    max="20" 
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={handleSaveNotes}
+                                  >
+                                    Enregistrer
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
                     <div className="mt-4">
                       <Button 
                         className="bg-primary hover:bg-primary/90"
@@ -660,26 +747,30 @@ export default function TeacherDashboard() {
                       Aucune formation assignée pour le moment.
                     </p>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
                       {formations.map((formation) => (
-                        <div key={formation.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex-1">
-                            <h4 className="font-bold mb-1">{formation.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {formation.start_date
-                                ? `Début: ${new Date(formation.start_date).toLocaleDateString("fr-FR")}`
-                                : "Date non définie"}
-                            </p>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {formation.enrolled_students}/{formation.capacity} étudiants inscrits
-                            </p>
-                            {formation.price && (
-                              <p className="text-sm font-medium text-primary mt-1">
-                                Prix: {formation.price.toLocaleString("fr-FR")} FCFA
-                              </p>
-                            )}
+                        <div key={formation.id} className="p-4 border rounded-lg">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-bold mb-2">{formation.name}</h4>
+                              <div className="space-y-1 text-sm text-muted-foreground">
+                                <p>
+                                  {formation.start_date
+                                    ? `Début: ${new Date(formation.start_date).toLocaleDateString("fr-FR")}`
+                                    : "Date non définie"}
+                                </p>
+                                <p>
+                                  {formation.enrolled_students}/{formation.capacity} étudiants inscrits
+                                </p>
+                                {formation.price && (
+                                  <p className="font-medium text-primary">
+                                    Prix: {formation.price.toLocaleString("fr-FR")} FCFA
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            <Button variant="outline" size="sm">Détails</Button>
                           </div>
-                          <Button variant="outline">Détails</Button>
                         </div>
                       ))}
                     </div>
@@ -709,8 +800,167 @@ export default function TeacherDashboard() {
               </Card>
             </div>
           </TabsContent>
+
+          <TabsContent value="tracking">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <ClipboardList className="h-5 w-5 text-accent" />
+                    Fiches de Suivi des Programmes
+                  </CardTitle>
+                  <CardDescription>Historique et saisie de vos rapports de cours</CardDescription>
+                </div>
+                <Button onClick={() => setIsTrackingDialogOpen(true)} className="bg-primary hover:bg-primary/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouvelle Fiche
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {trackings.length === 0 ? (
+                  <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                    <ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">Aucune fiche de suivi enregistrée.</p>
+                    <Button 
+                      variant="link" 
+                      onClick={() => setIsTrackingDialogOpen(true)}
+                      className="text-primary mt-2"
+                    >
+                      Créer votre première fiche maintenant
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Formation</TableHead>
+                          <TableHead>Matière</TableHead>
+                          <TableHead>Horaire</TableHead>
+                          <TableHead>Rapport</TableHead>
+                          <TableHead>Statut Admin</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {trackings.map((tracking) => (
+                          <TableRow key={tracking.id}>
+                            <TableCell className="font-medium">
+                              {new Date(tracking.date).toLocaleDateString("fr-FR")}
+                            </TableCell>
+                            <TableCell>{tracking.formation?.name}</TableCell>
+                            <TableCell>{tracking.subject}</TableCell>
+                            <TableCell>{tracking.start_time.substring(0, 5)} - {tracking.end_time.substring(0, 5)}</TableCell>
+                            <TableCell className="max-w-xs truncate">
+                              {tracking.report_content}
+                            </TableCell>
+                            <TableCell>
+                              {tracking.admin_signed_at ? (
+                                <Badge className="bg-green-500 text-white flex items-center gap-1 w-fit">
+                                  <CheckCircle className="h-3 w-3" /> Validé
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50 flex items-center gap-1 w-fit">
+                                  <Calendar className="h-3 w-3" /> En attente
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
+
+      {/* Tracking Dialog */}
+      <Dialog open={isTrackingDialogOpen} onOpenChange={setIsTrackingDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Nouvelle Fiche de Suivi des Programmes</DialogTitle>
+            <DialogDescription>
+              Remplissez les informations sur le cours dispensé.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Formation</label>
+              <select 
+                className="w-full h-10 border rounded-md px-3 text-sm"
+                value={newTracking.formation_id}
+                onChange={(e) => setNewTracking({...newTracking, formation_id: e.target.value})}
+              >
+                <option value="">Sélectionnez une formation</option>
+                {formations.map(f => (
+                  <option key={f.id} value={f.id}>{f.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Matière dispensée</label>
+              <Input 
+                value={newTracking.subject}
+                onChange={(e) => setNewTracking({...newTracking, subject: e.target.value})}
+                placeholder="Ex: Initiation Informatique, Word, Excel..."
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Date</label>
+              <Input 
+                type="date"
+                value={newTracking.date}
+                onChange={(e) => setNewTracking({...newTracking, date: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Semaine (Optionnel)</label>
+              <Input 
+                value={newTracking.week_range}
+                onChange={(e) => setNewTracking({...newTracking, week_range: e.target.value})}
+                placeholder="Ex: Semaine du 23 au 27 Février 2026"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Heure début</label>
+              <Input 
+                type="time"
+                value={newTracking.start_time}
+                onChange={(e) => setNewTracking({...newTracking, start_time: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Heure fin</label>
+              <Input 
+                type="time"
+                value={newTracking.end_time}
+                onChange={(e) => setNewTracking({...newTracking, end_time: e.target.value})}
+              />
+            </div>
+            <div className="col-span-1 md:col-span-2 space-y-2">
+              <label className="text-sm font-medium">Rapport synthétique du cours</label>
+              <textarea 
+                className="w-full min-h-[100px] border rounded-md p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                value={newTracking.report_content}
+                onChange={(e) => setNewTracking({...newTracking, report_content: e.target.value})}
+                placeholder="Décrivez brièvement le contenu du cours, les chapitres abordés, les TP réalisés..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsTrackingDialogOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleSaveTracking} className="bg-primary hover:bg-primary/90 text-white">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Signer et Envoyer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Student Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

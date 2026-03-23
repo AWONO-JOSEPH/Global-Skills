@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "../components/ui/alert";
 import { 
   User, 
   Lock, 
-  Upload, 
   Trash2, 
   Save,
   ArrowLeft,
@@ -42,7 +41,6 @@ export default function Settings() {
   });
 
   const [avatarUrl, setAvatarUrl] = useState<string>("");
-  const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -139,37 +137,6 @@ export default function Settings() {
       }
     } catch (error) {
       toast.error("Erreur de connexion");
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("L'image ne doit pas dépasser 2MB");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      
-      await uploadPhoto(file);
     }
   };
 
@@ -345,20 +312,6 @@ export default function Settings() {
                     className="hidden"
                     onChange={handleFileSelect}
                   />
-                </div>
-
-                <div
-                  className={`w-full border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                    isDragging ? "border-primary bg-primary/5" : "border-muted-foreground/25"
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Glissez une image ici ou cliquez pour sélectionner
-                  </p>
                 </div>
               </CardContent>
             </Card>

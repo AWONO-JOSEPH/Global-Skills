@@ -284,14 +284,14 @@ export default function AdminContactMessages() {
               <p className="text-muted-foreground">Aucun message trouvé</p>
             </div>
           ) : (
-            <Table>
+            <Table className="min-w-[860px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead className="hidden md:table-cell">Email</TableHead>
                   <TableHead>Sujet</TableHead>
                   <TableHead>Statut</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead className="hidden lg:table-cell">Date</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -299,7 +299,7 @@ export default function AdminContactMessages() {
                 {messages.map((message) => (
                   <TableRow key={message.id}>
                     <TableCell className="font-medium">{message.name}</TableCell>
-                    <TableCell>{message.email}</TableCell>
+                    <TableCell className="hidden md:table-cell">{message.email}</TableCell>
                     <TableCell>
                       <div className="max-w-[200px] truncate">
                         {message.subject || "Sans sujet"}
@@ -310,9 +310,9 @@ export default function AdminContactMessages() {
                         {message.status_label}
                       </Badge>
                     </TableCell>
-                    <TableCell>{message.created_at}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{message.created_at}</TableCell>
                     <TableCell>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Button
                           variant="outline"
                           size="sm"

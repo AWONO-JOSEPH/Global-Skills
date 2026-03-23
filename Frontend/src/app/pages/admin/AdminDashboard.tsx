@@ -28,6 +28,7 @@ import {
   Newspaper,
   Globe,
   MessageSquare,
+  ClipboardList,
 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Line, LineChart } from "recharts";
 import { getCurrentAuth, logout } from "../../auth";
@@ -98,6 +99,22 @@ type PaymentRow = {
   total_paid_so_far?: number;
 };
 
+type ProgramTracking = {
+  id: number;
+  user_id: number;
+  formation_id: number;
+  subject: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  report_content: string;
+  teacher_signed_at?: string;
+  admin_signed_at?: string;
+  week_range?: string;
+  user?: { name: string; email: string };
+  formation?: { name: string };
+};
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState<OverviewStats | null>(null);
@@ -133,6 +150,8 @@ export default function AdminDashboard() {
   const [teachers, setTeachers] = useState<TeacherRow[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [isLoadingPayments, setIsLoadingPayments] = useState(false);
+  const [trackings, setTrackings] = useState<ProgramTracking[]>([]);
+  const [isLoadingTrackings, setIsLoadingTrackings] = useState(false);
   const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false);
   const [studentDialogMode, setStudentDialogMode] = useState<"view" | "edit">("view");
   const [activeStudent, setActiveStudent] = useState<StudentRow | null>(null);
@@ -391,8 +410,44 @@ export default function AdminDashboard() {
       }
     };
 
-    loadFormations();
+    loadPayments();
   }, []);
+
+  useEffect(() => {
+    const loadTrackings = async () => {
+      setIsLoadingTrackings(true);
+      try {
+        const response = await fetch(apiUrl("/api/program-trackings"), {
+          headers: { Accept: "application/json" },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setTrackings(data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoadingTrackings(false);
+      }
+    };
+    loadTrackings();
+  }, []);
+
+  const handleSignTracking = async (id: number) => {
+    try {
+      const response = await fetch(apiUrl(`/api/program-trackings/${id}/sign`), {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+      });
+      if (response.ok) {
+        const updated = await response.json();
+        setTrackings(prev => prev.map(t => t.id === id ? updated : t));
+        toast.success("Fiche de suivi validée avec succès");
+      }
+    } catch (err) {
+      toast.error("Erreur de connexion");
+    }
+  };
 
   const handleCreateStudent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -780,12 +835,13 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="overview">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 mb-6">
+          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 mb-6">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="students">Étudiants</TabsTrigger>
             <TabsTrigger value="teachers">Enseignants</TabsTrigger>
             <TabsTrigger value="formations">Formations</TabsTrigger>
             <TabsTrigger value="payments">Paiements</TabsTrigger>
+            <TabsTrigger value="tracking">Suivi</TabsTrigger>
             <TabsTrigger value="reports">Rapports</TabsTrigger>
           </TabsList>
 
@@ -1157,13 +1213,13 @@ export default function AdminDashboard() {
                   </p>
                 ) : null}
 
-                <Table>
+                <Table className="min-w-[920px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Nom</TableHead>
-                      <TableHead>Email</TableHead>
+                      <TableHead className="hidden md:table-cell">Email</TableHead>
                       <TableHead>Formation</TableHead>
-                      <TableHead>Date d'Inscription</TableHead>
+                      <TableHead className="hidden lg:table-cell">Date d'Inscription</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -1173,17 +1229,17 @@ export default function AdminDashboard() {
                         <TableCell className="font-medium">
                           {student.name}
                         </TableCell>
-                        <TableCell>{student.email}</TableCell>
+                        <TableCell className="hidden md:table-cell">{student.email}</TableCell>
                         <TableCell>
                           {student.formation?.name ?? "—"}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden lg:table-cell">
                           {student.created_at
                             ? new Date(student.created_at).toLocaleDateString("fr-FR")
                             : ""}
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
+                          <div className="flex flex-col sm:flex-row gap-2">
                             <Button
                               variant="outline"
                               size="sm"
@@ -1360,13 +1416,13 @@ export default function AdminDashboard() {
                     Aucun enseignant pour le moment.
                   </p>
                 ) : (
-                  <Table>
+                  <Table className="min-w-[820px]">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Nom</TableHead>
-                        <TableHead>Email</TableHead>
+                        <TableHead className="hidden md:table-cell">Email</TableHead>
                         <TableHead>Spécialité</TableHead>
-                        <TableHead>Date d'Inscription</TableHead>
+                        <TableHead className="hidden lg:table-cell">Date d'Inscription</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1376,15 +1432,15 @@ export default function AdminDashboard() {
                           <TableCell className="font-medium">
                             {teacher.name}
                           </TableCell>
-                          <TableCell>{teacher.email}</TableCell>
+                          <TableCell className="hidden md:table-cell">{teacher.email}</TableCell>
                           <TableCell>{teacher.specialite || "—"}</TableCell>
-                          <TableCell>
+                          <TableCell className="hidden lg:table-cell">
                             {teacher.created_at
                               ? new Date(teacher.created_at).toLocaleDateString("fr-FR")
                               : ""}
                           </TableCell>
                           <TableCell>
-                            <div className="flex gap-2">
+                            <div className="flex flex-col sm:flex-row gap-2">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -1673,13 +1729,13 @@ export default function AdminDashboard() {
                 <CardDescription>Suivi des paiements et facturation</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
+                <Table className="min-w-[980px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Étudiant</TableHead>
                       <TableHead>Montant</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Date</TableHead>
+                      <TableHead className="hidden md:table-cell">Type</TableHead>
+                      <TableHead className="hidden lg:table-cell">Date</TableHead>
                       <TableHead>Statut</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -1693,8 +1749,8 @@ export default function AdminDashboard() {
                             ? (payment.montant as number).toLocaleString('fr-FR') + ' FCFA'
                             : payment.montant}
                         </TableCell>
-                        <TableCell>{payment.type}</TableCell>
-                        <TableCell>{payment.date}</TableCell>
+                        <TableCell className="hidden md:table-cell">{payment.type}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{payment.date}</TableCell>
                         <TableCell>
                           <div className="flex flex-col gap-1">
                             <Badge className={payment.statut === "Payé" ? "bg-green-500 text-white w-fit" : "bg-yellow-500 text-white w-fit"}>
@@ -1708,7 +1764,7 @@ export default function AdminDashboard() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
+                          <div className="flex flex-col sm:flex-row gap-2">
                             <Button variant="outline" size="sm" onClick={() => openViewPaymentDialog(payment)}>Voir</Button>
                             {payment.statut === "En attente" && (
                               <Button 
@@ -1726,6 +1782,90 @@ export default function AdminDashboard() {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Program Tracking Tab */}
+          <TabsContent value="tracking">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardList className="h-5 w-5 text-accent" />
+                  Suivi des Programmes
+                </CardTitle>
+                <CardDescription>Consultez et validez les rapports de cours des formateurs</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingTrackings ? (
+                  <div className="py-8 text-center text-muted-foreground">Chargement des fiches...</div>
+                ) : trackings.length === 0 ? (
+                  <div className="py-8 text-center text-muted-foreground">Aucune fiche de suivi disponible.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Formateur</TableHead>
+                          <TableHead>Formation</TableHead>
+                          <TableHead>Date & Horaire</TableHead>
+                          <TableHead>Matière</TableHead>
+                          <TableHead>Rapport</TableHead>
+                          <TableHead>Statut</TableHead>
+                          <TableHead>Action</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {trackings.map((tracking) => (
+                          <TableRow key={tracking.id}>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-medium">{tracking.user?.name}</span>
+                                <span className="text-[10px] text-muted-foreground">{tracking.user?.email}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{tracking.formation?.name}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span>{new Date(tracking.date).toLocaleDateString("fr-FR")}</span>
+                                <span className="text-xs text-muted-foreground">{tracking.start_time.substring(0, 5)} - {tracking.end_time.substring(0, 5)}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>{tracking.subject}</TableCell>
+                            <TableCell className="max-w-xs">
+                              <p className="text-xs line-clamp-2" title={tracking.report_content}>
+                                {tracking.report_content}
+                              </p>
+                            </TableCell>
+                            <TableCell>
+                              {tracking.admin_signed_at ? (
+                                <Badge className="bg-green-500 text-white flex items-center gap-1 w-fit">
+                                  Validé
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50 flex items-center gap-1 w-fit">
+                                  En attente
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {!tracking.admin_signed_at && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-primary"
+                                  onClick={() => handleSignTracking(tracking.id)}
+                                >
+                                  Valider
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1762,6 +1902,28 @@ export default function AdminDashboard() {
                       <div className="text-center">
                         <p className="font-semibold">Rapport Formations</p>
                         <p className="text-xs text-muted-foreground">Statistiques par formation (PDF)</p>
+                      </div>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-24 flex-col gap-2"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(apiUrl("/api/admin/reports/tracking"));
+                          if (response.ok) {
+                            const data = await response.json();
+                            toast.success("Rapport de suivi généré avec succès");
+                            console.log("Données de suivi:", data);
+                          }
+                        } catch (err) {
+                          toast.error("Erreur de connexion");
+                        }
+                      }}
+                    >
+                      <ClipboardList className="h-6 w-6 text-orange-600" />
+                      <div className="text-center">
+                        <p className="font-semibold">Suivi des Programmes</p>
+                        <p className="text-xs text-muted-foreground">Rapport d'activités (PDF)</p>
                       </div>
                     </Button>
                     <Button 
@@ -2017,22 +2179,22 @@ export default function AdminDashboard() {
           ) : formationStudents.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">Aucun étudiant inscrit à cette formation.</div>
           ) : (
-            <Table>
+            <Table className="min-w-[760px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead className="hidden md:table-cell">Email</TableHead>
                   <TableHead>Matricule</TableHead>
-                  <TableHead>Date d'inscription</TableHead>
+                  <TableHead className="hidden lg:table-cell">Date d'inscription</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {formationStudents.map((student) => (
                   <TableRow key={student.id}>
                     <TableCell className="font-medium">{student.name}</TableCell>
-                    <TableCell>{student.email}</TableCell>
+                    <TableCell className="hidden md:table-cell">{student.email}</TableCell>
                     <TableCell>{student.matricule}</TableCell>
-                    <TableCell>{student.joined_at}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{student.joined_at}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
