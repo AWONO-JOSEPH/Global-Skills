@@ -7,6 +7,7 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { MapPin, Phone, Mail, Clock, Facebook, Send } from "lucide-react";
 import { toast } from "sonner";
+import { apiUrl } from "../lib/api";
 
 export default function Contact() {
   const [searchParams] = useSearchParams();
@@ -32,7 +33,7 @@ export default function Contact() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/contact-messages", {
+      const response = await fetch(apiUrl("/api/contact-messages"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

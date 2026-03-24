@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
+import { apiUrl } from "../../lib/api";
 
 interface InternationalRequest {
   id: number;
@@ -73,7 +74,7 @@ export default function AdminInternationalRequests() {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/international-requests");
+      const response = await fetch(apiUrl("/api/admin/international-requests"));
       if (response.ok) {
         const data = await response.json();
         const filteredRequests = statusFilter === "all" 
@@ -93,7 +94,7 @@ export default function AdminInternationalRequests() {
   const fetchRequestDetail = async (id: number) => {
     try {
       setSelectedRequest(null);
-      const response = await fetch(`/api/admin/international-requests/${id}`);
+      const response = await fetch(apiUrl(`/api/admin/international-requests/${id}`));
       if (response.ok) {
         const data = await response.json();
         setSelectedRequest(data.request);
@@ -108,7 +109,7 @@ export default function AdminInternationalRequests() {
   const updateStatus = async (id: number, newStatus: string) => {
     try {
       setUpdatingStatus(id);
-      const response = await fetch(`/api/admin/international-requests/${id}/status`, {
+      const response = await fetch(apiUrl(`/api/admin/international-requests/${id}/status`), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +139,7 @@ export default function AdminInternationalRequests() {
     }
 
     try {
-      const response = await fetch(`/api/admin/international-requests/${id}`, {
+      const response = await fetch(apiUrl(`/api/admin/international-requests/${id}`), {
         method: "DELETE",
       });
 
