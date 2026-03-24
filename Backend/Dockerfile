@@ -1,33 +1,42 @@
-FROM php:8.3-cli-alpine
+FROM php:8.2-fpm
 
-WORKDIR /var/www/html
-
-# System and PHP extensions required by Laravel + PostgreSQL
-RUN apk add --no-cache \
-    bash \
+# Installer les dépendances système
+RUN apt-get update && apt-get install -y \
     git \
-    unzip \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libpq-dev \
     libzip-dev \
-    icu-dev \
-    oniguruma-dev \
-    postgresql-dev \
-    && docker-php-ext-install pdo pdo_pgsql mbstring zip intl bcmath
+    zip \
+    unzip \
+    nginx \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Installer les extensions PHP
+RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip
 
-# Install PHP dependencies first for build cache efficiency
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# Installer Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy project
+# Définir le dossier de travail
+WORKDIR /var/www
+
+# Copier les fichiers du projet
 COPY . .
 
-# Runtime directory permissions
-RUN mkdir -p storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+# Installer les dépendances Laravel
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# Permissions
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+# Copier la config Nginx
+COPY nginx.conf /etc/nginx/sites-available/default
+
+# Exposer le port
 EXPOSE 10000
 
-# Render injects $PORT; run migrations before serving.
-CMD ["sh", "-lc", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}"]
+# Démarrer Laravel + PHP-FPM + Nginx
+CMD ["sh", "-lc", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php-fpm -D && nginx -g 'daemon off;'"]
