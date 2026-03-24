@@ -14,10 +14,18 @@ services:
         value: pgsql
       - key: DB_SSLMODE
         value: require
+      - key: DB_HOST
+        value: dpg-d717tedm5p6s738gp1m0-a
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        value: globalskillsdb
+      - key: DB_USERNAME
+        value: joseph
+      - key: DB_PASSWORD
+        sync: false
       - key: DATABASE_URL
-        fromDatabase:
-          name: global-skills-db
-          property: connectionString
+        sync: false
 
   - type: web
     name: global-skills-frontend
@@ -28,7 +36,3 @@ services:
     envVars:
       - key: VITE_API_BASE_URL
         value: https://global-skills-api.onrender.com
-
-databases:
-  - name: global-skills-db
-    plan: free
