@@ -113,7 +113,7 @@ export default function StudentDashboard() {
     <div className="min-h-screen bg-muted/30">
       {/* Header */}
       <header className="bg-primary text-white shadow-md sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 relative">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
               <img src={logo} alt="Global Skills Logo" className="h-10 w-auto brightness-0 invert" />
@@ -122,31 +122,74 @@ export default function StudentDashboard() {
                 <p className="text-xs text-white/80">Espace Étudiant</p>
               </div>
             </Link>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 relative">
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-accent text-xs flex items-center justify-center">
                   {notifications.length}
                 </span>
               </Button>
-              <Link to="/settings">
-                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Paramètres
+              <div className="hidden sm:flex items-center gap-2">
+                <Link to="/settings">
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+                    <Settings className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Paramètres</span>
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/10"
+                  onClick={() => {
+                    logout();
+                    navigate("/login");
+                  }}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Déconnexion</span>
                 </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/10"
-                onClick={() => {
-                  logout();
-                  navigate("/login");
-                }}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Déconnexion
-              </Button>
+              </div>
+              {/* Mobile menu button */}
+              <div className="sm:hidden">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/10"
+                  onClick={() => {
+                    const menu = document.getElementById('mobile-menu');
+                    if (menu) {
+                      menu.classList.toggle('hidden');
+                    }
+                  }}
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </Button>
+              </div>
+            </div>
+            {/* Mobile menu */}
+            <div id="mobile-menu" className="hidden sm:hidden absolute top-full left-0 right-0 bg-primary border-t border-white/20">
+              <div className="px-4 py-2 space-y-1">
+                <Link to="/settings" className="block w-full">
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 w-full justify-start">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Paramètres
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/10 w-full justify-start"
+                  onClick={() => {
+                    logout();
+                    navigate("/login");
+                  }}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Déconnexion
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -154,34 +197,51 @@ export default function StudentDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Student Info Card */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex items-center gap-6">
+            <div className="relative group flex-shrink-0">
               <img
                 src={studentInfo?.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(studentInfo?.nom || 'Student')}&background=1e3a8a&color=fff`}
                 alt={studentInfo?.nom}
-                className="h-24 w-24 rounded-full"
+                className="h-20 w-20 sm:h-24 sm:w-24 rounded-full border-2 border-gray-100 transition-transform hover:scale-105 cursor-pointer"
+                onClick={() => {
+                  const img = new Image();
+                  img.src = studentInfo?.photo || '';
+                  img.onload = () => {
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
+                    modal.onclick = () => modal.remove();
+                    
+                    const modalImg = document.createElement('img');
+                    modalImg.src = img.src;
+                    modalImg.className = 'max-w-full max-h-full rounded-lg';
+                    
+                    modal.appendChild(modalImg);
+                    document.body.appendChild(modal);
+                  };
+                }}
               />
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold mb-1">{studentInfo?.nom}</h2>
-                <p className="text-muted-foreground mb-2">Matricule: {studentInfo?.matricule}</p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="bg-primary text-white">
-                    <GraduationCap className="h-3 w-3 mr-1" />
-                    {studentInfo?.formation}
-                  </Badge>
-                  <Badge variant="secondary">
-                    Phase: {studentInfo?.niveau}
-                  </Badge>
-                </div>
-              </div>
-              <Button variant="outline">
-                <User className="h-4 w-4 mr-2" />
-                Mon Profil
-              </Button>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{studentInfo?.nom}</h2>
+              <p className="text-sm text-gray-600 mb-2">Matricule: {studentInfo?.matricule}</p>
+              <div className="flex flex-wrap gap-2">
+                <Badge className="bg-primary text-white">
+                  <GraduationCap className="h-3 w-3 mr-1" />
+                  {studentInfo?.formation}
+                </Badge>
+                <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+                  Phase: {studentInfo?.niveau}
+                </Badge>
+              </div>
+            </div>
+            <Button variant="outline" className="border-gray-200 hover:border-accent hover:bg-accent/5">
+              <User className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Mon Profil</span>
+              <span className="sm:hidden">Profil</span>
+            </Button>
+          </div>
+        </div>
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>

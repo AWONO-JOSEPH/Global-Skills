@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { toast } from "sonner";
+import { apiUrl } from "../lib/api";
 
 export default function InternationalServices() {
   const [formData, setFormData] = useState({
@@ -60,7 +61,7 @@ export default function InternationalServices() {
     };
 
     try {
-      const response = await fetch('/api/international-requests', {
+      const response = await fetch(apiUrl('/api/international-requests'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

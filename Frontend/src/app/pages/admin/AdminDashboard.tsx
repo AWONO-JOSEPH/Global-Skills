@@ -410,7 +410,7 @@ export default function AdminDashboard() {
       }
     };
 
-    loadPayments();
+    loadFormations();
   }, []);
 
   useEffect(() => {

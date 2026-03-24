@@ -259,235 +259,224 @@ export default function Settings() {
                 <p className="text-xs text-white/80">Paramètres</p>
               </div>
             </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-white hover:bg-white/10"
-              onClick={() => navigate(-1)}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour au dashboard
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/10"
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Retour au dashboard</span>
+                <span className="sm:hidden">Retour</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Photo de profil */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-accent" />
-                  Photo de profil
-                </CardTitle>
-                <CardDescription>
-                  Cliquez sur votre photo pour l'agrandir ou sur le bouton + pour la modifier
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col items-center space-y-4">
-                <div className="relative group">
-                  <div
-                    className="w-32 h-32 rounded-full overflow-hidden cursor-pointer transition-transform hover:scale-105 border-4 border-background"
-                    onClick={handleAvatarClick}
-                  >
-                    <img
-                      src={avatarUrl}
-                      alt="Photo de profil"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <Button
-                    size="sm"
-                    className="absolute bottom-2 right-2 bg-primary text-white rounded-full h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFileSelect}
+        {/* Profile Header Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex items-center gap-6">
+            <div className="relative group flex-shrink-0">
+              <div
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden cursor-pointer transition-transform hover:scale-105 border-2 border-gray-100"
+                onClick={handleAvatarClick}
+              >
+                <img
+                  src={avatarUrl}
+                  alt="Photo de profil"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <Button
+                size="sm"
+                className="absolute bottom-0 right-0 bg-accent text-white rounded-full h-8 w-8 p-0 flex items-center justify-center shadow-md"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Camera className="h-4 w-4" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                {personalInfo.firstName} {personalInfo.lastName}
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {getCurrentAuth()?.role === 'student' ? 'Apprenante' : getCurrentAuth()?.role === 'teacher' ? 'Formatrice' : 'Administratrice'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Forms Section */}
+        <div className="space-y-6">
+          {/* Informations personnelles */}
+          <div className="bg-white rounded-lg shadow-md">
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900">Informations personnelles</h3>
+              <p className="text-sm text-gray-600 mt-1">Mettez à jour vos informations personnelles</p>
+            </div>
+            <div className="p-4 sm:p-6">
+              <form onSubmit={handlePersonalInfoSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">Prénom</Label>
+                  <Input
+                    id="firstName"
+                    value={personalInfo.firstName}
+                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="Votre prénom"
+                    className="w-full border-gray-200 focus:border-accent focus:ring-accent"
                   />
                 </div>
-              </CardContent>
-            </Card>
+                <div>
+                  <Label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Nom</Label>
+                  <Input
+                    id="lastName"
+                    value={personalInfo.lastName}
+                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, lastName: e.target.value }))}
+                    placeholder="Votre nom"
+                    className="w-full border-gray-200 focus:border-accent focus:ring-accent"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Adresse e-mail</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={personalInfo.email}
+                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="Votre email"
+                    className="w-full border-gray-200 focus:border-accent focus:ring-accent"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Numéro de téléphone</Label>
+                  <Input
+                    id="phone"
+                    value={personalInfo.phone}
+                    onChange={(e) => setPersonalInfo(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="Votre numéro de téléphone"
+                    className="w-full border-gray-200 focus:border-accent focus:ring-accent"
+                  />
+                </div>
+                <Button type="submit" disabled={isLoading} className="w-full bg-accent hover:bg-accent/90 text-white shadow-md">
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? "Enregistrement..." : "Enregistrer les modifications"}
+                </Button>
+              </form>
+            </div>
           </div>
 
-          {/* Informations personnelles et mot de passe */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Informations personnelles */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-accent" />
-                  Informations personnelles
-                </CardTitle>
-                <CardDescription>
-                  Mettez à jour vos informations personnelles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handlePersonalInfoSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName">Prénom</Label>
-                      <Input
-                        id="firstName"
-                        value={personalInfo.firstName}
-                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, firstName: e.target.value }))}
-                        placeholder="Votre prénom"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="lastName">Nom</Label>
-                      <Input
-                        id="lastName"
-                        value={personalInfo.lastName}
-                        onChange={(e) => setPersonalInfo(prev => ({ ...prev, lastName: e.target.value }))}
-                        placeholder="Votre nom"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={personalInfo.email}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="Votre email"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Téléphone</Label>
-                    <Input
-                      id="phone"
-                      value={personalInfo.phone}
-                      onChange={(e) => setPersonalInfo(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="Votre numéro de téléphone"
-                    />
-                  </div>
-                  <Button type="submit" disabled={isLoading} className="w-full">
-                    <Save className="h-4 w-4 mr-2" />
-                    {isLoading ? "Enregistrement..." : "Enregistrer les modifications"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
             {/* Mot de passe */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Lock className="h-5 w-5 text-accent" />
-                  Mot de passe
-                </CardTitle>
-                <CardDescription>
-                  Changez votre mot de passe pour sécuriser votre compte
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="currentPassword">Mot de passe actuel</Label>
-                    <div className="relative">
-                      <Input
-                        id="currentPassword"
-                        type={showCurrentPassword ? "text" : "password"}
-                        value={passwordData.currentPassword}
-                        onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                        placeholder="Entrez votre mot de passe actuel"
-                        className="pr-10"
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      >
-                        {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+          {/* Mot de passe */}
+          <div className="bg-white rounded-lg shadow-md">
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900">Mot de passe</h3>
+              <p className="text-sm text-gray-600 mt-1">Changez votre mot de passe pour sécuriser votre compte</p>
+            </div>
+            <div className="p-4 sm:p-6">
+              <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">Mot de passe actuel</Label>
+                  <div className="relative">
+                    <Input
+                      id="currentPassword"
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
+                      placeholder="Entrez votre mot de passe actuel"
+                      className="w-full pr-10 border-gray-200 focus:border-accent focus:ring-accent"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    >
+                      {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
-                  <div>
-                    <Label htmlFor="newPassword">Nouveau mot de passe</Label>
-                    <div className="relative">
-                      <Input
-                        id="newPassword"
-                        type={showNewPassword ? "text" : "password"}
-                        value={passwordData.newPassword}
-                        onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                        placeholder="Entrez votre nouveau mot de passe"
-                        className="pr-10"
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        onClick={() => setShowNewPassword(!showNewPassword)}
-                      >
-                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                </div>
+                <div>
+                  <Label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</Label>
+                  <div className="relative">
+                    <Input
+                      id="newPassword"
+                      type={showNewPassword ? "text" : "password"}
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                      placeholder="Entrez votre nouveau mot de passe"
+                      className="w-full pr-10 border-gray-200 focus:border-accent focus:ring-accent"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                    >
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-                    <div className="relative">
-                      <Input
-                        id="confirmPassword"
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={passwordData.confirmPassword}
-                        onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                        placeholder="Confirmez votre nouveau mot de passe"
-                        className="pr-10"
-                      />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      >
-                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      placeholder="Confirmez votre nouveau mot de passe"
+                      className="w-full pr-10 border-gray-200 focus:border-accent focus:ring-accent"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
-                  <Button type="submit" className="w-full">
-                    <Lock className="h-4 w-4 mr-2" />
-                    Changer le mot de passe
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+                </div>
+                <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-white shadow-md">
+                  <Lock className="h-4 w-4 mr-2" />
+                  Changer le mot de passe
+                </Button>
+              </form>
+            </div>
+          </div>
 
             {/* Suppression du compte */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-destructive">
-                  <Trash2 className="h-5 w-5" />
-                  Supprimer le compte
-                </CardTitle>
-                <CardDescription>
-                  Attention : cette action est irréversible
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
+          {/* Suppression du compte */}
+          <div className="bg-white rounded-lg shadow-md">
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+              <h3 className="text-lg font-semibold text-red-600">Supprimer le compte</h3>
+              <p className="text-sm text-gray-600 mt-1">Attention : cette action est irréversible</p>
+            </div>
+            <div className="p-4 sm:p-6">
+              <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <Info className="h-5 w-5 text-red-600 mt-0.5" />
+                  <p className="text-sm text-red-800">
                     La suppression de votre compte entraînera la perte permanente de toutes vos données.
-                  </AlertDescription>
-                </Alert>
-                <Button 
-                  variant="destructive" 
-                  onClick={handleDeleteAccount}
-                  className="mt-4"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Supprimer mon compte
-                </Button>
-              </CardContent>
-            </Card>
+                  </p>
+                </div>
+              </div>
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteAccount}
+                className="w-full bg-red-600 hover:bg-red-700 text-white shadow-md"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Supprimer mon compte
+              </Button>
+            </div>
           </div>
         </div>
       </div>

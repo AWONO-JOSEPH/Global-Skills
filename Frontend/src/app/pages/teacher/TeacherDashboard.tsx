@@ -20,6 +20,7 @@ import {
   Camera,
   ClipboardList,
   CheckCircle,
+  User,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { getCurrentAuth, logout } from "../../auth";
@@ -414,7 +415,7 @@ export default function TeacherDashboard() {
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="bg-primary text-white shadow-md sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-4 relative">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3">
               <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center">
@@ -426,24 +427,67 @@ export default function TeacherDashboard() {
               </div>
             </Link>
             <div className="flex items-center gap-2">
-              <Link to="/settings">
-                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Paramètres
+              <div className="hidden sm:flex items-center gap-2">
+                <Link to="/settings">
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
+                    <Settings className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Paramètres</span>
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/10"
+                  onClick={() => {
+                    logout();
+                    navigate("/login");
+                  }}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Déconnexion</span>
                 </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/10"
-                onClick={() => {
-                  logout();
-                  navigate("/login");
-                }}
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Déconnexion
-              </Button>
+              </div>
+              {/* Mobile menu button */}
+              <div className="sm:hidden">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/10"
+                  onClick={() => {
+                    const menu = document.getElementById('teacher-mobile-menu');
+                    if (menu) {
+                      menu.classList.toggle('hidden');
+                    }
+                  }}
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </Button>
+              </div>
+            </div>
+            {/* Mobile menu */}
+            <div id="teacher-mobile-menu" className="hidden sm:hidden absolute top-full left-0 right-0 bg-primary border-t border-white/20">
+              <div className="px-4 py-2 space-y-1">
+                <Link to="/settings" className="block w-full">
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 w-full justify-start">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Paramètres
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/10 w-full justify-start"
+                  onClick={() => {
+                    logout();
+                    navigate("/login");
+                  }}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Déconnexion
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -451,139 +495,207 @@ export default function TeacherDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Teacher Info Card */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <div className="relative group">
-                <img 
-                  src={teacherInfo.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(teacherInfo.name)}&background=f97316&color=fff`} 
-                  alt={teacherInfo.name} 
-                  className="h-24 w-24 rounded-full object-cover cursor-pointer transition-transform hover:scale-105"
-                  onClick={() => {
-                    const img = new Image();
-                    img.src = teacherInfo.photo || '';
-                    img.onload = () => {
-                      const modal = document.createElement('div');
-                      modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
-                      modal.onclick = () => modal.remove();
-                      
-                      const modalImg = document.createElement('img');
-                      modalImg.src = img.src;
-                      modalImg.className = 'max-w-full max-h-full rounded-lg';
-                      
-                      modal.appendChild(modalImg);
-                      document.body.appendChild(modal);
-                    };
-                  }}
-                />
-                <Button
-                  size="sm"
-                  className="absolute bottom-0 right-0 bg-primary text-white rounded-full h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handlePhotoUpload}
-                />
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div className="flex items-center gap-6">
+            <div className="relative group flex-shrink-0">
+              <img 
+                src={teacherInfo.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(teacherInfo.name)}&background=f97316&color=fff`} 
+                alt={teacherInfo.name} 
+                className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover cursor-pointer transition-transform hover:scale-105 border-2 border-gray-100"
+                onClick={() => {
+                  const img = new Image();
+                  img.src = teacherInfo.photo || '';
+                  img.onload = () => {
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
+                    modal.onclick = () => modal.remove();
+                    
+                    const modalImg = document.createElement('img');
+                    modalImg.src = img.src;
+                    modalImg.className = 'max-w-full max-h-full rounded-lg';
+                    
+                    modal.appendChild(modalImg);
+                    document.body.appendChild(modal);
+                  };
+                }}
+              />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">{teacherInfo.name}</h2>
+              <p className="text-sm text-gray-600 mb-2">Formateur</p>
+              {teacherInfo.specialite && (
+                <Badge className="bg-accent text-white">{teacherInfo.specialite}</Badge>
+              )}
+            </div>
+            <Button variant="outline" className="border-gray-200 hover:border-accent hover:bg-accent/5">
+              <User className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Mon Profil</span>
+              <span className="sm:hidden">Profil</span>
+            </Button>
+          </div>
+        </div>
+
+        <Tabs defaultValue="students" className="w-full">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-5 mb-6">
+            <TabsTrigger value="students" className="data-[state=active]:bg-accent data-[state=active]:text-white transition-all duration-300">
+              <Users className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Étudiants</span>
+              <span className="sm:hidden">Étud.</span>
+            </TabsTrigger>
+            <TabsTrigger value="presence" className="data-[state=active]:bg-accent data-[state=active]:text-white transition-all duration-300">
+              <Calendar className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Présences</span>
+              <span className="sm:hidden">Prés.</span>
+            </TabsTrigger>
+            <TabsTrigger value="notes" className="data-[state=active]:bg-accent data-[state=active]:text-white transition-all duration-300">
+              <FileText className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Notes</span>
+              <span className="sm:hidden">Not.</span>
+            </TabsTrigger>
+            <TabsTrigger value="courses" className="data-[state=active]:bg-accent data-[state=active]:text-white transition-all duration-300">
+              <Upload className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Mes Cours</span>
+              <span className="sm:hidden">Cours</span>
+            </TabsTrigger>
+            <TabsTrigger value="tracking" className="data-[state=active]:bg-accent data-[state=active]:text-white transition-all duration-300">
+              <ClipboardList className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Suivi</span>
+              <span className="sm:hidden">Suiv.</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Mobile Navigation Indicator */}
+          <div className="sm:hidden mb-4">
+            <div className="bg-gray-100 rounded-lg p-1">
+              <div className="flex items-center justify-between text-xs text-gray-600">
+                <span>Glissez pour naviguer</span>
+                <span>→</span>
               </div>
-              <div className="flex-1 text-center sm:text-left">
-                <h2 className="text-2xl font-bold mb-1">{teacherInfo.name}</h2>
-                <p className="text-muted-foreground mb-2">Formateur</p>
-                {teacherInfo.specialite && (
-                  <Badge className="bg-accent text-white">{teacherInfo.specialite}</Badge>
+            </div>
+          </div>
+
+          <TabsContent value="students" className="animate-in slide-in-from-right-5 duration-300">
+            <div className="bg-white rounded-lg shadow-md">
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-accent" />
+                  <h3 className="text-lg font-semibold text-gray-900">Liste des Étudiants</h3>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">Étudiants inscrits dans vos formations</p>
+              </div>
+              <div className="p-4 sm:p-6">
+                {students.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500">Aucun étudiant inscrit dans vos formations pour le moment.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Mobile Cards */}
+                    <div className="sm:hidden space-y-3">
+                      {students.map((student) => (
+                        <div key={student.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{student.name}</h4>
+                              <p className="text-sm text-gray-600">{student.matricule}</p>
+                            </div>
+                            <Badge variant={student.presence_count / student.total_sessions >= 0.9 ? "default" : "secondary"} className="bg-accent text-white">
+                              {student.presence_count}/{student.total_sessions}
+                            </Badge>
+                          </div>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Email:</span>
+                              <span className="text-gray-900 truncate ml-2">{student.email}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Formation:</span>
+                              <span className="text-gray-900 truncate ml-2">{student.formation_name}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Moyenne:</span>
+                              <span className="font-semibold text-gray-900 ml-2">
+                                {student.average_note ? `${student.average_note}/20` : 'N/A'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              className="w-full border-gray-200 hover:border-accent hover:bg-accent/5"
+                              onClick={() => handleEditStudent(student)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Modifier
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Desktop Table */}
+                    <div className="hidden sm:block overflow-x-auto">
+                      <Table className="min-w-[800px]">
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="hidden sm:table-cell">Nom</TableHead>
+                            <TableHead className="hidden md:table-cell">Email</TableHead>
+                            <TableHead>Matricule</TableHead>
+                            <TableHead className="hidden lg:table-cell">Formation</TableHead>
+                            <TableHead className="hidden md:table-cell">Présence</TableHead>
+                            <TableHead className="hidden md:table-cell">Note Moyenne</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {students.map((student) => (
+                            <TableRow key={student.id}>
+                              <TableCell className="font-medium sm:table-cell">{student.name}</TableCell>
+                              <TableCell className="hidden md:table-cell">{student.email}</TableCell>
+                              <TableCell>{student.matricule}</TableCell>
+                              <TableCell className="hidden lg:table-cell">{student.formation_name}</TableCell>
+                              <TableCell>
+                                <Badge variant={student.presence_count / student.total_sessions >= 0.9 ? "default" : "secondary"}>
+                                  {student.presence_count}/{student.total_sessions}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell font-semibold">
+                                {student.average_note ? `${student.average_note}/20` : 'N/A'}
+                              </TableCell>
+                              <TableCell>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="border-gray-200 hover:border-accent hover:bg-accent/5"
+                                  onClick={() => handleEditStudent(student)}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Modifier
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Tabs defaultValue="students">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-6">
-            <TabsTrigger value="students">Étudiants</TabsTrigger>
-            <TabsTrigger value="presence">Présences</TabsTrigger>
-            <TabsTrigger value="notes">Notes</TabsTrigger>
-            <TabsTrigger value="courses">Mes Cours</TabsTrigger>
-            <TabsTrigger value="tracking">Suivi Programme</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="students">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-accent" />
-                  Liste des Étudiants
-                </CardTitle>
-                <CardDescription>Étudiants inscrits dans vos formations</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {students.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">
-                    Aucun étudiant inscrit dans vos formations pour le moment.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table className="min-w-[800px]">
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="hidden sm:table-cell">Nom</TableHead>
-                          <TableHead className="hidden md:table-cell">Email</TableHead>
-                          <TableHead>Matricule</TableHead>
-                          <TableHead className="hidden lg:table-cell">Formation</TableHead>
-                          <TableHead>Présence</TableHead>
-                          <TableHead className="hidden md:table-cell">Note Moyenne</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {students.map((student) => (
-                          <TableRow key={student.id}>
-                            <TableCell className="font-medium sm:table-cell">{student.name}</TableCell>
-                            <TableCell className="hidden md:table-cell">{student.email}</TableCell>
-                            <TableCell>{student.matricule}</TableCell>
-                            <TableCell className="hidden lg:table-cell">{student.formation_name}</TableCell>
-                            <TableCell>
-                              <Badge variant={student.presence_count / student.total_sessions >= 0.9 ? "default" : "secondary"}>
-                                {student.presence_count}/{student.total_sessions}
-                              </Badge>
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell font-semibold">
-                              {student.average_note ? `${student.average_note}/20` : 'N/A'}
-                            </TableCell>
-                            <TableCell>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleEditStudent(student)}
-                              >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Modifier
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </TabsContent>
 
-          <TabsContent value="presence">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+          <TabsContent value="presence" className="animate-in slide-in-from-right-5 duration-300">
+            <div className="bg-white rounded-lg shadow-md">
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <div className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-accent" />
-                  Gestion des Présences
-                </CardTitle>
-                <CardDescription>Marquez la présence de vos étudiants pour aujourd'hui</CardDescription>
-              </CardHeader>
-              <CardContent>
+                  <h3 className="text-lg font-semibold text-gray-900">Gestion des Présences</h3>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">Marquez la présence de vos étudiants pour aujourd'hui</p>
+              </div>
+              <div className="p-4 sm:p-6">
                 <div className="mb-4">
                   <p className="text-sm text-muted-foreground mb-2">
                     Date: {new Date().toLocaleDateString('fr-FR')}
@@ -602,8 +714,8 @@ export default function TeacherDashboard() {
                             <TableHead className="hidden sm:table-cell">Étudiant</TableHead>
                             <TableHead>Matricule</TableHead>
                             <TableHead className="hidden md:table-cell">Formation</TableHead>
-                            <TableHead className="text-center">Présent</TableHead>
-                            <TableHead className="text-center">Absent</TableHead>
+                            <TableHead className="hidden md:table-cell text-center">Présent</TableHead>
+                            <TableHead className="hidden md:table-cell text-center">Absent</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -651,20 +763,20 @@ export default function TeacherDashboard() {
                     </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
-          <TabsContent value="notes">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+          <TabsContent value="notes" className="animate-in slide-in-from-right-5 duration-300">
+            <div className="bg-white rounded-lg shadow-md">
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-accent" />
-                  Saisie des Notes
-                </CardTitle>
-                <CardDescription>Entrez les notes de vos étudiants</CardDescription>
-              </CardHeader>
-              <CardContent>
+                  <h3 className="text-lg font-semibold text-gray-900">Saisie des Notes</h3>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">Entrez les notes de vos étudiants</p>
+              </div>
+              <div className="p-4 sm:p-6">
                 {students.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">
                     Aucun étudiant à noter.
@@ -678,7 +790,7 @@ export default function TeacherDashboard() {
                             <TableHead className="hidden sm:table-cell">Étudiant</TableHead>
                             <TableHead>Matricule</TableHead>
                             <TableHead className="hidden md:table-cell">Formation</TableHead>
-                            <TableHead>Note /20</TableHead>
+                            <TableHead className="hidden md:table-cell">Note /20</TableHead>
                             <TableHead>Actions</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -727,27 +839,26 @@ export default function TeacherDashboard() {
                     </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
 
-          <TabsContent value="courses">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5 text-accent" />
-                    Mes Formations
-                  </CardTitle>
-                  <CardDescription>Vos formations assignées par l'administrateur</CardDescription>
-                </CardHeader>
-                <CardContent>
+          <TabsContent value="courses" className="animate-in slide-in-from-right-5 duration-300">
+            <div className="bg-white rounded-lg shadow-md">
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-accent" />
+                  <h3 className="text-lg font-semibold text-gray-900">Mes Formations</h3>
+                </div>
+                <p className="text-sm text-gray-600 mt-1">Vos formations assignées par l'administrateur</p>
+              </div>
+              <div className="p-4 sm:p-6">
                   {formations.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">
                       Aucune formation assignée pour le moment.
                     </p>
                   ) : (
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                       {formations.map((formation) => (
                         <div key={formation.id} className="p-4 border rounded-lg">
                           <div className="flex items-start justify-between">
@@ -775,48 +886,27 @@ export default function TeacherDashboard() {
                       ))}
                     </div>
                   )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Upload className="h-5 w-5 text-accent" />
-                    Supports de Cours
-                  </CardTitle>
-                  <CardDescription>Téléversez vos supports de cours pour les étudiants</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                    <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Glissez-déposez vos fichiers ici ou cliquez pour sélectionner
-                    </p>
-                    <Button variant="outline">
-                      Sélectionner des fichiers
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="tracking">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
+          <TabsContent value="tracking" className="animate-in slide-in-from-right-5 duration-300">
+            <div className="bg-white rounded-lg shadow-md">
+              <div className="p-4 sm:p-6 border-b border-gray-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <ClipboardList className="h-5 w-5 text-accent" />
-                    Fiches de Suivi des Programmes
-                  </CardTitle>
-                  <CardDescription>Historique et saisie de vos rapports de cours</CardDescription>
+                    <h3 className="text-lg font-semibold text-gray-900">Fiches de Suivi des Programmes</h3>
+                  </div>
+                  <Button onClick={() => setIsTrackingDialogOpen(true)} className="bg-primary hover:bg-primary/90">
+                    <Plus className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Nouvelle Fiche</span>
+                    <span className="sm:hidden">+</span>
+                  </Button>
                 </div>
-                <Button onClick={() => setIsTrackingDialogOpen(true)} className="bg-primary hover:bg-primary/90">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nouvelle Fiche
-                </Button>
-              </CardHeader>
-              <CardContent>
+                <p className="text-sm text-gray-600 mt-1">Historique et saisie de vos rapports de cours</p>
+              </div>
+              <div className="p-4 sm:p-6">
                 {trackings.length === 0 ? (
                   <div className="text-center py-12 border-2 border-dashed rounded-lg">
                     <ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -837,8 +927,8 @@ export default function TeacherDashboard() {
                           <TableHead>Date</TableHead>
                           <TableHead>Formation</TableHead>
                           <TableHead>Matière</TableHead>
-                          <TableHead>Horaire</TableHead>
-                          <TableHead>Rapport</TableHead>
+                          <TableHead className="hidden md:table-cell">Horaire</TableHead>
+                          <TableHead className="hidden lg:table-cell">Rapport</TableHead>
                           <TableHead>Statut Admin</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -850,8 +940,8 @@ export default function TeacherDashboard() {
                             </TableCell>
                             <TableCell>{tracking.formation?.name}</TableCell>
                             <TableCell>{tracking.subject}</TableCell>
-                            <TableCell>{tracking.start_time.substring(0, 5)} - {tracking.end_time.substring(0, 5)}</TableCell>
-                            <TableCell className="max-w-xs truncate">
+                            <TableCell className="hidden md:table-cell">{tracking.start_time.substring(0, 5)} - {tracking.end_time.substring(0, 5)}</TableCell>
+                            <TableCell className="hidden lg:table-cell max-w-xs truncate">
                               {tracking.report_content}
                             </TableCell>
                             <TableCell>
@@ -871,8 +961,8 @@ export default function TeacherDashboard() {
                     </Table>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
@@ -886,7 +976,7 @@ export default function TeacherDashboard() {
               Remplissez les informations sur le cours dispensé.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4 max-h-[70vh] overflow-y-auto">
             <div className="space-y-2">
               <label className="text-sm font-medium">Formation</label>
               <select 
