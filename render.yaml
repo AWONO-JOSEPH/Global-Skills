@@ -8,8 +8,12 @@ services:
         value: production
       - key: APP_DEBUG
         value: false
+      - key: APP_URL
+        value: https://global-skills.onrender.com
       - key: APP_KEY
         generateValue: true
+      - key: FRONTEND_URL
+        sync: false
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_SSLMODE
@@ -35,4 +39,4 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://global-skills-api.onrender.com
+        value: https://global-skills.onrender.com
