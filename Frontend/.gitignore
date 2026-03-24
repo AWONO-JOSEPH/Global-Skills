@@ -3,3 +3,7 @@
 !.env.example
 node_modules
 dist
+git rm -r --cached Frontend/node_modules
+git add .
+git commit -m "fix: remove Frontend node_modules from git"
+git push origin main
