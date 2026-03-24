@@ -29,8 +29,14 @@ COPY . .
 # Installer les dépendances Laravel
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+# Créer le dossier de cache des vues s'il n'existe pas
+RUN mkdir -p /var/www/storage/framework/views \
+    && mkdir -p /var/www/storage/framework/cache \
+    && mkdir -p /var/www/storage/framework/sessions
+
 # Permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 # Copier la config Nginx
 COPY nginx.conf /etc/nginx/sites-available/default
@@ -39,4 +45,6 @@ COPY nginx.conf /etc/nginx/sites-available/default
 EXPOSE 10000
 
 # Démarrer Laravel + PHP-FPM + Nginx
-CMD ["sh", "-lc", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php-fpm -D && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan storage:link && php-fpm -D && nginx -g 'daemon off;'"]
+
+
