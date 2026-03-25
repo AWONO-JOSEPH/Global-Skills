@@ -1,6 +1,6 @@
 import { apiUrl } from "../../lib/api";
-import { Link, useNavigate } from "react-router";
-import { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
@@ -117,6 +117,13 @@ type ProgramTracking = {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "overview";
+
+  const setActiveTab = (tab: string) => {
+    setSearchParams({ tab });
+  };
+
   const [stats, setStats] = useState<OverviewStats | null>(null);
   const [enrollmentData, setEnrollmentData] = useState<EnrollmentPoint[]>([]);
   const [revenueData, setRevenueData] = useState<RevenuePoint[]>([]);
@@ -287,6 +294,137 @@ export default function AdminDashboard() {
     setIsTeacherDialogOpen(true);
   };
 
+  const loadOverview = useCallback(async (silent = false) => {
+    if (!silent) setIsLoadingOverview(true);
+    try {
+      const response = await fetch(apiUrl("/api/admin/overview"), {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors du chargement du tableau de bord");
+      }
+
+      const data = await response.json();
+      setStats(data.stats);
+      setEnrollmentData(data.enrollmentData ?? []);
+      setRevenueData(data.revenueData ?? []);
+      setRecentStudents(data.recentStudents ?? []);
+      setRecentPayments(data.recentPayments ?? []);
+    } catch {
+      // on laisse le tableau vide
+    } finally {
+      if (!silent) setIsLoadingOverview(false);
+    }
+  }, []);
+
+  const loadStudents = useCallback(async (silent = false) => {
+    if (!silent) setIsLoadingStudents(true);
+    try {
+      const response = await fetch(apiUrl("/api/admin/students"), {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors du chargement des étudiants");
+      }
+
+      const data: StudentRow[] = await response.json();
+      setStudents(data);
+    } catch {
+      // on laisse la liste vide
+    } finally {
+      if (!silent) setIsLoadingStudents(false);
+    }
+  }, []);
+
+  const loadTeachers = useCallback(async (silent = false) => {
+    try {
+      const res = await fetch(apiUrl("/api/admin/teachers"), {
+        headers: { Accept: "application/json" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTeachers(data);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const loadPayments = useCallback(async (silent = false) => {
+    if (!silent) setIsLoadingPayments(true);
+    try {
+      const res = await fetch(apiUrl("/api/admin/payments"), {
+        headers: { Accept: "application/json" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPayments(data);
+      }
+    } catch {
+      // ignore
+    } finally {
+      if (!silent) setIsLoadingPayments(false);
+    }
+  }, []);
+
+  const loadFormations = useCallback(async (silent = false) => {
+    if (!silent) setIsLoadingFormations(true);
+    try {
+      const response = await fetch(apiUrl("/api/admin/formations"), {
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors du chargement des formations");
+      }
+
+      const data: FormationRow[] = await response.json();
+      setFormations(data);
+    } catch {
+      // on laisse la liste vide
+    } finally {
+      if (!silent) setIsLoadingFormations(false);
+    }
+  }, []);
+
+  const loadTrackings = useCallback(async (silent = false) => {
+    if (!silent) setIsLoadingTrackings(true);
+    try {
+      const auth = getCurrentAuth();
+      const emailParam = auth ? `?email=${encodeURIComponent(auth.email)}` : "";
+      const response = await fetch(apiUrl(`/api/program-trackings${emailParam}`), {
+        headers: { Accept: "application/json" },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTrackings(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      if (!silent) setIsLoadingTrackings(false);
+    }
+  }, []);
+
+  const loadAllData = useCallback(async (silent = false) => {
+    await Promise.all([
+      loadOverview(silent),
+      loadStudents(silent),
+      loadTeachers(silent),
+      loadPayments(silent),
+      loadFormations(silent),
+      loadTrackings(silent),
+    ]);
+  }, [loadOverview, loadStudents, loadTeachers, loadPayments, loadFormations, loadTrackings]);
+
   useEffect(() => {
     const auth = getCurrentAuth();
     if (!auth || auth.role !== "admin") {
@@ -295,143 +433,15 @@ export default function AdminDashboard() {
       return;
     }
 
-    const loadOverview = async () => {
-      setIsLoadingOverview(true);
-      try {
-        const response = await fetch(apiUrl("/api/admin/overview"), {
-          headers: {
-            Accept: "application/json",
-          },
-        });
+    loadAllData();
 
-        if (!response.ok) {
-          throw new Error("Erreur lors du chargement du tableau de bord");
-        }
+    // Auto-update every 30 seconds
+    const interval = setInterval(() => {
+      loadAllData(true);
+    }, 30000);
 
-        const data = await response.json();
-        setStats(data.stats);
-        setEnrollmentData(data.enrollmentData ?? []);
-        setRevenueData(data.revenueData ?? []);
-        setRecentStudents(data.recentStudents ?? []);
-        setRecentPayments(data.recentPayments ?? []);
-      } catch {
-        // on laisse le tableau vide
-      } finally {
-        setIsLoadingOverview(false);
-      }
-    };
-
-    loadOverview();
-  }, [navigate]);
-
-  useEffect(() => {
-    const loadStudents = async () => {
-      setIsLoadingStudents(true);
-      try {
-        const response = await fetch(apiUrl("/api/admin/students"), {
-          headers: {
-            Accept: "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Erreur lors du chargement des étudiants");
-        }
-
-        const data: StudentRow[] = await response.json();
-        setStudents(data);
-      } catch {
-        // on laisse la liste vide
-      } finally {
-        setIsLoadingStudents(false);
-      }
-    };
-
-    loadStudents();
-  }, []);
-
-  useEffect(() => {
-    const loadTeachers = async () => {
-      try {
-        const res = await fetch(apiUrl("/api/admin/teachers"), {
-          headers: { Accept: "application/json" },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setTeachers(data);
-        }
-      } catch {
-        // ignore
-      }
-    };
-    loadTeachers();
-  }, []);
-
-  useEffect(() => {
-    const loadPayments = async () => {
-      setIsLoadingPayments(true);
-      try {
-        const res = await fetch(apiUrl("/api/admin/payments"), {
-          headers: { Accept: "application/json" },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setPayments(data);
-        }
-      } catch {
-        // ignore
-      } finally {
-        setIsLoadingPayments(false);
-      }
-    };
-    loadPayments();
-  }, []);
-
-  useEffect(() => {
-    const loadFormations = async () => {
-      setIsLoadingFormations(true);
-      try {
-        const response = await fetch(apiUrl("/api/admin/formations"), {
-          headers: {
-            Accept: "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Erreur lors du chargement des formations");
-        }
-
-        const data: FormationRow[] = await response.json();
-        setFormations(data);
-      } catch {
-        // on laisse la liste vide
-      } finally {
-        setIsLoadingFormations(false);
-      }
-    };
-
-    loadFormations();
-  }, []);
-
-  useEffect(() => {
-    const loadTrackings = async () => {
-      setIsLoadingTrackings(true);
-      try {
-        const response = await fetch(apiUrl("/api/program-trackings"), {
-          headers: { Accept: "application/json" },
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setTrackings(data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoadingTrackings(false);
-      }
-    };
-    loadTrackings();
-  }, []);
+    return () => clearInterval(interval);
+  }, [navigate, loadAllData]);
 
   const handleSignTracking = async (id: number) => {
     try {
@@ -834,7 +844,7 @@ export default function AdminDashboard() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="overview">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 mb-6">
             <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
             <TabsTrigger value="students">Étudiants</TabsTrigger>

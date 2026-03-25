@@ -1,5 +1,5 @@
 import { apiUrl } from "../../lib/api";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
@@ -22,7 +22,7 @@ import {
   CheckCircle,
   User,
 } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { getCurrentAuth, logout } from "../../auth";
 import { toast } from "sonner";
 
@@ -88,6 +88,13 @@ type ProgramTracking = {
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "students";
+
+  const setActiveTab = (tab: string) => {
+    setSearchParams({ tab });
+  };
+
   const [teacherInfo, setTeacherInfo] = useState<TeacherInfo | null>(null);
   const [formations, setFormations] = useState<Formation[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -110,19 +117,8 @@ export default function TeacherDashboard() {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const auth = getCurrentAuth();
-    if (!auth || auth.role !== "teacher") {
-      logout();
-      navigate("/login");
-      return;
-    }
-
-    loadTeacherData();
-  }, [navigate]);
-
-  const loadTeacherData = async () => {
-    setIsLoading(true);
+  const loadTeacherData = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
     try {
       const auth = getCurrentAuth();
       if (!auth) return;
@@ -164,11 +160,11 @@ export default function TeacherDashboard() {
     } catch (error) {
       console.error("Erreur lors du chargement des données:", error);
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadStudentsForFormations = async (formationsList: Formation[], teacherEmail: string) => {
+  const loadStudentsForFormations = useCallback(async (formationsList: Formation[], teacherEmail: string) => {
     if (formationsList.length === 0) return;
     
     try {
@@ -205,7 +201,24 @@ export default function TeacherDashboard() {
     } catch (error) {
       console.error("Erreur lors du chargement des étudiants:", error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const auth = getCurrentAuth();
+    if (!auth || auth.role !== "teacher") {
+      logout();
+      navigate("/login");
+      return;
+    }
+
+    loadTeacherData();
+
+    const interval = setInterval(() => {
+      loadTeacherData(true);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [navigate, loadTeacherData]);
 
   const handleEditStudent = (student: Student) => {
     setSelectedStudent(student);
@@ -535,7 +548,7 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        <Tabs defaultValue="students" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-5 mb-6">
             <TabsTrigger value="students" className="data-[state=active]:bg-accent data-[state=active]:text-white transition-all duration-300">
               <Users className="h-4 w-4 mr-2" />

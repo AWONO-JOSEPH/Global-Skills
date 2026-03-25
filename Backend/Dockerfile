@@ -44,6 +44,6 @@ COPY nginx.conf /etc/nginx/sites-available/default
 # Exposer le port
 EXPOSE 10000
 
-# Démarrer Laravel + PHP-FPM + Nginx
-CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan storage:link && php-fpm -D && nginx -g 'daemon off;'"]
+# Démarrer Laravel + PHP-FPM + Nginx + Queue Worker
+CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan storage:link && (php artisan queue:work --tries=3 --timeout=90 &) && php-fpm -D && nginx -g 'daemon off;'"]
 

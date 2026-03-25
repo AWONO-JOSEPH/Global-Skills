@@ -1,4 +1,28 @@
-Access to fetch at 'https://global-skills.onrender.com/api/login' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: The 'Access-Control-Allow-Origin' header has a value 'http://localhost:5173' that is not equal to the supplied origin. Have the server send the header with a valid value.Understand this error
-global-skills.onrender.com/api/login:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
-login:1 Access to fetch at 'https://global-skills.onrender.com/api/login' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
-global-skills.onrender.com/api/login:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
+index-Crf1a2a0.js:551 
+ GET https://global-skills.onrender.com/api/program-trackings 401 (Unauthorized)
+(anonymous)	@	index-Crf1a2a0.js:551
+(anonymous)	@	index-Crf1a2a0.js:551
+wf	@	index-Crf1a2a0.js:40
+rl	@	index-Crf1a2a0.js:40
+QS	@	index-Crf1a2a0.js:40
+io	@	index-Crf1a2a0.js:38
+ZL	@	index-Crf1a2a0.js:40
+ns	@	index-Crf1a2a0.js:40
+ZS	@	index-Crf1a2a0.js:40
+C	@	index-Crf1a2a0.js:25
+z	@	index-Crf1a2a0.js:25
+
+index-Crf1a2a0.js:551 
+ POST https://global-skills.onrender.com/api/admin/users 504 (Gateway Timeout)
+bi	@	index-Crf1a2a0.js:551
+Q	@	index-Crf1a2a0.js:37
+Ee	@	index-Crf1a2a0.js:37
+ke	@	index-Crf1a2a0.js:37
+ON	@	index-Crf1a2a0.js:37
+CN	@	index-Crf1a2a0.js:37
+(anonymous)	@	index-Crf1a2a0.js:37
+Dv	@	index-Crf1a2a0.js:40
+Wt	@	index-Crf1a2a0.js:37
+Dp	@	index-Crf1a2a0.js:37
+yp	@	index-Crf1a2a0.js:37
+D3	@	index-Crf1a2a0.js:37

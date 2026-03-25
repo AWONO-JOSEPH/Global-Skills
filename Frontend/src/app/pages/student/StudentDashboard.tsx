@@ -1,6 +1,6 @@
 import { apiUrl } from "../../lib/api";
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
@@ -27,8 +27,14 @@ import logo from "../../../assets/84498a56cb9356abc2f9404869c93b519e727718.png";
 import { getCurrentAuth, logout } from "../../auth";
 
 export default function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "overview";
+
+  const setActiveTab = (tab: string) => {
+    setSearchParams({ tab });
+  };
+
   const [loading, setLoading] = useState(true);
   
   // États pour les données dynamiques
@@ -41,19 +47,9 @@ export default function StudentDashboard() {
   const [notes, setNotes] = useState<any[]>([]);
   const [overview, setOverview] = useState<any>(null);
 
-  useEffect(() => {
-    const auth = getCurrentAuth();
-    if (!auth || auth.role !== "student") {
-      logout();
-      navigate("/login");
-      return;
-    }
-    loadStudentData();
-  }, [navigate]);
-
-  const loadStudentData = async () => {
+  const loadStudentData = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const auth = getCurrentAuth();
       if (!auth) return;
 
@@ -92,11 +88,27 @@ export default function StudentDashboard() {
       
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
-      toast.error('Erreur lors du chargement des données');
+      if (!silent) toast.error('Erreur lors du chargement des données');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const auth = getCurrentAuth();
+    if (!auth || auth.role !== "student") {
+      logout();
+      navigate("/login");
+      return;
+    }
+    loadStudentData();
+
+    const interval = setInterval(() => {
+      loadStudentData(true);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [navigate, loadStudentData]);
 
   if (loading) {
     return (
