@@ -8,14 +8,9 @@ return [
     'allowed_origins' => [
         'http://localhost:5173',
         'http://localhost:3000',
-        'https://global-skills.vercel.app',
-        'https://global-skills-git-main-awono-josephs-projects.vercel.app',
-        'https://global-skills-gmgo15ovj-awono-josephs-projects.vercel.app',
     ],
 
-    'allowed_origins_patterns' => [
-        'https://.*\.vercel\.app',
-    ],
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 

@@ -1,4 +1,4 @@
-Quand tu as importé tes données SQLite vers PostgreSQL, les IDs ont été insérés manuellement (1, 2, 3...) mais la séquence PostgreSQL (qui génère les nouveaux IDs automatiquement) est restée à 1. Du coup quand Laravel essaie d'insérer un nouvel enregistrement, PostgreSQL génère l'ID 2 qui existe déjà.
-
-La solution — Réinitialiser les séquences
-Va dans ton Postgres Render → PSQL Console et exécute ces commandes pour chaque table :
+Access to fetch at 'https://global-skills.onrender.com/api/login' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: The 'Access-Control-Allow-Origin' header has a value 'http://localhost:5173' that is not equal to the supplied origin. Have the server send the header with a valid value.Understand this error
+global-skills.onrender.com/api/login:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
+login:1 Access to fetch at 'https://global-skills.onrender.com/api/login' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
+global-skills.onrender.com/api/login:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
