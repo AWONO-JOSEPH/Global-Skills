@@ -118,10 +118,11 @@ type ProgramTracking = {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || "overview";
+  const activeTab = searchParams.get("tab") || localStorage.getItem("admin_tab") || "overview";
 
   const setActiveTab = (tab: string) => {
     setSearchParams({ tab });
+    localStorage.setItem("admin_tab", tab);
   };
 
   const [stats, setStats] = useState<OverviewStats | null>(null);
@@ -485,20 +486,32 @@ export default function AdminDashboard() {
         throw new Error(err?.message ?? "Erreur lors de la création de l'étudiant");
       }
 
-      const created: StudentRow = await response.json();
+      const payload = await response.json();
+      const created: StudentRow = payload.user ?? payload;
+      const tempPassword: string | null = payload.temp_password ?? null;
+      const emailSent: boolean | undefined = payload.email_sent;
       const createdFormationId = newStudentFormationId;
+
+      // Reload lists from server to avoid inconsistent UI if the request timed out previously.
       if (newStudentRole === "student") {
-        setStudents((prev) => [created, ...prev]);
+        await loadStudents(true);
       } else {
-        setTeachers((prev) => [created, ...prev]);
+        await loadTeachers(true);
       }
+
       setNewStudentName("");
       setNewStudentEmail("");
       setNewStudentPhone("");
       setNewStudentRole("student");
       setNewStudentFormationId("");
       const roleText = newStudentRole === "student" ? "étudiant" : "enseignant";
-      toast.success(`${roleText.charAt(0).toUpperCase() + roleText.slice(1)} créé. Un email avec le mot de passe temporaire a été envoyé.`);
+      if (emailSent) {
+        toast.success(`${roleText.charAt(0).toUpperCase() + roleText.slice(1)} créé. Email envoyé avec mot de passe temporaire.`);
+      } else if (tempPassword) {
+        toast.success(`${roleText.charAt(0).toUpperCase() + roleText.slice(1)} créé. Mot de passe temporaire: ${tempPassword}`);
+      } else {
+        toast.success(`${roleText.charAt(0).toUpperCase() + roleText.slice(1)} créé.`);
+      }
 
       const loadOverview = async () => {
         try {
@@ -517,12 +530,15 @@ export default function AdminDashboard() {
       };
       loadOverview();
 
-      setPaymentStudentId(created.id);
-      setPaymentFormationId(createdFormationId || "");
-      const formation = formations.find((f) => f.id === createdFormationId);
-      setPaymentTotal(formation?.price ?? 0);
-      setPaymentAmount("");
-      setIsPaymentDialogOpen(true);
+      // Only open payment dialog when student is created and role is student.
+      if (newStudentRole === "student") {
+        setPaymentStudentId(created.id);
+        setPaymentFormationId(createdFormationId || "");
+        const formation = formations.find((f) => f.id === createdFormationId);
+        setPaymentTotal(formation?.price ?? 0);
+        setPaymentAmount("");
+        setIsPaymentDialogOpen(true);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erreur lors de la création.");
     } finally {

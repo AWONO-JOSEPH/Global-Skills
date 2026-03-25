@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class UserManagementController extends Controller
 {
@@ -88,27 +89,49 @@ class UserManagementController extends Controller
 
         $tempPassword = Str::random(10);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'role' => $validated['role'],
-            'formation_id' => $validated['formation_id'] ?? null,
-            'phone' => $validated['phone'] ?? null,
-            'password' => Hash::make($tempPassword),
-            'must_change_password' => true,
-        ]);
-
-        if ($user->role === 'student') {
-            \App\Models\Student::create([
-                'user_id' => $user->id,
-                'formation_id' => $user->formation_id,
-                'matricule' => 'GS-' . strtoupper(Str::random(6)),
+        $user = DB::transaction(function () use ($validated, $tempPassword) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'role' => $validated['role'],
+                'formation_id' => $validated['formation_id'] ?? null,
+                'phone' => $validated['phone'] ?? null,
+                'password' => Hash::make($tempPassword),
+                'must_change_password' => true,
             ]);
+
+            if ($user->role === 'student') {
+                \App\Models\Student::create([
+                    'user_id' => $user->id,
+                    'formation_id' => $user->formation_id,
+                    'matricule' => 'GS-' . strtoupper(Str::random(6)),
+                ]);
+            }
+
+            return $user;
+        });
+
+        // Avoid blocking the HTTP request on external SMTP calls (Render timeouts).
+        $shouldSendEmail = filter_var(env('SEND_ACCOUNT_EMAIL', 'false'), FILTER_VALIDATE_BOOLEAN);
+        $emailSent = false;
+        if ($shouldSendEmail) {
+            try {
+                Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
+                $emailSent = true;
+            } catch (\Throwable $e) {
+                Log::warning('AccountCreated email failed', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
-        Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
-
-        return response()->json($user->load('formation:id,name'), 201);
+        return response()->json([
+            'user' => $user->load('formation:id,name'),
+            'temp_password' => $shouldSendEmail ? null : $tempPassword,
+            'email_sent' => $emailSent,
+        ], 201);
     }
 
     public function forgotPassword(Request $request): JsonResponse
@@ -126,10 +149,23 @@ class UserManagementController extends Controller
             'must_change_password' => true,
         ]);
 
-        Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
+        $shouldSendEmail = filter_var(env('SEND_ACCOUNT_EMAIL', 'false'), FILTER_VALIDATE_BOOLEAN);
+        if ($shouldSendEmail) {
+            try {
+                Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
+            } catch (\Throwable $e) {
+                Log::warning('Forgot password email failed', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
 
         return response()->json([
-            'message' => 'Un mot de passe temporaire a été envoyé à votre adresse email.',
+            'message' => $shouldSendEmail
+                ? 'Un mot de passe temporaire a été envoyé à votre adresse email.'
+                : 'Mot de passe temporaire généré. Configurez SEND_ACCOUNT_EMAIL=true pour envoyer par email.',
         ]);
     }
 
