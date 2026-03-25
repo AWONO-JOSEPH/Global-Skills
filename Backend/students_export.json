@@ -1,0 +1,24 @@
+[
+    {
+        "id": 2,
+        "matricule": "GS-ZJX9EH",
+        "user_id": 5,
+        "formation_id": 1,
+        "presence_count": 0,
+        "total_sessions": 0,
+        "average_note": null,
+        "created_at": "2026-03-18 21:54:24",
+        "updated_at": "2026-03-18 21:54:24"
+    },
+    {
+        "id": 3,
+        "matricule": "GS-4Z4BTC",
+        "user_id": 7,
+        "formation_id": 2,
+        "presence_count": 2,
+        "total_sessions": 4,
+        "average_note": 12,
+        "created_at": "2026-03-18 22:58:23",
+        "updated_at": "2026-03-18 23:50:06"
+    }
+]

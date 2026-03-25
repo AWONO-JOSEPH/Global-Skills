@@ -8,7 +8,8 @@ import { Label } from "../components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { User, Lock, GraduationCap, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import logo from "../../assets/84498a56cb9356abc2f9404869c93b519e727718.png";
+
+const logo = "https://raw.githubusercontent.com/AWONO-JOSEPH/Global-Skills/main/Frontend/src/assets/84498a56cb9356abc2f9404869c93b519e727718.png";
 
 type UserRole = "student" | "teacher" | "admin";
 

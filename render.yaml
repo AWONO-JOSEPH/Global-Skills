@@ -19,17 +19,17 @@ services:
       - key: DB_SSLMODE
         value: require
       - key: DB_HOST
-        value: dpg-d717tedm5p6s738gp1m0-a
+        value: dpg-d719mq94tr6s73e8kpv0-a
       - key: DB_PORT
         value: 5432
       - key: DB_DATABASE
-        value: globalskillsdb
+        value: globalskillsdb_wt3x
       - key: DB_USERNAME
         value: joseph
       - key: DB_PASSWORD
-        sync: false
+        value: gbtMynlQTtSQjw14gI6CACqppwy0gYnJ
       - key: DATABASE_URL
-        sync: false
+        value: postgresql://joseph:gbtMynlQTtSQjw14gI6CACqppwy0gYnJ@dpg-d719mq94tr6s73e8kpv0-a/globalskillsdb_wt3x
 
   - type: web
     name: global-skills-frontend

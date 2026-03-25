@@ -1,0 +1,35 @@
+[
+    {
+        "id": 1,
+        "title": "Auto ecole",
+        "category": "Annonce",
+        "description": "Lauto ecole reprend bientot",
+        "published_at": "2026-03-18 22:12:27",
+        "created_at": "2026-03-18 22:12:27",
+        "updated_at": "2026-03-18 22:12:27",
+        "image": "news\/images\/vqavkO9vFdnoTYpVN9KEh6A7Y7Yg4iv3S7qASOmi.jpg",
+        "video": null
+    },
+    {
+        "id": 2,
+        "title": "Reunion importante",
+        "category": "Événement",
+        "description": "cette une super reunion tres interresante",
+        "published_at": "2026-03-18 22:14:45",
+        "created_at": "2026-03-18 22:14:45",
+        "updated_at": "2026-03-18 22:14:45",
+        "image": "news\/images\/oNjUdkfPXwsFt0P5kHmjjN8WagxUJTMZB45rg5LT.jpg",
+        "video": null
+    },
+    {
+        "id": 3,
+        "title": "Nous lancons notre toute nouvelle formation",
+        "category": "Programme",
+        "description": "Ceci est notre toute nouvelle formation. Ne la rater surtout pas",
+        "published_at": "2026-03-24 10:27:38",
+        "created_at": "2026-03-24 10:27:38",
+        "updated_at": "2026-03-24 10:27:38",
+        "image": null,
+        "video": "news\/videos\/Oos5jyJkDm9quzrPQtNvdB7PVvoNt0zW19MPQ1Hu.mp4"
+    }
+]

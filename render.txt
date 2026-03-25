@@ -193,3 +193,6 @@ envVITE_API_URL=https://centre-formation-api.onrender.com/api
 ⚠️ Limitations du plan gratuit Render à connaître
 LimitationImpactMise en veille après 15 minPremier chargement lent (~30s)PostgreSQL gratuit expire après 90 joursDoit être recréé ou migré vers payant512 Mo RAMSuffisant pour Laravel légerPas de cron jobsLes schedule:run Laravel ne fonctionnent pas
 Pour les cron jobs (rappels, rapports automatiques...) tu peux utiliser Cron-job.org gratuitement pour pinger ton endpoint Render.
+
+
+J'arrive a me connecter avec les comptes de formateur et etudiant mais pas celui de l'administrateur

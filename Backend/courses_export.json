@@ -1,0 +1,46 @@
+[
+    {
+        "id": 1,
+        "formation_id": 1,
+        "name": "SEO et Référencement",
+        "date": "2026-03-10 00:00:00",
+        "start_time": "2026-03-16 09:00:00",
+        "end_time": "2026-03-16 12:00:00",
+        "room": "A201",
+        "created_at": "2026-03-16 13:07:59",
+        "updated_at": "2026-03-16 13:07:59"
+    },
+    {
+        "id": 2,
+        "formation_id": 1,
+        "name": "Social Media Marketing",
+        "date": "2026-03-12 00:00:00",
+        "start_time": "2026-03-16 14:00:00",
+        "end_time": "2026-03-16 17:00:00",
+        "room": "B105",
+        "created_at": "2026-03-16 13:07:59",
+        "updated_at": "2026-03-16 13:07:59"
+    },
+    {
+        "id": 3,
+        "formation_id": 1,
+        "name": "Google Ads",
+        "date": "2026-03-15 00:00:00",
+        "start_time": "2026-03-16 09:00:00",
+        "end_time": "2026-03-16 12:00:00",
+        "room": "A201",
+        "created_at": "2026-03-16 13:07:59",
+        "updated_at": "2026-03-16 13:07:59"
+    },
+    {
+        "id": 4,
+        "formation_id": 1,
+        "name": "Email Marketing",
+        "date": "2026-03-18 00:00:00",
+        "start_time": "2026-03-16 10:00:00",
+        "end_time": "2026-03-16 13:00:00",
+        "room": "C302",
+        "created_at": "2026-03-16 13:07:59",
+        "updated_at": "2026-03-16 13:07:59"
+    }
+]

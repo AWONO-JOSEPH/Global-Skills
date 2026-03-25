@@ -8,10 +8,12 @@ return [
     'allowed_origins' => array_values(array_filter([
         env('FRONTEND_URL', 'http://localhost:5173'),
         env('FRONTEND_URL_ALT'),
+        'https://global-skills.vercel.app',
     ])),
 
     'allowed_origins_patterns' => [
         '#^https://.*\.onrender\.com$#',
+        '#^https://.*\.vercel\.app$#',
     ],
 
     'allowed_headers' => ['*'],

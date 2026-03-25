@@ -114,7 +114,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="https://globalskills.cm/assets/logo.png" alt="Global Skills Logo" onerror="this.style.display='none'">
+            <img src="https://raw.githubusercontent.com/AWONO-JOSEPH/Global-Skills/main/Frontend/src/assets/84498a56cb9356abc2f9404869c93b519e727718.png" alt="Global Skills Logo" onerror="this.style.display='none'">
             <h1>GLOBAL SKILLS</h1>
         </div>
         
