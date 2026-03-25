@@ -111,25 +111,23 @@ class UserManagementController extends Controller
             return $user;
         });
 
-        // Avoid blocking the HTTP request on external SMTP calls (Render timeouts).
-        $shouldSendEmail = filter_var(env('SEND_ACCOUNT_EMAIL', 'false'), FILTER_VALIDATE_BOOLEAN);
+        // Always send email or at least try to
+        $shouldSendEmail = true;
         $emailSent = false;
-        if ($shouldSendEmail) {
-            try {
-                Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
-                $emailSent = true;
-            } catch (\Throwable $e) {
-                Log::warning('AccountCreated email failed', [
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+        try {
+            Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
+            $emailSent = true;
+        } catch (\Throwable $e) {
+            Log::warning('AccountCreated email failed', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return response()->json([
             'user' => $user->load('formation:id,name'),
-            'temp_password' => $shouldSendEmail ? null : $tempPassword,
+            'temp_password' => $emailSent ? null : $tempPassword,
             'email_sent' => $emailSent,
         ], 201);
     }
@@ -149,23 +147,23 @@ class UserManagementController extends Controller
             'must_change_password' => true,
         ]);
 
-        $shouldSendEmail = filter_var(env('SEND_ACCOUNT_EMAIL', 'false'), FILTER_VALIDATE_BOOLEAN);
-        if ($shouldSendEmail) {
-            try {
-                Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
-            } catch (\Throwable $e) {
-                Log::warning('Forgot password email failed', [
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+        // Always try to send email
+        $emailSent = false;
+        try {
+            Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
+            $emailSent = true;
+        } catch (\Throwable $e) {
+            Log::warning('Forgot password email failed', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
         }
 
         return response()->json([
-            'message' => $shouldSendEmail
+            'message' => $emailSent
                 ? 'Un mot de passe temporaire a été envoyé à votre adresse email.'
-                : 'Mot de passe temporaire généré. Configurez SEND_ACCOUNT_EMAIL=true pour envoyer par email.',
+                : 'Erreur lors de l\'envoi de l\'email. Contactez l\'administrateur.',
         ]);
     }
 
