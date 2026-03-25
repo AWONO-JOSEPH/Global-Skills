@@ -45,7 +45,7 @@ COPY nginx.conf /etc/nginx/sites-available/default
 EXPOSE 10000
 
 # Démarrer Laravel + PHP-FPM + Nginx
-CMD ["sh", "-c", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan storage:link && php-fpm -D && nginx -g 'daemon off;'"]
+CMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan storage:link && php-fpm -D && nginx -g 'daemon off;'"]
 
 
 https://global-skills.onrender.com

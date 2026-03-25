@@ -5,15 +5,16 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => array_values(array_filter([
-        env('FRONTEND_URL', 'http://localhost:5173'),
-        env('FRONTEND_URL_ALT'),
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'http://localhost:3000',
         'https://global-skills.vercel.app',
-    ])),
+        'https://global-skills-git-main-awono-josephs-projects.vercel.app',
+        'https://global-skills-gmgo15ovj-awono-josephs-projects.vercel.app',
+    ],
 
     'allowed_origins_patterns' => [
-        '#^https://.*\.onrender\.com$#',
-        '#^https://.*\.vercel\.app$#',
+        'https://.*\.vercel\.app',
     ],
 
     'allowed_headers' => ['*'],
@@ -22,5 +23,5 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 ];
