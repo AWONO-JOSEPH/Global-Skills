@@ -88,6 +88,11 @@ Route::get('/simple-test', function () {
     return response()->json(['status' => 'ok']);
 });
 
+// Route de ping pour cron-job.org
+Route::get('/ping', function () {
+    return response()->json(['status' => 'ok', 'timestamp' => now()]);
+});
+
 // Teacher routes
 Route::prefix('teacher')->group(function () {
     Route::get('/profile', [TeacherController::class, 'profile']);

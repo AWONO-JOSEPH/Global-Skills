@@ -1,234 +1,53 @@
-Migrer SQLite → PostgreSQL dans Laravel
-Étape 1 — Installer le driver PostgreSQL
-bashcomposer require doctrine/dbal
-Vérifie que l'extension PHP pgsql est activée dans ton php.ini :
-iniextension=pgsql
-extension=pdo_pgsql
+Utilise cron-job.org gratuitement pour pinger ton backend toutes les 10 minutes :
 
-Étape 2 — Configurer la connexion dans .env
-Remplace ta config SQLite :
-env# AVANT (SQLite)
-DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/database.sqlite
-Par la config PostgreSQL :
-env# APRÈS (PostgreSQL)
-DB_CONNECTION=pgsql
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=nom_de_ta_base
-DB_USERNAME=ton_user
-DB_PASSWORD=ton_mot_de_passe
+Crée un compte sur cron-job.org
+Crée un nouveau cron job :
 
-Étape 3 — Vérifier tes migrations
-PostgreSQL est plus strict que SQLite. Vérifie ces points dans tes fichiers de migration :
-Les colonnes string avec index unique — longueur obligatoire :
-php// ❌ Peut poser problème sur PostgreSQL
-$table->string('email')->unique();
+ChampValeurURLhttps://global-skills.onrender.com/api/pingIntervalToutes les 10 minutes
 
-// ✅ Correct
-$table->string('email', 255)->unique();
-Les enum — PostgreSQL les gère différemment :
-php// SQLite accepte n'importe quoi, PostgreSQL est strict
-// Préfère utiliser string + validation plutôt que enum
-$table->string('statut')->default('actif');
-// ou
-$table->enum('statut', ['actif', 'inactif', 'suspendu']);
-Les boolean :
-php// SQLite stocke 0/1, PostgreSQL stocke true/false
-// Laravel gère ça automatiquement, mais vérifie tes requêtes raw
-$table->boolean('est_actif')->default(false); // ✅ OK
+Crée la route ping dans Laravel Backend/routes/api.php :
 
-Étape 4 — Migrer les données existantes
-Tu as deux options :
-Option A — Repartir de zéro (recommandé si peu de données)
-bashphp artisan migrate:fresh --seed
-Option B — Migrer les données existantes avec pgloader
-Installe pgloader sur ta machine :
-bash# Ubuntu/Debian
-sudo apt install pgloader
+phpRoute::get('/ping', function () {
+    return response()->json(['status' => 'ok']);
+});
 
-# macOS
-brew install pgloader
-```
+Solution 2 — Ajouter les headers CORS dans Nginx
+Même quand Laravel ne répond pas (504), Nginx peut quand même retourner les headers CORS. Modifie Backend/nginx.conf :
+nginxserver {
+    listen 10000;
+    server_name _;
+    root /var/www/public;
+    index index.php index.html;
 
-Crée un fichier `migration.load` :
-```
-LOAD DATABASE
-  FROM sqlite:///chemin/vers/database.sqlite
-  INTO postgresql://user:password@localhost/nom_base
+    # Headers CORS globaux
+    add_header 'Access-Control-Allow-Origin' 'https://global-skills.vercel.app' always;
+    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+    add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept, X-Requested-With' always;
+    add_header 'Access-Control-Allow-Credentials' 'true' always;
 
-WITH include drop, create tables, create indexes, reset sequences
+    location / {
+        # Gérer les requêtes OPTIONS (preflight)
+        if ($request_method = 'OPTIONS') {
+            add_header 'Access-Control-Allow-Origin' 'https://global-skills.vercel.app' always;
+            add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+            add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type, Accept, X-Requested-With' always;
+            add_header 'Access-Control-Allow-Credentials' 'true' always;
+            add_header 'Content-Length' '0';
+            add_header 'Content-Type' 'text/plain';
+            return 204;
+        }
 
-SET work_mem to '16MB', maintenance_work_mem to '512 MB';
-Lance la migration :
-bashpgloader migration.load
-Option C — Via un script Laravel (si pgloader non dispo)
-bash# 1. Exporte les données SQLite en JSON
-php artisan tinker
-php// Dans tinker, exporte chaque table
-$data = DB::table('users')->get();
-file_put_contents('users_backup.json', $data->toJson());
-// Répète pour chaque table...
-Puis après avoir configuré PostgreSQL :
-php// Importe les données
-$users = json_decode(file_get_contents('users_backup.json'), true);
-DB::table('users')->insert($users);
+        try_files $uri $uri/ /index.php?$query_string;
+    }
 
-Étape 5 — Tester en local avec PostgreSQL (Docker)
-Si tu n'as pas PostgreSQL installé localement :
-bashdocker run --name postgres-local \
-  -e POSTGRES_PASSWORD=secret \
-  -e POSTGRES_DB=centre_formation \
-  -p 5432:5432 \
-  -d postgres:15
-Puis :
-bashphp artisan migrate
-php artisan db:seed  # si tu as des seeders
-```
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
 
----
-
----
-
-## PARTIE 2 — Héberger Laravel + PostgreSQL ensemble sur Render
-
-### Architecture sur Render
-```
-Render
-├── Web Service      → ton backend Laravel (PHP)
-└── PostgreSQL       → ta base de données (géré par Render)
-Les deux sont dans le même réseau interne Render → connexion rapide et sécurisée.
-
-Étape 1 — Préparer ton projet Laravel
-Crée un fichier render.yaml à la racine du projet :
-yamlservices:
-  - type: web
-    name: centre-formation-api
-    env: php
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      php artisan config:cache
-      php artisan route:cache
-      php artisan view:cache
-      php artisan migrate --force
-    startCommand: php artisan serve --host=0.0.0.0 --port=10000
-    envVars:
-      - key: APP_ENV
-        value: production
-      - key: APP_KEY
-        generateValue: true
-      - key: DATABASE_URL
-        fromDatabase:
-          name: centre-formation-db
-          property: connectionString
-
-databases:
-  - name: centre-formation-db
-    plan: free
-```
-
-**Crée un fichier `Procfile`** à la racine :
-```
-web: php artisan serve --host=0.0.0.0 --port=$PORT
-
-Étape 2 — Configurer config/database.php pour lire l'URL Render
-Render fournit une DATABASE_URL au format :
-postgresql://user:password@host:5432/dbname
-Modifie config/database.php pour la parser :
-php'pgsql' => [
-    'driver'   => 'pgsql',
-    'url'      => env('DATABASE_URL'),
-    'host'     => env('DB_HOST', '127.0.0.1'),
-    'port'     => env('DB_PORT', '5432'),
-    'database' => env('DB_DATABASE', 'forge'),
-    'username' => env('DB_USERNAME', 'forge'),
-    'password' => env('DB_PASSWORD', ''),
-    'charset'  => 'utf8',
-    'prefix'   => '',
-    'schema'   => 'public',
-    'sslmode'  => 'require',  // obligatoire sur Render
-],
-Et dans .env de production, ajoute juste :
-envDB_CONNECTION=pgsql
-DATABASE_URL=<fourni automatiquement par Render>
-```
-
----
-
-### Étape 3 — Déployer sur Render
-
-**1. Va sur [render.com](https://render.com) → crée un compte**
-
-**2. Crée la base de données PostgreSQL :**
-- New → PostgreSQL
-- Name : `centre-formation-db`
-- Plan : **Free**
-- Clique sur **Create Database**
-- Copie l'**Internal Database URL** (pour la connexion interne)
-
-**3. Crée le Web Service Laravel :**
-- New → Web Service
-- Connecte ton repo GitHub
-- Configure :
-```
-Name        : centre-formation-api
-Runtime     : PHP (ou Docker si tu préfères)
-Build Cmd   : composer install --no-dev && php artisan migrate --force
-Start Cmd   : php artisan serve --host=0.0.0.0 --port=$PORT
-```
-
-**4. Ajoute les variables d'environnement :**
-```
-APP_ENV          = production
-APP_KEY          = (génère avec: php artisan key:generate --show)
-APP_DEBUG        = false
-DB_CONNECTION    = pgsql
-DATABASE_URL     = <Internal Database URL copiée à l'étape 2>
-5. Deploy → Render va automatiquement builder et lancer les migrations.
-
-Étape 4 — Configurer le frontend React pour pointer vers Render
-Dans ton .env React :
-envVITE_API_URL=https://centre-formation-api.onrender.com/api
-
-⚠️ Limitations du plan gratuit Render à connaître
-LimitationImpactMise en veille après 15 minPremier chargement lent (~30s)PostgreSQL gratuit expire après 90 joursDoit être recréé ou migré vers payant512 Mo RAMSuffisant pour Laravel légerPas de cron jobsLes schedule:run Laravel ne fonctionnent pas
-Pour les cron jobs (rappels, rapports automatiques...) tu peux utiliser Cron-job.org gratuitement pour pinger ton endpoint Render.
-
-
-
-
-Ouvre Backend/config/cors.php et remplace tout le contenu par :
-php<?php
-
-return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
-
-    'allowed_methods' => ['*'],
-
-    'allowed_origins' => [
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'https://global-skills.vercel.app',
-        'https://global-skills-git-main-awono-josephs-projects.vercel.app',
-        'https://global-skills-gmgo15ovj-awono-josephs-projects.vercel.app',
-    ],
-
-    'allowed_origins_patterns' => [
-        'https://.*\.vercel\.app',
-    ],
-
-    'allowed_headers' => ['*'],
-
-    'exposed_headers' => [],
-
-    'max_age' => 0,
-
-    'supports_credentials' => true,
-];
-
-Aussi vide le cache de config sur Render
-Le problème peut venir du config:cache qui a mis en cache l'ancienne config CORS. Modifie ton Dockerfile CMD pour vider le cache avant de le recréer :
-dockerfileCMD ["sh", "-c", "php artisan config:clear && php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan storage:link && php-fpm -D && nginx -g 'daemon off;'"]
-
-Access to fetch at 'https://global-skills.onrender.com/api/login' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: The 'Access-Control-Allow-Origin' header has a value 'http://localhost:5173' that is not equal to the supplied origin. Have the server send the header with a valid value.Understand this error
-global-skills.onrender.com/api/login:1  Failed to load resource: net::ERR_FAILED
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
