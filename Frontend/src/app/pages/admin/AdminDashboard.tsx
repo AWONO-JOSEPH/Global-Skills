@@ -14,10 +14,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../components/ui/dialog";
-import { 
-  Users, 
-  GraduationCap, 
-  DollarSign, 
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Textarea } from "../../components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
+import {
+  Users,
+  GraduationCap,
+  DollarSign,
   TrendingUp,
   UserPlus,
   LogOut,
@@ -29,6 +39,11 @@ import {
   Globe,
   MessageSquare,
   ClipboardList,
+  BookOpen,
+  Menu,
+  X,
+  Trash2,
+  CheckCircle,
 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Line, LineChart } from "recharts";
 import { getCurrentAuth, logout } from "../../auth";
@@ -48,79 +63,53 @@ type OverviewStats = {
 type EnrollmentPoint = { month: string; students: number };
 type RevenuePoint = { month: string; revenue: number };
 
-type RecentStudent = {
-  nom: string;
-  formation: string | null;
-  date: string | null;
-  statut: string;
-};
-
-type RecentPayment = {
-  etudiant: string;
-  montant: string;
-  type: string;
-  date: string;
-  statut: string;
-};
-
 type StudentRow = {
   id: number;
   name: string;
   email: string;
-  phone?: string;
-  created_at: string;
-  formation_id?: number | null;
-  formation?: { id: number; name: string } | null;
+  phone: string;
+  formation_name?: string;
+  matricule?: string;
 };
 
-type TeacherRow = { id: number; name: string; email: string; phone?: string; specialite?: string; created_at?: string };
+type TeacherRow = {
+  id: number;
+  name: string;
+  email: string;
+  specialite?: string;
+};
 
 type FormationRow = {
   id: number;
   name: string;
-  start_date: string | null;
-  capacity: number;
-  enrolled_students: number;
+  description?: string;
+  duration?: string;
   price?: number;
-  teacher_id?: number | null;
-  teacher?: { id: number; name: string } | null;
 };
 
 type PaymentRow = {
   id: number;
-  etudiant: string;
-  montant: number;
-  type: string;
+  student_name: string;
+  amount: number;
   date: string;
-  statut: string;
-  is_partial?: boolean;
-  remaining?: number;
-  formation_price?: number;
-  total_paid_so_far?: number;
+  status?: string;
 };
 
 type ProgramTracking = {
   id: number;
-  user_id: number;
-  formation_id: number;
+  formation_name: string;
   subject: string;
   date: string;
-  start_time: string;
-  end_time: string;
-  report_content: string;
-  teacher_signed_at?: string;
-  admin_signed_at?: string;
-  week_range?: string;
-  user?: { name: string; email: string };
-  formation?: { name: string };
+  status?: string;
 };
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get("tab") || localStorage.getItem("admin_tab") || "overview";
+  const [activeTab, setActiveTabState] = useState(searchParams.get("tab") || localStorage.getItem("admin_tab") || "overview");
 
   const setActiveTab = (tab: string) => {
+    setActiveTabState(tab);
     setSearchParams({ tab });
     localStorage.setItem("admin_tab", tab);
   };
@@ -128,291 +117,78 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<OverviewStats | null>(null);
   const [enrollmentData, setEnrollmentData] = useState<EnrollmentPoint[]>([]);
   const [revenueData, setRevenueData] = useState<RevenuePoint[]>([]);
-  const [recentStudents, setRecentStudents] = useState<RecentStudent[]>([]);
-  const [recentPayments, setRecentPayments] = useState<RecentPayment[]>([]);
-  const [isLoadingOverview, setIsLoadingOverview] = useState(false);
+  const [recentStudents, setRecentStudents] = useState<any[]>([]);
+  const [recentPayments, setRecentPayments] = useState<any[]>([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   const [students, setStudents] = useState<StudentRow[]>([]);
-  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
-  const [isCreatingStudent, setIsCreatingStudent] = useState(false);
-  const [newStudentName, setNewStudentName] = useState("");
-  const [newStudentEmail, setNewStudentEmail] = useState("");
-  const [newStudentPhone, setNewStudentPhone] = useState("");
-  const [newStudentRole, setNewStudentRole] = useState<"student" | "teacher">("student");
-  const [newStudentFormationId, setNewStudentFormationId] = useState<number | "">("");
-  const [formations, setFormations] = useState<FormationRow[]>([]);
-  const [isLoadingFormations, setIsLoadingFormations] = useState(false);
-  const [isSavingFormation, setIsSavingFormation] = useState(false);
-  const [isFormationDialogOpen, setIsFormationDialogOpen] = useState(false);
-  const [formationMode, setFormationMode] = useState<"create" | "view" | "edit">("create");
-  const [activeFormation, setActiveFormation] = useState<FormationRow | null>(null);
-  const [formationName, setFormationName] = useState("");
-  const [formationStartDate, setFormationStartDate] = useState("");
-  const [formationCapacity, setFormationCapacity] = useState<number>(0);
-  const [formationEnrolled, setFormationEnrolled] = useState<number>(0);
-  const [formationPrice, setFormationPrice] = useState<number>(0);
-  const [formationTeacherId, setFormationTeacherId] = useState<number | "">("");
-  const [isFormationStudentsDialogOpen, setIsFormationStudentsDialogOpen] = useState(false);
-  const [formationStudents, setFormationStudents] = useState<any[]>([]);
-  const [selectedFormationName, setSelectedFormationName] = useState("");
-  const [isLoadingFormationStudents, setIsLoadingFormationStudents] = useState(false);
   const [teachers, setTeachers] = useState<TeacherRow[]>([]);
+  const [formations, setFormations] = useState<FormationRow[]>([]);
   const [payments, setPayments] = useState<PaymentRow[]>([]);
-  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
   const [trackings, setTrackings] = useState<ProgramTracking[]>([]);
+
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
+  const [isLoadingFormations, setIsLoadingFormations] = useState(false);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
   const [isLoadingTrackings, setIsLoadingTrackings] = useState(false);
-  const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false);
-  const [studentDialogMode, setStudentDialogMode] = useState<"view" | "edit">("view");
-  const [activeStudent, setActiveStudent] = useState<StudentRow | null>(null);
-  const [editStudentName, setEditStudentName] = useState("");
-  const [editStudentEmail, setEditStudentEmail] = useState("");
-  const [editStudentPhone, setEditStudentPhone] = useState("");
-  const [editStudentFormationId, setEditStudentFormationId] = useState<number | "">("");
-  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
-  const [paymentStudentId, setPaymentStudentId] = useState<number | null>(null);
-  const [paymentFormationId, setPaymentFormationId] = useState<number | "">("");
-  const [paymentAmount, setPaymentAmount] = useState<string>("");
-  const [paymentTotal, setPaymentTotal] = useState<number>(0);
-  const [isSavingPayment, setIsSavingPayment] = useState(false);
-  const [isSavingStudent, setIsSavingStudent] = useState(false);
-
-  // Payment view dialog state
-  const [isViewPaymentDialogOpen, setIsViewPaymentDialogOpen] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<PaymentRow | null>(null);
-
-  const handleConfirmPayment = async (paymentId: number) => {
-    try {
-      const response = await fetch(apiUrl(`/api/admin/payments/${paymentId}/confirm`), {
-        method: "POST",
-        headers: { Accept: "application/json" },
-      });
-
-      if (!response.ok) throw new Error("Erreur");
-
-      setPayments((prev) =>
-        prev.map((p) => (p.id === paymentId ? { ...p, statut: "Payé" } : p))
-      );
-      toast.success("Paiement confirmé.");
-
-      // Recharger les listes pour mettre à jour les calculs de tranches
-      const paymentsRes = await fetch(apiUrl("/api/admin/payments"));
-      if (paymentsRes.ok) {
-        const pData = await paymentsRes.json();
-        setPayments(pData);
-      }
-
-      const r = await fetch(apiUrl("/api/admin/overview"), {
-        headers: { Accept: "application/json" },
-      });
-      if (r.ok) {
-        const d = await r.json();
-        setStats(d.stats);
-        setRevenueData(d.revenueData ?? []);
-        setRecentPayments(d.recentPayments ?? []);
-      }
-    } catch {
-      toast.error("Erreur lors de la confirmation.");
-    }
-  };
-
-  const openViewPaymentDialog = (payment: PaymentRow) => {
-    setSelectedPayment(payment);
-    setIsViewPaymentDialogOpen(true);
-  };
-
-  // Teacher dialog state
-  const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
-  const [teacherDialogMode, setTeacherDialogMode] = useState<"view" | "edit">("view");
-  const [activeTeacher, setActiveTeacher] = useState<TeacherRow | null>(null);
-  const [editTeacherName, setEditTeacherName] = useState("");
-  const [editTeacherEmail, setEditTeacherEmail] = useState("");
-  const [editTeacherSpecialite, setEditTeacherSpecialite] = useState("");
-  const [editTeacherPhone, setEditTeacherPhone] = useState("");
-
-  const handleDeleteStudent = async (studentId: number) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cet étudiant ? Cette action est irréversible.")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(apiUrl(`/api/admin/students/${studentId}`), {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de la suppression de l'étudiant");
-      }
-
-      setStudents((prev) => prev.filter((s) => s.id !== studentId));
-      toast.success("Étudiant supprimé avec succès.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erreur lors de la suppression.");
-    }
-  };
-
-  const handleDeleteTeacher = async (teacherId: number) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cet enseignant ? Cette action est irréversible.")) {
-      return;
-    }
-
-    try {
-      const response = await fetch(apiUrl(`/api/admin/teachers/${teacherId}`), {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de la suppression de l'enseignant");
-      }
-
-      setTeachers((prev) => prev.filter((t) => t.id !== teacherId));
-      toast.success("Enseignant supprimé avec succès.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erreur lors de la suppression.");
-    }
-  };
-
-  const openTeacherDialog = (mode: "view" | "edit", teacher?: TeacherRow) => {
-    setTeacherDialogMode(mode);
-    setActiveTeacher(teacher ?? null);
-    if (teacher) {
-      setEditTeacherName(teacher.name);
-      setEditTeacherEmail(teacher.email);
-      setEditTeacherSpecialite(teacher.specialite || "");
-      setEditTeacherPhone(teacher.phone || "");
-    } else {
-      setEditTeacherName("");
-      setEditTeacherEmail("");
-      setEditTeacherSpecialite("");
-      setEditTeacherPhone("");
-    }
-    setIsTeacherDialogOpen(true);
-  };
+  const [isLoadingOverview, setIsLoadingOverview] = useState(false);
 
   const loadOverview = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingOverview(true);
     try {
       const response = await fetch(apiUrl("/api/admin/overview"), {
-        headers: {
-          Accept: "application/json",
-        },
+        headers: { Accept: "application/json" },
       });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors du chargement du tableau de bord");
-      }
-
+      if (!response.ok) throw new Error("Erreur");
       const data = await response.json();
       setStats(data.stats);
       setEnrollmentData(data.enrollmentData ?? []);
       setRevenueData(data.revenueData ?? []);
       setRecentStudents(data.recentStudents ?? []);
       setRecentPayments(data.recentPayments ?? []);
-    } catch {
-      // on laisse le tableau vide
-    } finally {
-      if (!silent) setIsLoadingOverview(false);
-    }
+    } catch {} finally { if (!silent) setIsLoadingOverview(false); }
   }, []);
 
   const loadStudents = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingStudents(true);
     try {
-      const response = await fetch(apiUrl("/api/admin/students"), {
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors du chargement des étudiants");
-      }
-
-      const data: StudentRow[] = await response.json();
-      setStudents(data);
-    } catch {
-      // on laisse la liste vide
-    } finally {
-      if (!silent) setIsLoadingStudents(false);
-    }
+      const r = await fetch(apiUrl("/api/admin/students"), { headers: { Accept: "application/json" } });
+      if (r.ok) setStudents(await r.json());
+    } catch {} finally { if (!silent) setIsLoadingStudents(false); }
   }, []);
 
   const loadTeachers = useCallback(async (silent = false) => {
+    if (!silent) setIsLoadingTeachers(true);
     try {
-      const res = await fetch(apiUrl("/api/admin/teachers"), {
-        headers: { Accept: "application/json" },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTeachers(data);
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  const loadPayments = useCallback(async (silent = false) => {
-    if (!silent) setIsLoadingPayments(true);
-    try {
-      const res = await fetch(apiUrl("/api/admin/payments"), {
-        headers: { Accept: "application/json" },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setPayments(data);
-      }
-    } catch {
-      // ignore
-    } finally {
-      if (!silent) setIsLoadingPayments(false);
-    }
+      const r = await fetch(apiUrl("/api/admin/teachers"), { headers: { Accept: "application/json" } });
+      if (r.ok) setTeachers(await r.json());
+    } catch {} finally { if (!silent) setIsLoadingTeachers(false); }
   }, []);
 
   const loadFormations = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingFormations(true);
     try {
-      const response = await fetch(apiUrl("/api/admin/formations"), {
-        headers: {
-          Accept: "application/json",
-        },
-      });
+      const r = await fetch(apiUrl("/api/admin/formations"), { headers: { Accept: "application/json" } });
+      if (r.ok) setFormations(await r.json());
+    } catch {} finally { if (!silent) setIsLoadingFormations(false); }
+  }, []);
 
-      if (!response.ok) {
-        throw new Error("Erreur lors du chargement des formations");
-      }
-
-      const data: FormationRow[] = await response.json();
-      setFormations(data);
-    } catch {
-      // on laisse la liste vide
-    } finally {
-      if (!silent) setIsLoadingFormations(false);
-    }
+  const loadPayments = useCallback(async (silent = false) => {
+    if (!silent) setIsLoadingPayments(true);
+    try {
+      const r = await fetch(apiUrl("/api/admin/payments"), { headers: { Accept: "application/json" } });
+      if (r.ok) setPayments(await r.json());
+    } catch {} finally { if (!silent) setIsLoadingPayments(false); }
   }, []);
 
   const loadTrackings = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingTrackings(true);
     try {
-      const auth = getCurrentAuth();
-      const emailParam = auth ? `?email=${encodeURIComponent(auth.email)}` : "";
-      const response = await fetch(apiUrl(`/api/program-trackings${emailParam}`), {
-        headers: { Accept: "application/json" },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTrackings(data);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      if (!silent) setIsLoadingTrackings(false);
-    }
+      const r = await fetch(apiUrl("/api/program-trackings"), { headers: { Accept: "application/json" } });
+      if (r.ok) setTrackings(await r.json());
+    } catch (err) { console.error(err); } finally { if (!silent) setIsLoadingTrackings(false); }
   }, []);
 
   const loadAllData = useCallback(async (silent = false) => {
@@ -420,11 +196,11 @@ export default function AdminDashboard() {
       loadOverview(silent),
       loadStudents(silent),
       loadTeachers(silent),
-      loadPayments(silent),
       loadFormations(silent),
+      loadPayments(silent),
       loadTrackings(silent),
     ]);
-  }, [loadOverview, loadStudents, loadTeachers, loadPayments, loadFormations, loadTrackings]);
+  }, [loadOverview, loadStudents, loadTeachers, loadFormations, loadPayments, loadTrackings]);
 
   useEffect(() => {
     const auth = getCurrentAuth();
@@ -436,7 +212,6 @@ export default function AdminDashboard() {
 
     loadAllData();
 
-    // Auto-update every 30 seconds
     const interval = setInterval(() => {
       loadAllData(true);
     }, 30000);
@@ -444,1794 +219,1166 @@ export default function AdminDashboard() {
     return () => clearInterval(interval);
   }, [navigate, loadAllData]);
 
-  const handleSignTracking = async (id: number) => {
+  const handleDeleteStudent = async (studentId: number) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cet étudiant ?")) return;
     try {
-      const response = await fetch(apiUrl(`/api/program-trackings/${id}/sign`), {
-        method: 'POST',
-        headers: { Accept: 'application/json' },
+      const response = await fetch(apiUrl(`/api/admin/students/${studentId}`), {
+        method: "DELETE",
+        headers: { Accept: "application/json" },
       });
       if (response.ok) {
-        const updated = await response.json();
-        setTrackings(prev => prev.map(t => t.id === id ? updated : t));
-        toast.success("Fiche de suivi validée avec succès");
-      }
-    } catch (err) {
-      toast.error("Erreur de connexion");
-    }
+        setStudents(prev => prev.filter(s => s.id !== studentId));
+        toast.success("Étudiant supprimé.");
+      } else throw new Error();
+    } catch { toast.error("Erreur lors de la suppression."); }
   };
 
-  const handleCreateStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newStudentName || !newStudentEmail) return;
-
-    setIsCreatingStudent(true);
+  const handleDeleteTeacher = async (teacherId: number) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cet enseignant ?")) return;
     try {
-      const response = await fetch(apiUrl("/api/admin/users"), {
+      const response = await fetch(apiUrl(`/api/admin/teachers/${teacherId}`), {
+        method: "DELETE",
+        headers: { Accept: "application/json" },
+      });
+      if (response.ok) {
+        setTeachers(prev => prev.filter(t => t.id !== teacherId));
+        toast.success("Enseignant supprimé.");
+      } else throw new Error();
+    } catch { toast.error("Erreur lors de la suppression."); }
+  };
+
+  const handleDeleteFormation = async (id: number) => {
+    if (!confirm("Supprimer cette formation ?")) return;
+    try {
+      const response = await fetch(apiUrl(`/api/admin/formations/${id}`), {
+        method: "DELETE",
+        headers: { Accept: "application/json" },
+      });
+      if (response.ok) {
+        setFormations(prev => prev.filter(f => f.id !== id));
+        toast.success("Formation supprimée.");
+      } else throw new Error();
+    } catch { toast.error("Erreur lors de la suppression."); }
+  };
+
+  const handleConfirmPayment = async (paymentId: number) => {
+    try {
+      const response = await fetch(apiUrl(`/api/admin/payments/${paymentId}/confirm`), {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          name: newStudentName,
-          email: newStudentEmail,
-          phone: newStudentPhone,
-          role: newStudentRole,
-          formation_id: newStudentRole === "student" ? (newStudentFormationId || null) : null,
-        }),
+        headers: { Accept: "application/json" },
       });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err?.message ?? "Erreur lors de la création de l'étudiant");
-      }
-
-      const payload = await response.json();
-      const created: StudentRow = payload.user ?? payload;
-      const tempPassword: string | null = payload.temp_password ?? null;
-      const emailSent: boolean | undefined = payload.email_sent;
-      const createdFormationId = newStudentFormationId;
-
-      // Reload lists from server to avoid inconsistent UI if the request timed out previously.
-      if (newStudentRole === "student") {
-        await loadStudents(true);
-      } else {
-        await loadTeachers(true);
-      }
-
-      setNewStudentName("");
-      setNewStudentEmail("");
-      setNewStudentPhone("");
-      setNewStudentRole("student");
-      setNewStudentFormationId("");
-      const roleText = newStudentRole === "student" ? "étudiant" : "enseignant";
-      if (emailSent) {
-        toast.success(`${roleText.charAt(0).toUpperCase() + roleText.slice(1)} créé. Email envoyé avec mot de passe temporaire.`);
-      } else if (tempPassword) {
-        toast.success(`${roleText.charAt(0).toUpperCase() + roleText.slice(1)} créé. Mot de passe temporaire: ${tempPassword}`);
-      } else {
-        toast.success(`${roleText.charAt(0).toUpperCase() + roleText.slice(1)} créé.`);
-      }
-
-      const loadOverview = async () => {
-        try {
-          const r = await fetch(apiUrl("/api/admin/overview"), {
-            headers: { Accept: "application/json" },
-          });
-          if (r.ok) {
-            const d = await r.json();
-            setStats(d.stats);
-            setRecentStudents(d.recentStudents ?? []);
-            setRecentPayments(d.recentPayments ?? []);
-          }
-        } catch {
-          /* ignore */
-        }
-      };
-      loadOverview();
-
-      // Only open payment dialog when student is created and role is student.
-      if (newStudentRole === "student") {
-        setPaymentStudentId(created.id);
-        setPaymentFormationId(createdFormationId || "");
-        const formation = formations.find((f) => f.id === createdFormationId);
-        setPaymentTotal(formation?.price ?? 0);
-        setPaymentAmount("");
-        setIsPaymentDialogOpen(true);
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erreur lors de la création.");
-    } finally {
-      setIsCreatingStudent(false);
-    }
+      if (response.ok) {
+        setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, status: "Payé" } : p));
+        toast.success("Paiement confirmé.");
+        loadOverview(true);
+      } else throw new Error();
+    } catch { toast.error("Erreur lors de la confirmation."); }
   };
 
-  const openStudentDialog = (mode: "view" | "edit", student?: StudentRow) => {
-    setStudentDialogMode(mode);
-    setActiveStudent(student ?? null);
-    if (student) {
-      setEditStudentName(student.name);
-      setEditStudentEmail(student.email);
-      setEditStudentPhone(student.phone || "");
-      setEditStudentFormationId(student.formation_id ?? "");
-    } else {
-      setEditStudentName("");
-      setEditStudentEmail("");
-      setEditStudentPhone("");
-      setEditStudentFormationId("");
-    }
-    setIsStudentDialogOpen(true);
-  };
-
-  const handleSaveStudent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeStudent) return;
-
-    setIsSavingStudent(true);
+  const handleGenerateReport = async (type: "annual" | "tracking") => {
     try {
-      const response = await fetch(apiUrl(`/api/admin/students/${activeStudent.id}`), {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+      const response = await fetch(apiUrl(`/api/admin/reports/${type}`), {
+        headers: { Accept: "application/json" },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        if (data.url) window.open(data.url, "_blank");
+        else toast.info("Rapport généré avec succès.");
+      } else throw new Error();
+    } catch { toast.error("Erreur lors de la génération du rapport."); }
+  };
+
+  const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false);
+  const [isTeacherDialogOpen, setIsTeacherDialogOpen] = useState(false);
+  const [isFormationDialogOpen, setIsFormationDialogOpen] = useState(false);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+
+  // Form states
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    role: "student" as "student" | "teacher" | "admin",
+    formation_id: "" as number | "",
+    specialite: "",
+    title: "",
+    description: "",
+    price: "",
+    duration: "",
+    amount: "",
+    student_id: "" as number | "",
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const resetForm = () => {
+    setEditingId(null);
+    setFormData({
+      name: "", email: "", phone: "", role: "student",
+      formation_id: "", specialite: "",
+      title: "", description: "", price: "", duration: "",
+      amount: "", student_id: "",
+    });
+  };
+
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const url = editingId 
+        ? apiUrl(`/api/admin/${formData.role === 'student' ? 'students' : 'teachers'}/${editingId}`)
+        : apiUrl("/api/admin/users");
+      
+      const response = await fetch(url, {
+        method: editingId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          name: editStudentName,
-          email: editStudentEmail,
-          phone: editStudentPhone,
-          formation_id: editStudentFormationId || null,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          role: formData.role,
+          formation_id: formData.role === "student" ? formData.formation_id : null,
+          specialite: formData.role === "teacher" ? formData.specialite : null,
         }),
       });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err?.message ?? "Erreur lors de la mise à jour");
+      if (response.ok) {
+        toast.success(editingId ? "Mis à jour avec succès." : "Utilisateur créé avec succès.");
+        setIsStudentDialogOpen(false);
+        setIsTeacherDialogOpen(false);
+        resetForm();
+        loadAllData(true);
+      } else {
+        const err = await response.json();
+        toast.error(err.message || "Erreur lors de l'opération.");
       }
-
-      const updated: StudentRow = await response.json();
-      setStudents((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
-      setIsStudentDialogOpen(false);
-      toast.success("Étudiant mis à jour.");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erreur.");
-    } finally {
-      setIsSavingStudent(false);
-    }
+    } catch { toast.error("Erreur de connexion."); }
+    finally { setIsSubmitting(false); }
   };
 
-  const openPaymentDialogForStudent = (student: StudentRow) => {
-    setPaymentStudentId(student.id);
-    setPaymentFormationId(student.formation_id ?? "");
-    const formation = formations.find((f) => f.id === (student.formation_id ?? 0));
-    setPaymentTotal(formation?.price ?? 0);
-    setPaymentAmount("");
-    setIsPaymentDialogOpen(true);
-  };
-
-  const handleSavePayment = async (e: React.FormEvent) => {
+  const handleCreateFormation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!paymentStudentId || !paymentAmount || isNaN(Number(paymentAmount))) return;
+    setIsSubmitting(true);
+    try {
+      const url = editingId ? apiUrl(`/api/admin/formations/${editingId}`) : apiUrl("/api/admin/formations");
+      const response = await fetch(url, {
+        method: editingId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          name: formData.title,
+          description: formData.description,
+          price: formData.price,
+          duration: formData.duration,
+        }),
+      });
+      if (response.ok) {
+        toast.success(editingId ? "Formation mise à jour." : "Formation créée.");
+        setIsFormationDialogOpen(false);
+        resetForm();
+        loadFormations(true);
+      } else throw new Error();
+    } catch { toast.error("Erreur lors de l'opération."); }
+    finally { setIsSubmitting(false); }
+  };
 
-    setIsSavingPayment(true);
+  const handleCreatePayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
     try {
       const response = await fetch(apiUrl("/api/admin/payments"), {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
-          user_id: paymentStudentId,
-          formation_id: paymentFormationId || null,
-          amount: parseInt(paymentAmount, 10),
+          user_id: formData.student_id,
+          amount: formData.amount,
+          formation_id: students.find(s => s.id === formData.student_id)?.formation_id,
         }),
       });
-
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err?.message ?? "Erreur lors de l'enregistrement du paiement");
-      }
-
-      const newPayment = await response.json();
-      setPayments((prev) => [
-        {
-          id: newPayment.id,
-          etudiant: students.find((s) => s.id === paymentStudentId)?.name ?? "",
-          montant: parseInt(paymentAmount, 10),
-          type: formations.find((f) => f.id === paymentFormationId)?.name ?? "Paiement",
-          date: new Date().toLocaleDateString("fr-FR"),
-          statut: "En attente",
-        },
-        ...prev,
-      ]);
-      setIsPaymentDialogOpen(false);
-      setPaymentStudentId(null);
-      toast.success("Paiement enregistré. Statut: En attente.");
-
-      const r = await fetch(apiUrl("/api/admin/overview"), {
-        headers: { Accept: "application/json" },
-      });
-      if (r.ok) {
-        const d = await r.json();
-        setRecentPayments(d.recentPayments ?? []);
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erreur.");
-    } finally {
-      setIsSavingPayment(false);
-    }
+      if (response.ok) {
+        toast.success("Paiement enregistré.");
+        setIsPaymentDialogOpen(false);
+        resetForm();
+        loadPayments(true);
+        loadOverview(true);
+      } else throw new Error();
+    } catch { toast.error("Erreur lors de l'enregistrement."); }
+    finally { setIsSubmitting(false); }
   };
 
-  const openFormationDialog = (mode: "create" | "view" | "edit", formation?: FormationRow) => {
-    setFormationMode(mode);
-    setActiveFormation(formation ?? null);
-    if (formation) {
-      setFormationName(formation.name);
-      setFormationStartDate(
-        formation.start_date ? formation.start_date.substring(0, 10) : ""
-      );
-      setFormationCapacity(formation.capacity);
-      setFormationEnrolled(formation.enrolled_students);
-      setFormationPrice(formation.price ?? 0);
-      setFormationTeacherId(formation.teacher_id ?? "");
-    } else {
-      setFormationName("");
-      setFormationStartDate("");
-      setFormationCapacity(0);
-      setFormationEnrolled(0);
-      setFormationPrice(0);
-      setFormationTeacherId("");
-    }
+  const handleEditStudent = (student: StudentRow) => {
+    setEditingId(student.id);
+    setFormData({
+      ...formData,
+      name: student.name,
+      email: student.email,
+      phone: student.phone || "",
+      role: "student",
+      formation_id: students.find(s => s.id === student.id)?.formation_id || "",
+    });
+    setIsStudentDialogOpen(true);
+  };
+
+  const handleEditTeacher = (teacher: TeacherRow) => {
+    setEditingId(teacher.id);
+    setFormData({
+      ...formData,
+      name: teacher.name,
+      email: teacher.email,
+      role: "teacher",
+      specialite: teacher.specialite || "",
+    });
+    setIsTeacherDialogOpen(true);
+  };
+
+  const handleEditFormation = (formation: FormationRow) => {
+    setEditingId(formation.id);
+    setFormData({
+      ...formData,
+      title: formation.name,
+      description: formation.description || "",
+      price: formation.price?.toString() || "",
+      duration: formation.duration || "",
+    });
     setIsFormationDialogOpen(true);
   };
 
-  const openFormationStudentsDialog = async (formation: FormationRow) => {
-    setSelectedFormationName(formation.name);
-    setIsFormationStudentsDialogOpen(true);
-    setIsLoadingFormationStudents(true);
-    try {
-      const response = await fetch(apiUrl(`/api/admin/formations/${formation.id}/students`));
-      if (response.ok) {
-        const data = await response.json();
-        setFormationStudents(data);
-      } else {
-        toast.error("Impossible de charger la liste des étudiants.");
-      }
-    } catch (err) {
-      toast.error("Erreur de connexion.");
-    } finally {
-      setIsLoadingFormationStudents(false);
-    }
-  };
+  const tabItems = [
+    { value: "overview", label: "Aperçu", icon: BarChart3 },
+    { value: "students", label: "Étudiants", icon: Users },
+    { value: "teachers", label: "Enseignants", icon: GraduationCap },
+    { value: "formations", label: "Formations", icon: BookOpen },
+    { value: "payments", label: "Paiements", icon: DollarSign },
+    { value: "tracking", label: "Suivi", icon: ClipboardList },
+    { value: "reports", label: "Rapports", icon: FileText },
+  ];
 
-  const handleSaveFormation = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formationName) return;
+  const LoadingSpinner = ({ color = "border-primary" }: { color?: string }) => (
+    <div className="flex flex-col items-center justify-center py-16 gap-3">
+      <div className={`animate-spin rounded-full h-7 w-7 border-2 border-t-transparent ${color}`} />
+      <p className="text-sm text-gray-400 font-medium">Chargement…</p>
+    </div>
+  );
 
-    setIsSavingFormation(true);
-    try {
-      const payload = {
-        name: formationName,
-        start_date: formationStartDate || null,
-        capacity: formationCapacity,
-        enrolled_students: formationEnrolled,
-        price: formationPrice,
-        teacher_id: formationTeacherId || null,
-      };
-
-      let response: Response;
-      if (formationMode === "edit" && activeFormation) {
-        response = await fetch(
-          apiUrl(`/api/admin/formations/${activeFormation.id}`),
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify(payload),
-          }
-        );
-      } else {
-        response = await fetch(apiUrl("/api/admin/formations"), {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-      }
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'enregistrement de la formation");
-      }
-
-      const saved: FormationRow = await response.json();
-
-      if (formationMode === "edit") {
-        setFormations((prev) =>
-          prev.map((f) => (f.id === saved.id ? saved : f))
-        );
-      } else {
-        setFormations((prev) => [saved, ...prev]);
-      }
-
-      setIsFormationDialogOpen(false);
-    } catch {
-      // on pourrait afficher un toast d'erreur ici
-    } finally {
-      setIsSavingFormation(false);
-    }
-  };
-
-  const handleDeleteFormation = async () => {
-    if (!activeFormation) return;
-    if (!confirm("Supprimer cette formation ?")) return;
-
-    try {
-      const response = await fetch(
-        apiUrl(`/api/admin/formations/${activeFormation.id}`),
-        {
-          method: "DELETE",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-
-      if (!response.ok && response.status !== 204) {
-        throw new Error("Erreur lors de la suppression de la formation");
-      }
-
-      setFormations((prev) =>
-        prev.filter((f) => f.id !== activeFormation.id)
-      );
-      setIsFormationDialogOpen(false);
-    } catch {
-      // on pourrait afficher un toast d'erreur ici
-    }
-  };
+  const EmptyState = ({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) => (
+    <div className="flex flex-col items-center justify-center py-16 gap-2">
+      <div className="p-4 bg-gray-50 rounded-2xl mb-2">
+        <Icon className="h-8 w-8 text-gray-300" />
+      </div>
+      <p className="text-gray-500 font-semibold">{title}</p>
+      <p className="text-gray-400 text-sm text-center max-w-xs">{subtitle}</p>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <header className="bg-primary text-white shadow-md sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3">
-              <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center">
-                <span className="text-primary font-bold text-lg">GS</span>
-              </div>
-              <div>
-                <h1 className="text-lg font-bold">GLOBAL SKILLS</h1>
-                <p className="text-xs text-white/80">Panneau d'Administration</p>
-              </div>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Link to="/admin/news">
-                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
-                  <Newspaper className="h-4 w-4 mr-2" />
-                  Actualités
-                </Button>
-              </Link>
-              <Link to="/admin/international-requests">
-                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 relative">
-                  <Globe className="h-4 w-4 mr-2" />
-                  International
-                  {stats?.new_international_requests ? (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
-                      {stats.new_international_requests > 9 ? "9+" : stats.new_international_requests}
+    <div className="min-h-screen bg-[#f8f9fb] font-sans">
+
+      {/* ── HEADER ─────────────────────────────────────────── */}
+      <header className="bg-primary sticky top-0 z-50">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3 flex-shrink-0">
+            <div className="h-9 w-9 bg-white/15 rounded-xl flex items-center justify-center border border-white/20">
+              <span className="text-white font-bold text-sm tracking-wide">GS</span>
+            </div>
+            <div className="hidden sm:block leading-tight">
+              <p className="text-white font-bold text-sm tracking-wider">GLOBAL SKILLS</p>
+              <p className="text-white/60 text-[10px] uppercase tracking-widest">Administration</p>
+            </div>
+            <p className="sm:hidden text-white font-bold text-sm tracking-widest">ADMIN</p>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {[
+              { to: "/admin/news", icon: Newspaper, label: "Actualités" },
+              { to: "/admin/international-requests", icon: Globe, label: "International", badge: stats?.new_international_requests },
+              { to: "/admin/contact-messages", icon: MessageSquare, label: "Messages", badge: stats?.new_messages },
+              { to: "/settings", icon: Settings, label: "Paramètres" },
+            ].map(({ to, icon: Icon, label, badge }) => (
+              <Link to={to} key={to}>
+                <Button variant="ghost" size="sm" className="text-white/80 hover:text-white hover:bg-white/10 rounded-lg h-9 px-3 text-sm font-medium relative transition-all">
+                  <Icon className="h-4 w-4 mr-1.5" />
+                  {label}
+                  {badge ? (
+                    <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                      {badge > 9 ? "9+" : badge}
                     </span>
                   ) : null}
                 </Button>
               </Link>
-              <Link to="/admin/contact-messages">
-                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 relative">
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Messages
-                  {stats?.new_messages ? (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
-                      {stats.new_messages > 9 ? "9+" : stats.new_messages}
-                    </span>
-                  ) : null}
-                </Button>
-              </Link>
-              <Link to="/settings">
-                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Paramètres
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/10"
-                onClick={() => {
-                  logout();
-                  navigate("/login");
-                }}
+            ))}
+            <Button
+              variant="ghost" size="sm"
+              className="text-white/80 hover:text-white hover:bg-white/10 rounded-lg h-9 px-3 text-sm font-medium ml-1"
+              onClick={() => { logout(); navigate("/login"); }}
+            >
+              <LogOut className="h-4 w-4 mr-1.5" />
+              Déconnexion
+            </Button>
+          </nav>
+
+          {/* Mobile hamburger */}
+          <button
+            className="lg:hidden p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+
+        {/* Mobile dropdown nav */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-white/10 bg-primary">
+            <div className="max-w-screen-xl mx-auto px-4 py-3 flex flex-col gap-1">
+              {[
+                { to: "/admin/news", icon: Newspaper, label: "Actualités" },
+                { to: "/admin/international-requests", icon: Globe, label: "International", badge: stats?.new_international_requests },
+                { to: "/admin/contact-messages", icon: MessageSquare, label: "Messages", badge: stats?.new_messages },
+                { to: "/settings", icon: Settings, label: "Paramètres" },
+              ].map(({ to, icon: Icon, label, badge }) => (
+                <Link to={to} key={to} onClick={() => setMobileMenuOpen(false)}>
+                  <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all relative">
+                    <Icon className="h-4 w-4" />
+                    <span className="text-sm font-medium">{label}</span>
+                    {badge ? (
+                      <span className="ml-auto h-5 w-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                        {badge > 9 ? "9+" : badge}
+                      </span>
+                    ) : null}
+                  </div>
+                </Link>
+              ))}
+              <button
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all w-full"
+                onClick={() => { logout(); navigate("/login"); }}
               >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Déconnexion
-                </Button>
+                <LogOut className="h-4 w-4" />
+                <span className="text-sm font-medium">Déconnexion</span>
+              </button>
             </div>
           </div>
-        </div>
+        )}
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      {/* ── MAIN ────────────────────────────────────────────── */}
+      <main className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 mb-6">
-            <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-            <TabsTrigger value="students">Étudiants</TabsTrigger>
-            <TabsTrigger value="teachers">Enseignants</TabsTrigger>
-            <TabsTrigger value="formations">Formations</TabsTrigger>
-            <TabsTrigger value="payments">Paiements</TabsTrigger>
-            <TabsTrigger value="tracking">Suivi</TabsTrigger>
-            <TabsTrigger value="reports">Rapports</TabsTrigger>
-          </TabsList>
 
-          {/* Overview Tab */}
+          {/* ── TAB NAV ── */}
+          {/* Desktop: horizontal strip */}
+          <div className="hidden sm:block mb-6">
+            <TabsList className="bg-white border border-gray-100 shadow-sm rounded-2xl p-1.5 h-auto w-full flex gap-1 overflow-x-auto">
+              {tabItems.map(({ value, label, icon: Icon }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-500 transition-all duration-200
+                    data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm
+                    hover:text-gray-700 hover:bg-gray-50 flex-shrink-0"
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          {/* Mobile: current tab label + bottom sheet style scroll */}
+          <div className="sm:hidden mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-bold text-gray-800">
+                {tabItems.find(t => t.value === activeTab)?.label}
+              </h2>
+              <button
+                className="flex items-center gap-1.5 text-xs text-primary font-semibold bg-primary/8 px-3 py-1.5 rounded-full"
+                onClick={() => setMobileNavOpen(!mobileNavOpen)}
+              >
+                <Menu className="h-3.5 w-3.5" />
+                Navigation
+              </button>
+            </div>
+            {/* Scrollable tab chips */}
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+              {tabItems.map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  onClick={() => setActiveTab(value)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold flex-shrink-0 transition-all duration-200 border
+                    ${activeTab === value
+                      ? "bg-primary text-white border-primary shadow-sm"
+                      : "bg-white text-gray-500 border-gray-100 hover:border-gray-200"
+                    }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ════════════════════════════════════════════════
+              TAB: OVERVIEW
+          ════════════════════════════════════════════════ */}
           <TabsContent value="overview" className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Total Étudiants
-                      </CardTitle>
-                    <Users className="h-5 w-5 text-blue-600" />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                  <div className="text-3xl font-bold mb-1">
-                    {stats ? stats.total_students : 0}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Nombre d'étudiants inscrits
-                  </p>
-                  </CardContent>
-                </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Formations Actives
-                    </CardTitle>
-                    <GraduationCap className="h-5 w-5 text-green-600" />
+            {/* Stat cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {[
+                {
+                  label: "Étudiants", value: stats?.total_students?.toLocaleString() ?? "0",
+                  sub: "inscrits", icon: Users, color: "text-primary", bg: "bg-primary/8",
+                },
+                {
+                  label: "Formations", value: stats?.total_formations ?? "0",
+                  sub: "disponibles", icon: BookOpen, color: "text-secondary", bg: "bg-secondary/8",
+                },
+                {
+                  label: "Revenus", value: stats?.monthly_revenue ? `${(stats.monthly_revenue / 1000).toFixed(0)}k` : "0k",
+                  sub: "FCFA ce mois", icon: DollarSign, color: "text-emerald-600", bg: "bg-emerald-50",
+                },
+                {
+                  label: "Messages", value: stats?.new_messages ?? "0",
+                  sub: "non lus", icon: MessageSquare, color: "text-accent", bg: "bg-accent/8",
+                  badge: stats?.new_messages,
+                },
+              ].map(({ label, value, sub, icon: Icon, color, bg, badge }) => (
+                <div key={label} className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 hover:shadow-md transition-all duration-200 relative overflow-hidden">
+                  {/* Soft bg circle decoration */}
+                  <div className={`absolute -right-4 -top-4 h-20 w-20 rounded-full ${bg} opacity-40`} />
+                  <div className={`inline-flex p-2.5 rounded-xl ${bg} mb-3 relative`}>
+                    <Icon className={`h-5 w-5 ${color}`} />
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold mb-1">
-                    {stats ? stats.total_formations : 0}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Formations actuellement ouvertes
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Revenus ce Mois
-                    </CardTitle>
-                    <DollarSign className="h-5 w-5 text-accent" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold mb-1">
-                    {stats ? `${stats.monthly_revenue.toLocaleString("fr-FR")} FCFA` : "0 FCFA"}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Basé sur les paiements enregistrés
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-red-100 bg-red-50/30">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-red-800">
-                      Nouveaux Messages
-                    </CardTitle>
-                    <MessageSquare className="h-5 w-5 text-red-600" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold mb-1 text-red-700">
-                    {stats?.new_messages ?? 0}
-                  </div>
-                  <Link to="/admin/contact-messages" className="text-xs text-red-600 hover:underline">
-                    Voir les messages de contact
-                  </Link>
-                </CardContent>
-              </Card>
-
-              <Card className="border-blue-100 bg-blue-50/30">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-blue-800">
-                      Demandes Internationales
-                    </CardTitle>
-                    <Globe className="h-5 w-5 text-blue-600" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold mb-1 text-blue-700">
-                    {stats?.new_international_requests ?? 0}
-                  </div>
-                  <Link to="/admin/international-requests" className="text-xs text-blue-600 hover:underline">
-                    Voir les demandes de projets
-                  </Link>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">
-                      Taux de Réussite
-                    </CardTitle>
-                    <TrendingUp className="h-5 w-5 text-purple-600" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold mb-1">
-                    {stats ? `${stats.monthly_success_rate}%` : "0%"}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Indicateur global (en cours de définition)
-                  </p>
-                </CardContent>
-              </Card>
+                  {badge ? (
+                    <span className="absolute top-3 right-3 h-5 w-5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                      {badge > 9 ? "9+" : badge}
+                    </span>
+                  ) : null}
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-0.5">{label}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 leading-none mb-1">{value}</p>
+                  <p className="text-xs text-gray-400">{sub}</p>
+                </div>
+              ))}
             </div>
 
             {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Inscriptions Mensuelles</CardTitle>
-                  <CardDescription>Évolution du nombre d'inscriptions</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={enrollmentData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis allowDecimals={false} />
-                      <Tooltip />
-                      <Bar dataKey="students" fill="#1e3a8a" name="Étudiants" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+                <div className="flex items-center gap-2.5 mb-5">
+                  <div className="p-2 bg-primary/8 rounded-xl">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-gray-800 text-sm">Évolution des inscriptions</h3>
+                </div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={enrollmentData} barCategoryGap="30%">
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: 12 }}
+                      cursor={{ fill: '#f8fafc' }}
+                    />
+                    <Bar dataKey="students" fill="#1e3a8a" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Revenus Mensuels</CardTitle>
-                  <CardDescription>Évolution des revenus (milliers FCFA)</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={revenueData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="revenue" stroke="#f97316" strokeWidth={2} name="Revenus" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+                <div className="flex items-center gap-2.5 mb-5">
+                  <div className="p-2 bg-emerald-50 rounded-xl">
+                    <TrendingUp className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-800 text-sm">Revenus mensuels</h3>
+                </div>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={revenueData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis dataKey="month" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: 12 }}
+                    />
+                    <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2.5} dot={{ fill: '#10b981', r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserPlus className="h-5 w-5 text-accent" />
-                    Inscriptions Récentes
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {isLoadingOverview && recentStudents.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Chargement des inscriptions récentes...
-                      </p>
-                    )}
-                    {!isLoadingOverview && recentStudents.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Aucune inscription pour le moment.
-                      </p>
-                    )}
-                    {recentStudents.map((student, index) => (
-                      <div key={index} className="flex items-center justify-between pb-3 border-b last:border-0">
-                        <div>
-                          <p className="font-medium">{student.nom}</p>
-                          {student.formation && (
-                          <p className="text-sm text-muted-foreground">{student.formation}</p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          <Badge className="bg-green-500 text-white mb-1">{student.statut}</Badge>
-                          {student.date && (
-                          <p className="text-xs text-muted-foreground">{student.date}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+            {/* Recent activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Recent students */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="p-2 bg-primary/8 rounded-xl">
+                    <Users className="h-4 w-4 text-primary" />
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <DollarSign className="h-5 w-5 text-accent" />
-                    Paiements Récents
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {isLoadingOverview && recentPayments.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Chargement des paiements récents...
-                      </p>
-                    )}
-                    {!isLoadingOverview && recentPayments.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
-                        Aucun paiement enregistré pour le moment.
-                      </p>
-                    )}
-                    {recentPayments.map((payment, index) => (
-                      <div key={index} className="flex items-center justify-between pb-3 border-b last:border-0">
-                        <div>
-                          <p className="font-medium">{payment.etudiant}</p>
-                          <p className="text-sm text-muted-foreground">{payment.type}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-accent">{payment.montant}</p>
-                          <Badge className={payment.statut === "Payé" ? "bg-green-500 text-white" : "bg-yellow-500 text-white"}>
-                            {payment.statut}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          {/* Students Tab */}
-          <TabsContent value="students">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Gestion des Étudiants</CardTitle>
-                    <CardDescription>Liste complète des étudiants inscrits</CardDescription>
-                  </div>
-                  <Button
-                    className="bg-accent hover:bg-accent/90"
-                    onClick={() => {
-                      const container = document.getElementById("new-student-form");
-                      if (container) {
-                        container.scrollIntoView({ behavior: "smooth" });
-                      }
-                    }}
-                  >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Nouvel Étudiant
-                  </Button>
+                  <h3 className="font-semibold text-gray-800 text-sm">Étudiants récents</h3>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div
-                  id="new-student-form"
-                  className="mb-6 p-4 border rounded-lg bg-muted/40 space-y-4"
-                >
-                  <h3 className="font-semibold text-sm">
-                    Créer un nouvel utilisateur
-                  </h3>
-                  <form
-                    onSubmit={handleCreateStudent}
-                    className="flex flex-col md:flex-row gap-3 md:items-end"
-                  >
-                    <div className="flex-1">
-                      <label className="block text-xs font-medium mb-1">
-                        Rôle
-                      </label>
-                      <select
-                        className="w-full border rounded-md px-3 py-2 text-sm"
-                        value={newStudentRole}
-                        onChange={(e) => setNewStudentRole(e.target.value as "student" | "teacher")}
-                        required
-                      >
-                        <option value="student">Étudiant</option>
-                        <option value="teacher">Enseignant</option>
-                      </select>
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-medium mb-1">
-                        Nom complet
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full border rounded-md px-3 py-2 text-sm"
-                        value={newStudentName}
-                        onChange={(e) => setNewStudentName(e.target.value)}
-                        placeholder="Nom de l'utilisateur"
-                        required
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-medium mb-1">
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        className="w-full border rounded-md px-3 py-2 text-sm"
-                        value={newStudentEmail}
-                        onChange={(e) => setNewStudentEmail(e.target.value)}
-                        placeholder="email@exemple.com"
-                        required
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <label className="block text-xs font-medium mb-1">
-                        Téléphone
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full border rounded-md px-3 py-2 text-sm"
-                        value={newStudentPhone}
-                        onChange={(e) => setNewStudentPhone(e.target.value)}
-                        placeholder="Ex: 677..."
-                      />
-                    </div>
-                    {newStudentRole === "student" && (
-                      <div className="flex-1">
-                        <label className="block text-xs font-medium mb-1">
-                          Formation
-                        </label>
-                        <select
-                          className="w-full border rounded-md px-3 py-2 text-sm"
-                          value={newStudentFormationId}
-                          onChange={(e) =>
-                            setNewStudentFormationId(
-                              e.target.value ? parseInt(e.target.value, 10) : ""
-                            )
-                          }
-                        >
-                          <option value="">— Aucune —</option>
-                          {formations.map((f) => (
-                            <option key={f.id} value={f.id}>
-                              {f.name}
-                            </option>
-                          ))}
-                        </select>
+                <div className="space-y-2">
+                  {recentStudents?.length ? recentStudents.slice(0, 4).map((s, i) => (
+                    <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-primary text-xs font-bold">{s.name?.[0]?.toUpperCase()}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{s.name}</p>
+                          <p className="text-xs text-gray-400">{s.formation}</p>
+                        </div>
                       </div>
-                    )}
-                    <div className="flex-1">
-                      <Button type="submit" disabled={isCreatingStudent}>
-                        {isCreatingStudent ? "Création..." : "Enregistrer"}
-                      </Button>
+                      <span className="text-[10px] font-semibold text-primary bg-primary/8 px-2.5 py-1 rounded-full">Nouveau</span>
                     </div>
-                  </form>
-                </div>
-
-                {isLoadingStudents && students.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Chargement des étudiants...
-                  </p>
-                ) : null}
-
-                {!isLoadingStudents && students.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Aucun étudiant pour le moment.
-                  </p>
-                ) : null}
-
-                <Table className="min-w-[920px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nom</TableHead>
-                      <TableHead className="hidden md:table-cell">Email</TableHead>
-                      <TableHead>Formation</TableHead>
-                      <TableHead className="hidden lg:table-cell">Date d'Inscription</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {students.map((student) => (
-                      <TableRow key={student.id}>
-                        <TableCell className="font-medium">
-                          {student.name}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">{student.email}</TableCell>
-                        <TableCell>
-                          {student.formation?.name ?? "—"}
-                        </TableCell>
-                        <TableCell className="hidden lg:table-cell">
-                          {student.created_at
-                            ? new Date(student.created_at).toLocaleDateString("fr-FR")
-                            : ""}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-accent border-accent hover:bg-accent hover:text-white"
-                              onClick={() => openPaymentDialogForStudent(student)}
-                            >
-                              Paiement
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openStudentDialog("view", student)}
-                            >
-                              Voir
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openStudentDialog("edit", student)}
-                            >
-                              Modifier
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleDeleteStudent(student.id)}
-                            >
-                              Supprimer
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            <Dialog open={isStudentDialogOpen} onOpenChange={setIsStudentDialogOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>
-                    {studentDialogMode === "view" ? "Détails de l'étudiant" : "Modifier l'étudiant"}
-                  </DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSaveStudent} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Nom</label>
-                    <input
-                      type="text"
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={editStudentName}
-                      onChange={(e) => setEditStudentName(e.target.value)}
-                      disabled={studentDialogMode === "view"}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Email</label>
-                    <input
-                      type="email"
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={editStudentEmail}
-                      onChange={(e) => setEditStudentEmail(e.target.value)}
-                      disabled={studentDialogMode === "view"}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Téléphone</label>
-                    <input
-                      type="text"
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={editStudentPhone}
-                      onChange={(e) => setEditStudentPhone(e.target.value)}
-                      disabled={studentDialogMode === "view"}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Formation</label>
-                    <select
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={editStudentFormationId}
-                      onChange={(e) =>
-                        setEditStudentFormationId(
-                          e.target.value ? parseInt(e.target.value, 10) : ""
-                        )
-                      }
-                      disabled={studentDialogMode === "view"}
-                    >
-                      <option value="">— Aucune —</option>
-                      {formations.map((f) => (
-                        <option key={f.id} value={f.id}>
-                          {f.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  {studentDialogMode === "edit" && (
-                    <DialogFooter>
-                      <Button type="submit" disabled={isSavingStudent}>
-                        {isSavingStudent ? "Enregistrement..." : "Enregistrer"}
-                      </Button>
-                    </DialogFooter>
+                  )) : (
+                    <div className="flex flex-col items-center py-8 gap-2">
+                      <Users className="h-8 w-8 text-gray-200" />
+                      <p className="text-sm text-gray-400">Aucun étudiant récent</p>
+                    </div>
                   )}
-                </form>
-              </DialogContent>
-            </Dialog>
+                </div>
+              </div>
 
-            <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Enregistrer un paiement</DialogTitle>
-                  <DialogDescription>
-                    Indiquez le montant versé par l'étudiant
-                    {paymentTotal > 0 && ` (Total formation: ${paymentTotal.toLocaleString("fr-FR")} FCFA)`}
-                  </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSavePayment} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Formation</label>
-                    <select
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={paymentFormationId}
-                      onChange={(e) => {
-                        const v = e.target.value ? parseInt(e.target.value, 10) : "";
-                        setPaymentFormationId(v);
-                        const f = formations.find((x) => x.id === v);
-                        setPaymentTotal(f?.price ?? 0);
-                      }}
-                    >
-                      <option value="">— Aucune —</option>
-                      {formations.map((f) => (
-                        <option key={f.id} value={f.id}>
-                          {f.name} ({f.price?.toLocaleString("fr-FR") ?? 0} FCFA)
-                        </option>
-                      ))}
-                    </select>
+              {/* Recent payments */}
+              <div className="bg-white rounded-2xl border border-gray-100 p-5">
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="p-2 bg-emerald-50 rounded-xl">
+                    <DollarSign className="h-4 w-4 text-emerald-600" />
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">Montant versé (FCFA)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      placeholder="0"
-                      required
-                    />
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit" disabled={isSavingPayment}>
-                      {isSavingPayment ? "Enregistrement..." : "Enregistrer"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+                  <h3 className="font-semibold text-gray-800 text-sm">Paiements récents</h3>
+                </div>
+                <div className="space-y-2">
+                  {recentPayments?.length ? recentPayments.slice(0, 4).map((p, i) => (
+                    <div key={i} className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center flex-shrink-0">
+                          <DollarSign className="h-4 w-4 text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{p.student_name}</p>
+                          <p className="text-xs text-gray-400">{p.date}</p>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                        {p.amount} FCFA
+                      </span>
+                    </div>
+                  )) : (
+                    <div className="flex flex-col items-center py-8 gap-2">
+                      <DollarSign className="h-8 w-8 text-gray-200" />
+                      <p className="text-sm text-gray-400">Aucun paiement récent</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </TabsContent>
 
-          {/* Teachers Tab */}
-          <TabsContent value="teachers">
-            <Card>
-              <CardHeader>
-                <div>
-                  <CardTitle>Gestion des Enseignants</CardTitle>
-                  <CardDescription>Liste complète des enseignants</CardDescription>
+          {/* ════════════════════════════════════════════════
+              TAB: STUDENTS
+          ════════════════════════════════════════════════ */}
+          <TabsContent value="students">
+            <div className="bg-white rounded-2xl border border-gray-100">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 border-b border-gray-50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-primary/8 rounded-xl">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Gestion des Étudiants</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Liste complète des étudiants inscrits</p>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {teachers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Aucun enseignant pour le moment.
-                  </p>
-                ) : (
-                  <Table className="min-w-[820px]">
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nom</TableHead>
-                        <TableHead className="hidden md:table-cell">Email</TableHead>
-                        <TableHead>Spécialité</TableHead>
-                        <TableHead className="hidden lg:table-cell">Date d'Inscription</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {teachers.map((teacher) => (
-                        <TableRow key={teacher.id}>
-                          <TableCell className="font-medium">
-                            {teacher.name}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">{teacher.email}</TableCell>
-                          <TableCell>{teacher.specialite || "—"}</TableCell>
-                          <TableCell className="hidden lg:table-cell">
-                            {teacher.created_at
-                              ? new Date(teacher.created_at).toLocaleDateString("fr-FR")
-                              : ""}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openTeacherDialog("view", teacher)}
-                              >
-                                Voir
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => openTeacherDialog("edit", teacher)}
-                              >
+                <Button
+                  onClick={() => setIsStudentDialogOpen(true)}
+                  className="bg-primary hover:bg-primary/90 text-white rounded-xl h-9 px-4 text-sm font-medium shadow-sm self-start sm:self-auto"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Ajouter
+                </Button>
+              </div>
+
+              {/* Content */}
+              <div className="p-5">
+                {isLoadingStudents ? <LoadingSpinner /> :
+                  students.length === 0 ? <EmptyState icon={Users} title="Aucun étudiant trouvé" subtitle="Commencez par ajouter votre premier étudiant" /> : (
+                    <>
+                      {/* Mobile cards */}
+                      <div className="sm:hidden space-y-3">
+                        {students.map((s) => (
+                          <div key={s.id} className="border border-gray-100 rounded-xl p-4 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                                  <span className="text-primary text-xs font-bold">{s.name?.[0]?.toUpperCase()}</span>
+                                </div>
+                                <p className="font-semibold text-gray-900 text-sm">{s.name}</p>
+                              </div>
+                              <Badge variant="secondary" className="bg-primary/8 text-primary border-0 text-[10px] font-semibold">
+                                {s.formation_name || '-'}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-gray-400 pl-10">{s.email}</p>
+                              <div className="flex items-center justify-between pl-10">
+                              <p className="text-xs text-gray-400">{s.phone || '-'}</p>
+                              <div className="flex gap-2">
+                                <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-gray-100 hover:border-primary/30 hover:bg-primary/5" onClick={() => handleEditStudent(s)}>
+                                  Modifier
+                                </Button>
+                                <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-red-100 text-red-600 hover:bg-red-50" onClick={() => handleDeleteStudent(s.id)}>
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Desktop table */}
+                      <div className="hidden sm:block overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-gray-50 hover:bg-transparent">
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Nom</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Email</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Téléphone</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Formation</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {students.map((s) => (
+                              <TableRow key={s.id} className="border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                <TableCell className="font-medium text-gray-900 text-sm">{s.name}</TableCell>
+                                <TableCell className="text-gray-500 text-sm">{s.email}</TableCell>
+                                <TableCell className="text-gray-500 text-sm hidden md:table-cell">{s.phone || '—'}</TableCell>
+                                <TableCell>
+                                  <span className="text-[11px] font-semibold text-primary bg-primary/8 px-2.5 py-1 rounded-full">
+                                    {s.formation_name || '—'}
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg border-gray-100 hover:border-primary/30 hover:bg-primary/5" onClick={() => handleEditStudent(s)}>
+                                      Modifier
+                                    </Button>
+                                    <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg border-red-100 text-red-600 hover:bg-red-50" onClick={() => handleDeleteStudent(s.id)}>
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </>
+                  )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ════════════════════════════════════════════════
+              TAB: TEACHERS
+          ════════════════════════════════════════════════ */}
+          <TabsContent value="teachers">
+            <div className="bg-white rounded-2xl border border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 border-b border-gray-50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-secondary/8 rounded-xl">
+                    <GraduationCap className="h-5 w-5 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Gestion des Enseignants</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Liste complète des enseignants actifs</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setIsTeacherDialogOpen(true)}
+                  className="bg-secondary hover:bg-secondary/90 text-white rounded-xl h-9 px-4 text-sm font-medium shadow-sm self-start sm:self-auto"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Ajouter
+                </Button>
+              </div>
+
+              <div className="p-5">
+                {isLoadingTeachers ? <LoadingSpinner color="border-secondary" /> :
+                  teachers.length === 0 ? <EmptyState icon={GraduationCap} title="Aucun enseignant trouvé" subtitle="Commencez par ajouter votre premier enseignant" /> : (
+                    <>
+                      {/* Mobile cards */}
+                      <div className="sm:hidden space-y-3">
+                        {teachers.map((t) => (
+                          <div key={t.id} className="border border-gray-100 rounded-xl p-4 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 bg-secondary/10 rounded-full flex items-center justify-center">
+                                  <span className="text-secondary text-xs font-bold">{t.name?.[0]?.toUpperCase()}</span>
+                                </div>
+                                <p className="font-semibold text-gray-900 text-sm">{t.name}</p>
+                              </div>
+                              {t.specialite && (
+                                <span className="text-[10px] font-semibold text-secondary bg-secondary/8 px-2.5 py-1 rounded-full">{t.specialite}</span>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between pl-10">
+                              <p className="text-xs text-gray-400">{t.email}</p>
+                              <div className="flex gap-2">
+                                <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-gray-100 hover:border-secondary/30 hover:bg-secondary/5" onClick={() => handleEditTeacher(t)}>
+                                  Modifier
+                                </Button>
+                                <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-red-100 text-red-600 hover:bg-red-50" onClick={() => handleDeleteTeacher(t.id)}>
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Desktop table */}
+                      <div className="hidden sm:block overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-gray-50 hover:bg-transparent">
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Nom</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Email</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 hidden lg:table-cell">Spécialité</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {teachers.map((t) => (
+                              <TableRow key={t.id} className="border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                <TableCell className="font-medium text-gray-900 text-sm">{t.name}</TableCell>
+                                <TableCell className="text-gray-500 text-sm">{t.email}</TableCell>
+                                <TableCell className="text-gray-500 text-sm hidden lg:table-cell">{t.specialite || '—'}</TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg border-gray-100 hover:border-secondary/30 hover:bg-secondary/5" onClick={() => handleEditTeacher(t)}>
+                                      Modifier
+                                    </Button>
+                                    <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg border-red-100 text-red-600 hover:bg-red-50" onClick={() => handleDeleteTeacher(t.id)}>
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </>
+                  )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ════════════════════════════════════════════════
+              TAB: FORMATIONS
+          ════════════════════════════════════════════════ */}
+          <TabsContent value="formations">
+            <div className="bg-white rounded-2xl border border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 border-b border-gray-50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-secondary/8 rounded-xl">
+                    <BookOpen className="h-5 w-5 text-secondary" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Gestion des Formations</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Liste complète des formations disponibles</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setIsFormationDialogOpen(true)}
+                  className="bg-secondary hover:bg-secondary/90 text-white rounded-xl h-9 px-4 text-sm font-medium shadow-sm self-start sm:self-auto"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Ajouter
+                </Button>
+              </div>
+
+              <div className="p-5">
+                {isLoadingFormations ? <LoadingSpinner color="border-secondary" /> :
+                  formations.length === 0 ? <EmptyState icon={BookOpen} title="Aucune formation trouvée" subtitle="Commencez par ajouter votre première formation" /> : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {formations.map((f) => (
+                        <div key={f.id} className="border border-gray-100 rounded-xl p-4 hover:shadow-md hover:border-gray-200 transition-all duration-200 flex flex-col gap-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="font-semibold text-gray-900 text-sm leading-snug">{f.name}</h4>
+                            <span className="text-[10px] font-semibold text-secondary bg-secondary/8 px-2 py-1 rounded-full flex-shrink-0">{f.duration || 'N/A'}</span>
+                          </div>
+                          <p className="text-xs text-gray-400 line-clamp-2 flex-1">{f.description || 'Aucune description'}</p>
+                          <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+                            <span className="text-sm font-semibold text-gray-700">
+                              {f.price ? f.price.toLocaleString() + ' FCFA' : 'Gratuit'}
+                            </span>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-gray-100 hover:border-secondary/30 hover:bg-secondary/5" onClick={() => handleEditFormation(f)}>
                                 Modifier
                               </Button>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDeleteTeacher(teacher.id)}
-                              >
-                                Supprimer
+                              <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-red-100 text-red-600 hover:bg-red-50" onClick={() => handleDeleteFormation(f.id)}>
+                                <Trash2 className="h-3 w-3" />
                               </Button>
                             </div>
-                          </TableCell>
-                        </TableRow>
+                          </div>
+                        </div>
                       ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+                    </div>
+                  )}
+              </div>
+            </div>
           </TabsContent>
 
-          {/* Formations Tab */}
-          <TabsContent value="formations">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Gestion des Formations</CardTitle>
-                    <CardDescription>Gérez les formations et les inscriptions</CardDescription>
-                  </div>
-                  <Button
-                    className="bg-accent hover:bg-accent/90"
-                    onClick={() => openFormationDialog("create")}
-                  >
-                    <GraduationCap className="h-4 w-4 mr-2" />
-                    Nouvelle Formation
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {isLoadingFormations && formations.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      Chargement des formations...
-                    </p>
-                  )}
-                  {!isLoadingFormations && formations.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      Aucune formation pour le moment.
-                    </p>
-                  )}
-                  {formations.map((formation) => {
-                    const percent =
-                      formation.capacity > 0
-                        ? Math.round(
-                            (formation.enrolled_students / formation.capacity) * 100
-                          )
-                        : 0;
-                    return (
-                      <div key={formation.id} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <h4 className="font-bold text-lg">{formation.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Début:{" "}
-                              {formation.start_date
-                                ? new Date(formation.start_date).toLocaleDateString(
-                                    "fr-FR"
-                                  )
-                                : "Non défini"}
-                            </p>
-                            {formation.teacher && (
-                              <p className="text-sm text-muted-foreground">
-                                Formateur: {formation.teacher.name}
-                              </p>
-                            )}
-                            {formation.price && (
-                              <p className="text-sm font-medium text-primary">
-                                Prix: {formation.price.toLocaleString("fr-FR")} FCFA
-                              </p>
-                            )}
-                        </div>
-                        <div className="text-right">
-                            <p className="text-2xl font-bold text-primary">
-                              {formation.enrolled_students}/{formation.capacity}
-                            </p>
-                          <p className="text-xs text-muted-foreground">Étudiants inscrits</p>
-                        </div>
-                      </div>
-                      <div className="mb-3">
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Taux de remplissage</span>
-                            <span>{percent}%</span>
-                        </div>
-                        <div className="h-2 bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-primary" 
-                              style={{ width: `${percent}%` }}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openFormationDialog("view", formation)}
-                          >
-                            Voir Détails
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openFormationDialog("edit", formation)}
-                          >
-                            Modifier
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openFormationStudentsDialog(formation)}
-                          >
-                            Liste Étudiants
-                          </Button>
-                      </div>
-                    </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Dialog open={isFormationDialogOpen} onOpenChange={setIsFormationDialogOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>
-                    {formationMode === "create"
-                      ? "Nouvelle formation"
-                      : formationMode === "edit"
-                      ? "Modifier la formation"
-                      : "Détails de la formation"}
-                  </DialogTitle>
-                  <DialogDescription>
-                    Gérez les informations de la formation et les capacités
-                    d&apos;accueil.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <form onSubmit={handleSaveFormation} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-medium mb-1">
-                      Nom de la formation
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={formationName}
-                      onChange={(e) => setFormationName(e.target.value)}
-                      disabled={formationMode === "view"}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">
-                      Date de début
-                    </label>
-                    <input
-                      type="date"
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={formationStartDate}
-                      onChange={(e) => setFormationStartDate(e.target.value)}
-                      disabled={formationMode === "view"}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">
-                      Formateur
-                    </label>
-                    <select
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={formationTeacherId}
-                      onChange={(e) =>
-                        setFormationTeacherId(
-                          e.target.value ? parseInt(e.target.value, 10) : ""
-                        )
-                      }
-                      disabled={formationMode === "view"}
-                    >
-                      <option value="">— Sélectionner un formateur —</option>
-                      {teachers.map((teacher) => (
-                        <option key={teacher.id} value={teacher.id}>
-                          {teacher.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1">
-                      Prix (FCFA)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      className="w-full border rounded-md px-3 py-2 text-sm"
-                      value={formationPrice}
-                      onChange={(e) =>
-                        setFormationPrice(parseInt(e.target.value || "0", 10))
-                      }
-                      disabled={formationMode === "view"}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-medium mb-1">
-                        Capacité (places)
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        className="w-full border rounded-md px-3 py-2 text-sm"
-                        value={formationCapacity}
-                        onChange={(e) =>
-                          setFormationCapacity(parseInt(e.target.value || "0", 10))
-                        }
-                        disabled={formationMode === "view"}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium mb-1">
-                        Étudiants inscrits
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        className="w-full border rounded-md px-3 py-2 text-sm"
-                        value={formationEnrolled}
-                        onChange={(e) =>
-                          setFormationEnrolled(parseInt(e.target.value || "0", 10))
-                        }
-                        disabled={formationMode === "view"}
-                      />
-                    </div>
-                  </div>
-
-                  <DialogFooter>
-                    {formationMode === "edit" && activeFormation && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="mr-auto text-red-600"
-                        onClick={handleDeleteFormation}
-                      >
-                        Supprimer
-                      </Button>
-                    )}
-                    {formationMode !== "view" && (
-                      <Button type="submit" disabled={isSavingFormation}>
-                        {isSavingFormation ? "Enregistrement..." : "Enregistrer"}
-                      </Button>
-                    )}
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </TabsContent>
-
-          {/* Payments Tab */}
+          {/* ════════════════════════════════════════════════
+              TAB: PAYMENTS
+          ════════════════════════════════════════════════ */}
           <TabsContent value="payments">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-accent" />
-                  Gestion des Paiements
-                </CardTitle>
-                <CardDescription>Suivi des paiements et facturation</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table className="min-w-[980px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Étudiant</TableHead>
-                      <TableHead>Montant</TableHead>
-                      <TableHead className="hidden md:table-cell">Type</TableHead>
-                      <TableHead className="hidden lg:table-cell">Date</TableHead>
-                      <TableHead>Statut</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {payments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell className="font-medium">{payment.etudiant}</TableCell>
-                        <TableCell className="font-semibold text-accent">
-                          {typeof payment.montant === 'number' 
-                            ? (payment.montant as number).toLocaleString('fr-FR') + ' FCFA'
-                            : payment.montant}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">{payment.type}</TableCell>
-                        <TableCell className="hidden lg:table-cell">{payment.date}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-col gap-1">
-                            <Badge className={payment.statut === "Payé" ? "bg-green-500 text-white w-fit" : "bg-yellow-500 text-white w-fit"}>
-                              {payment.statut}
-                            </Badge>
-                            {payment.statut === "Payé" && (
-                              <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${payment.is_partial ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
-                                {payment.is_partial ? 'Tranche' : 'Complet'}
-                              </span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col sm:flex-row gap-2">
-                            <Button variant="outline" size="sm" onClick={() => openViewPaymentDialog(payment)}>Voir</Button>
-                            {payment.statut === "En attente" && (
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="text-green-600"
-                                onClick={() => handleConfirmPayment(payment.id)}
-                              >
-                                Confirmer
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <div className="bg-white rounded-2xl border border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 border-b border-gray-50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-emerald-50 rounded-xl">
+                    <DollarSign className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Gestion des Paiements</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Historique complet des paiements</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setIsPaymentDialogOpen(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-9 px-4 text-sm font-medium shadow-sm self-start sm:self-auto"
+                >
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Nouveau paiement
+                </Button>
+              </div>
 
-          {/* Program Tracking Tab */}
-          <TabsContent value="tracking">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5 text-accent" />
-                  Suivi des Programmes
-                </CardTitle>
-                <CardDescription>Consultez et validez les rapports de cours des formateurs</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoadingTrackings ? (
-                  <div className="py-8 text-center text-muted-foreground">Chargement des fiches...</div>
-                ) : trackings.length === 0 ? (
-                  <div className="py-8 text-center text-muted-foreground">Aucune fiche de suivi disponible.</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Formateur</TableHead>
-                          <TableHead>Formation</TableHead>
-                          <TableHead>Date & Horaire</TableHead>
-                          <TableHead>Matière</TableHead>
-                          <TableHead>Rapport</TableHead>
-                          <TableHead>Statut</TableHead>
-                          <TableHead>Action</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {trackings.map((tracking) => (
-                          <TableRow key={tracking.id}>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="font-medium">{tracking.user?.name}</span>
-                                <span className="text-[10px] text-muted-foreground">{tracking.user?.email}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>{tracking.formation?.name}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span>{new Date(tracking.date).toLocaleDateString("fr-FR")}</span>
-                                <span className="text-xs text-muted-foreground">{tracking.start_time.substring(0, 5)} - {tracking.end_time.substring(0, 5)}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>{tracking.subject}</TableCell>
-                            <TableCell className="max-w-xs">
-                              <p className="text-xs line-clamp-2" title={tracking.report_content}>
-                                {tracking.report_content}
-                              </p>
-                            </TableCell>
-                            <TableCell>
-                              {tracking.admin_signed_at ? (
-                                <Badge className="bg-green-500 text-white flex items-center gap-1 w-fit">
-                                  Validé
-                                </Badge>
+              <div className="p-5">
+                {isLoadingPayments ? <LoadingSpinner color="border-emerald-600" /> :
+                  payments.length === 0 ? <EmptyState icon={DollarSign} title="Aucun paiement trouvé" subtitle="Les paiements apparaîtront ici" /> : (
+                    <>
+                      {/* Mobile cards */}
+                      <div className="sm:hidden space-y-3">
+                        {payments.map((p) => (
+                          <div key={p.id} className="border border-gray-100 rounded-xl p-4 flex items-center justify-between gap-3">
+                            <div>
+                              <p className="font-semibold text-gray-900 text-sm">{p.student_name}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">{p.date}</p>
+                            </div>
+                            <div className="flex flex-col items-end gap-1.5">
+                              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                                {p.amount?.toLocaleString()} FCFA
+                              </span>
+                              {p.status === "Payé" ? (
+                                <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Payé</span>
                               ) : (
-                                <Badge variant="outline" className="text-yellow-600 border-yellow-200 bg-yellow-50 flex items-center gap-1 w-fit">
-                                  En attente
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {!tracking.admin_signed_at && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="text-primary"
-                                  onClick={() => handleSignTracking(tracking.id)}
-                                >
-                                  Valider
+                                <Button size="sm" className="h-6 text-[10px] bg-amber-500 hover:bg-amber-600 text-white gap-1" onClick={() => handleConfirmPayment(p.id)}>
+                                  <CheckCircle className="h-3 w-3" />
+                                  Confirmer
                                 </Button>
                               )}
-                            </TableCell>
-                          </TableRow>
+                            </div>
+                          </div>
                         ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      </div>
+
+                      {/* Desktop table */}
+                      <div className="hidden sm:block overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-gray-50 hover:bg-transparent">
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Étudiant</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Montant</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Date</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 text-right">Statut</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {payments.map((p) => (
+                              <TableRow key={p.id} className="border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                <TableCell className="font-medium text-gray-900 text-sm">{p.student_name}</TableCell>
+                                <TableCell>
+                                  <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
+                                    {p.amount?.toLocaleString()} FCFA
+                                  </span>
+                                </TableCell>
+                                <TableCell className="text-gray-500 text-sm">{p.date}</TableCell>
+                                <TableCell className="text-right">
+                                  {p.status === "Payé" ? (
+                                    <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Payé</span>
+                                  ) : (
+                                    <Button size="sm" className="h-7 text-xs bg-amber-500 hover:bg-amber-600 text-white gap-1.5" onClick={() => handleConfirmPayment(p.id)}>
+                                      <CheckCircle className="h-3.5 w-3.5" />
+                                      Confirmer
+                                    </Button>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </>
+                  )}
+              </div>
+            </div>
           </TabsContent>
 
-          {/* Reports Tab */}
-          <TabsContent value="reports">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5 text-accent" />
-                    Rapports et Statistiques
-                  </CardTitle>
-                  <CardDescription>Exportez vos données et générez des rapports</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button variant="outline" className="h-24 flex-col gap-2">
-                      <Download className="h-6 w-6 text-primary" />
-                      <div className="text-center">
-                        <p className="font-semibold">Export Étudiants</p>
-                        <p className="text-xs text-muted-foreground">Liste complète (Excel)</p>
-                      </div>
-                    </Button>
-                    <Button variant="outline" className="h-24 flex-col gap-2">
-                      <Download className="h-6 w-6 text-accent" />
-                      <div className="text-center">
-                        <p className="font-semibold">Rapport Financier</p>
-                        <p className="text-xs text-muted-foreground">Revenus et paiements (PDF)</p>
-                      </div>
-                    </Button>
-                    <Button variant="outline" className="h-24 flex-col gap-2">
-                      <Download className="h-6 w-6 text-green-600" />
-                      <div className="text-center">
-                        <p className="font-semibold">Rapport Formations</p>
-                        <p className="text-xs text-muted-foreground">Statistiques par formation (PDF)</p>
-                      </div>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="h-24 flex-col gap-2"
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(apiUrl("/api/admin/reports/tracking"));
-                          if (response.ok) {
-                            const data = await response.json();
-                            toast.success("Rapport de suivi généré avec succès");
-                            console.log("Données de suivi:", data);
-                          }
-                        } catch (err) {
-                          toast.error("Erreur de connexion");
-                        }
-                      }}
-                    >
-                      <ClipboardList className="h-6 w-6 text-orange-600" />
-                      <div className="text-center">
-                        <p className="font-semibold">Suivi des Programmes</p>
-                        <p className="text-xs text-muted-foreground">Rapport d'activités (PDF)</p>
-                      </div>
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="h-24 flex-col gap-2"
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(apiUrl("/api/admin/reports/annual"));
-                          if (response.ok) {
-                            const data = await response.json();
-                            toast.success("Rapport généré avec succès (Données récupérées)");
-                            console.log("Données du rapport:", data);
-                            // Ici on pourrait ouvrir une nouvelle fenêtre pour imprimer
-                          } else {
-                            toast.error("Erreur lors de la génération du rapport");
-                          }
-                        } catch (err) {
-                          toast.error("Erreur de connexion");
-                        }
-                      }}
-                    >
-                      <Download className="h-6 w-6 text-purple-600" />
-                      <div className="text-center">
-                        <p className="font-semibold">Rapport Annuel</p>
-                        <p className="text-xs text-muted-foreground">Bilan complet (PDF)</p>
-                      </div>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* ════════════════════════════════════════════════
+              TAB: TRACKING
+          ════════════════════════════════════════════════ */}
+          <TabsContent value="tracking">
+            <div className="bg-white rounded-2xl border border-gray-100">
+              <div className="flex items-center gap-3 p-5 border-b border-gray-50">
+                <div className="p-2.5 bg-accent/8 rounded-xl">
+                  <ClipboardList className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Suivi des Programmes</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">Rapports de progression des formations</p>
+                </div>
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Statistiques Détaillées</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-4 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-1">Taux de Présence Moyen</p>
-                      <p className="text-3xl font-bold text-blue-600">92%</p>
-                    </div>
-                    <div className="p-4 bg-green-50 rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-1">Taux de Réussite</p>
-                      <p className="text-3xl font-bold text-green-600">87%</p>
-                    </div>
-                    <div className="p-4 bg-orange-50 rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-1">Moyenne Générale</p>
-                      <p className="text-3xl font-bold text-accent">15.8/20</p>
-                    </div>
+              <div className="p-5">
+                {isLoadingTrackings ? <LoadingSpinner color="border-accent" /> :
+                  trackings.length === 0 ? <EmptyState icon={ClipboardList} title="Aucun suivi trouvé" subtitle="Les rapports de suivi apparaîtront ici" /> : (
+                    <>
+                      {/* Mobile cards */}
+                      <div className="sm:hidden space-y-3">
+                        {trackings.map((t) => (
+                          <div key={t.id} className="border border-gray-100 rounded-xl p-4 space-y-1.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="font-semibold text-gray-900 text-sm">{t.formation_name}</p>
+                              <span className="text-[10px] font-semibold text-accent bg-accent/8 px-2.5 py-1 rounded-full">{t.status || 'Complété'}</span>
+                            </div>
+                            <p className="text-xs text-gray-500">{t.subject}</p>
+                            <p className="text-xs text-gray-400">{t.date}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Desktop table */}
+                      <div className="hidden sm:block overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="border-gray-50 hover:bg-transparent">
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Formation</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Matière</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400">Date</TableHead>
+                              <TableHead className="text-xs font-semibold uppercase tracking-wider text-gray-400 text-right">Statut</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {trackings.map((t) => (
+                              <TableRow key={t.id} className="border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                <TableCell className="font-medium text-gray-900 text-sm">{t.formation_name}</TableCell>
+                                <TableCell className="text-gray-500 text-sm hidden md:table-cell">{t.subject}</TableCell>
+                                <TableCell className="text-gray-500 text-sm">{t.date}</TableCell>
+                                <TableCell className="text-right">
+                                  <span className="text-[10px] font-semibold text-accent bg-accent/8 px-2.5 py-1 rounded-full">{t.status || 'Complété'}</span>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </>
+                  )}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ════════════════════════════════════════════════
+              TAB: REPORTS
+          ════════════════════════════════════════════════ */}
+          <TabsContent value="reports">
+            <div className="bg-white rounded-2xl border border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 border-b border-gray-50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-destructive/8 rounded-xl">
+                    <FileText className="h-5 w-5 text-destructive" />
                   </div>
-                </CardContent>
-              </Card>
+                  <div>
+                    <h3 className="font-bold text-gray-900">Rapports et Analytics</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">Rapports détaillés et statistiques</p>
+                  </div>
+                </div>
+                <Button className="bg-destructive hover:bg-destructive/90 text-white rounded-xl h-9 px-4 text-sm font-medium shadow-sm self-start sm:self-auto">
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporter
+                </Button>
+              </div>
+
+              <div className="p-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { title: "Rapport mensuel", desc: "Statistiques détaillées du mois en cours", type: "tracking" },
+                    { title: "Rapport annuel", desc: "Analyse complète de l'année", type: "annual" },
+                  ].map(({ title, desc, type }) => (
+                    <div key={title} className="border border-gray-100 rounded-xl p-5 hover:border-gray-200 hover:shadow-sm transition-all duration-200">
+                      <div className="flex items-center gap-2.5 mb-3">
+                        <div className="p-2 bg-destructive/8 rounded-lg">
+                          <FileText className="h-4 w-4 text-destructive" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900 text-sm">{title}</h4>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-4">{desc}</p>
+                      <Button 
+                        variant="outline" 
+                        className="w-full h-9 text-sm rounded-xl border-gray-100 hover:border-destructive/30 hover:bg-destructive/5 hover:text-destructive transition-all"
+                        onClick={() => handleGenerateReport(type as "annual" | "tracking")}
+                      >
+                        Générer le rapport
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
-      </div>
+      </main>
 
-      {/* Teacher Dialog */}
-      <Dialog open={isTeacherDialogOpen} onOpenChange={setIsTeacherDialogOpen}>
-        <DialogContent>
+      {/* ── DIALOGS ─────────────────────────────────────────── */}
+      <Dialog open={isStudentDialogOpen} onOpenChange={(open) => { setIsStudentDialogOpen(open); if(!open) resetForm(); }}>
+        <DialogContent className="max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle>
-              {teacherDialogMode === "view" ? "Détails de l'enseignant" : "Modifier l'enseignant"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-medium mb-1">Nom</label>
-              <input
-                type="text"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={editTeacherName}
-                onChange={(e) => setEditTeacherName(e.target.value)}
-                disabled={teacherDialogMode === "view"}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Email</label>
-              <input
-                type="email"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={editTeacherEmail}
-                onChange={(e) => setEditTeacherEmail(e.target.value)}
-                disabled={teacherDialogMode === "view"}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Téléphone</label>
-              <input
-                type="text"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={editTeacherPhone}
-                onChange={(e) => setEditTeacherPhone(e.target.value)}
-                disabled={teacherDialogMode === "view"}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">Spécialité</label>
-              <input
-                type="text"
-                className="w-full border rounded-md px-3 py-2 text-sm"
-                value={editTeacherSpecialite}
-                onChange={(e) => setEditTeacherSpecialite(e.target.value)}
-                disabled={teacherDialogMode === "view"}
-                placeholder="Ex: Marketing, Design, etc."
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsTeacherDialogOpen(false)}
-            >
-              {teacherDialogMode === "view" ? "Fermer" : "Annuler"}
-            </Button>
-            {teacherDialogMode === "edit" && (
-              <Button
-                type="submit"
-                disabled={isSavingStudent}
-                onClick={async (e) => {
-                  e.preventDefault();
-                  if (!activeTeacher) return;
-
-                  try {
-                    const response = await fetch(apiUrl(`/api/admin/teachers/${activeTeacher.id}`), {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                      },
-                      body: JSON.stringify({
-                        name: editTeacherName,
-                        email: editTeacherEmail,
-                        phone: editTeacherPhone,
-                        specialite: editTeacherSpecialite,
-                      }),
-                    });
-
-                    if (!response.ok) {
-                      const err = await response.json().catch(() => ({}));
-                      throw new Error(err?.message ?? "Erreur lors de la mise à jour");
-                    }
-
-                    const updated: TeacherRow = await response.json();
-                    setTeachers((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-                    setIsTeacherDialogOpen(false);
-                    toast.success("Enseignant mis à jour.");
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : "Erreur.");
-                  }
-                }}
-              >
-                Enregistrer
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      {/* Payment View Dialog */}
-      <Dialog open={isViewPaymentDialogOpen} onOpenChange={setIsViewPaymentDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Détails du paiement</DialogTitle>
-          </DialogHeader>
-          {selectedPayment && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <p className="font-medium">Étudiant:</p>
-                <p>{selectedPayment.etudiant}</p>
-                
-                <p className="font-medium">Montant:</p>
-                <p className="font-bold text-accent">
-                  {typeof selectedPayment.montant === 'number' 
-                    ? (selectedPayment.montant as number).toLocaleString('fr-FR') + ' FCFA'
-                    : selectedPayment.montant}
-                </p>
-                
-                <p className="font-medium">Formation / Type:</p>
-                <p>{selectedPayment.type}</p>
-                
-                <p className="font-medium">Date:</p>
-                <p>{selectedPayment.date}</p>
-                
-                <p className="font-medium">Statut:</p>
-                <div className="flex flex-col gap-1">
-                  <Badge className={selectedPayment.statut === "Payé" ? "bg-green-500 text-white w-fit" : "bg-yellow-500 text-white w-fit"}>
-                    {selectedPayment.statut}
-                  </Badge>
-                  {selectedPayment.statut === "Payé" && (
-                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded w-fit ${selectedPayment.is_partial ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'}`}>
-                      {selectedPayment.is_partial ? 'Tranche' : 'Paiement Complet'}
-                    </span>
-                  )}
-                </div>
-
-                {selectedPayment.formation_price && selectedPayment.formation_price > 0 && (
-                  <>
-                    <p className="font-medium mt-2">Récapitulatif financier:</p>
-                    <div className="col-span-2 p-3 bg-muted rounded-md text-xs space-y-1">
-                      <div className="flex justify-between">
-                        <span>Prix formation:</span>
-                        <span className="font-semibold">{selectedPayment.formation_price.toLocaleString("fr-FR")} FCFA</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Total déjà payé:</span>
-                        <span className="font-semibold text-green-600">{selectedPayment.total_paid_so_far?.toLocaleString("fr-FR")} FCFA</span>
-                      </div>
-                      <div className="flex justify-between border-t pt-1 mt-1">
-                        <span>Reste à payer:</span>
-                        <span className={`font-bold ${selectedPayment.remaining && selectedPayment.remaining > 0 ? 'text-orange-600' : 'text-blue-600'}`}>
-                          {selectedPayment.remaining?.toLocaleString("fr-FR")} FCFA
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsViewPaymentDialogOpen(false)}>
-              Fermer
-            </Button>
-            {selectedPayment?.statut === "En attente" && (
-              <Button 
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => {
-                  handleConfirmPayment(selectedPayment.id);
-                  setIsViewPaymentDialogOpen(false);
-                }}
-              >
-                Confirmer le paiement
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Formation Students Dialog */}
-      <Dialog open={isFormationStudentsDialogOpen} onOpenChange={setIsFormationStudentsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Étudiants inscrits - {selectedFormationName}</DialogTitle>
-            <DialogDescription>
-              Liste des étudiants actuellement inscrits à cette formation.
+            <DialogTitle className="text-lg font-semibold">{editingId ? "Modifier l'étudiant" : "Ajouter un étudiant"}</DialogTitle>
+            <DialogDescription className="text-gray-500 text-sm">
+              {editingId ? "Mettre à jour les informations de l'étudiant" : "Créer un nouveau compte étudiant"}
             </DialogDescription>
           </DialogHeader>
-          
-          {isLoadingFormationStudents ? (
-            <div className="py-8 text-center text-muted-foreground">Chargement des étudiants...</div>
-          ) : formationStudents.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">Aucun étudiant inscrit à cette formation.</div>
-          ) : (
-            <Table className="min-w-[760px]">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead className="hidden md:table-cell">Email</TableHead>
-                  <TableHead>Matricule</TableHead>
-                  <TableHead className="hidden lg:table-cell">Date d'inscription</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {formationStudents.map((student) => (
-                  <TableRow key={student.id}>
-                    <TableCell className="font-medium">{student.name}</TableCell>
-                    <TableCell className="hidden md:table-cell">{student.email}</TableCell>
-                    <TableCell>{student.matricule}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{student.joined_at}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsFormationStudentsDialogOpen(false)}>
-              Fermer
-            </Button>
-          </DialogFooter>
+          <form onSubmit={handleCreateUser} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nom complet</Label>
+              <Input id="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value, role: 'student'})} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Téléphone</Label>
+              <Input id="phone" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
+            </div>
+            <div className="space-y-2">
+              <Label>Formation</Label>
+              <Select value={formData.formation_id.toString()} onValueChange={v => setFormData({...formData, formation_id: parseInt(v)})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une formation" />
+                </SelectTrigger>
+                <SelectContent>
+                  {formations.map(f => (
+                    <SelectItem key={f.id} value={f.id.toString()}>{f.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={isSubmitting} className="w-full bg-primary">
+                {isSubmitting ? "Opération..." : (editingId ? "Mettre à jour" : "Créer l'étudiant")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isTeacherDialogOpen} onOpenChange={(open) => { setIsTeacherDialogOpen(open); if(!open) resetForm(); }}>
+        <DialogContent className="max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">{editingId ? "Modifier l'enseignant" : "Ajouter un enseignant"}</DialogTitle>
+            <DialogDescription className="text-gray-500 text-sm">
+              {editingId ? "Mettre à jour les informations de l'enseignant" : "Créer un nouveau compte enseignant"}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateUser} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="t-name">Nom complet</Label>
+              <Input id="t-name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value, role: 'teacher'})} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="t-email">Email</Label>
+              <Input id="t-email" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="t-specialite">Spécialité</Label>
+              <Input id="t-specialite" value={formData.specialite} onChange={e => setFormData({...formData, specialite: e.target.value})} />
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={isSubmitting} className="w-full bg-secondary">
+                {isSubmitting ? "Opération..." : (editingId ? "Mettre à jour" : "Créer l'enseignant")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isFormationDialogOpen} onOpenChange={(open) => { setIsFormationDialogOpen(open); if(!open) resetForm(); }}>
+        <DialogContent className="max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">{editingId ? "Modifier la formation" : "Ajouter une formation"}</DialogTitle>
+            <DialogDescription className="text-gray-500 text-sm">
+              {editingId ? "Mettre à jour les détails de la formation" : "Créer une nouvelle formation"}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreateFormation} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="f-title">Titre de la formation</Label>
+              <Input id="f-title" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="f-desc">Description</Label>
+              <Textarea id="f-desc" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="f-price">Prix (FCFA)</Label>
+                <Input id="f-price" type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="f-dur">Durée</Label>
+                <Input id="f-dur" placeholder="ex: 6 mois" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} required />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={isSubmitting} className="w-full bg-secondary">
+                {isSubmitting ? "Opération..." : (editingId ? "Mettre à jour" : "Créer la formation")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Payment Dialog Button logic needed in overview or payments tab */}
+      <Dialog open={isPaymentDialogOpen} onOpenChange={(open) => { setIsPaymentDialogOpen(open); if(!open) resetForm(); }}>
+        <DialogContent className="max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">Enregistrer un paiement</DialogTitle>
+            <DialogDescription className="text-gray-500 text-sm">Saisir un nouveau paiement reçu</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreatePayment} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Étudiant</Label>
+              <Select value={formData.student_id.toString()} onValueChange={v => setFormData({...formData, student_id: parseInt(v)})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner l'étudiant" />
+                </SelectTrigger>
+                <SelectContent>
+                  {students.map(s => (
+                    <SelectItem key={s.id} value={s.id.toString()}>{s.name} ({s.formation_name})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="p-amount">Montant (FCFA)</Label>
+              <Input id="p-amount" type="number" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} required />
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={isSubmitting} className="w-full bg-emerald-600">{isSubmitting ? "Enregistrement..." : "Enregistrer le paiement"}</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
