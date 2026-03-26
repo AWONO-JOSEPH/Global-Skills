@@ -1,1 +1,3 @@
-POST https://global-skills.onrender.com/api/admin/users 504 (Gateway Timeout)
+Failed to load resource: the server responded with a status of 413 ()Understand this error
+global-skills.onrender.com/api/news:1  Failed to load resource: the server responded with a status of 413 ()Understand this error
+global-skills.onrender.com/api/news:1  Failed to load resource: the server responded with a status of 413 ()Understand this error

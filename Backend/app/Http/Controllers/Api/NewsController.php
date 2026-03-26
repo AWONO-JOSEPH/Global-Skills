@@ -45,8 +45,8 @@ class NewsController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'category' => ['required', 'string', 'max:100'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
-            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,wmv', 'max:20480'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:10240'],
+            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,wmv', 'max:32768'],
         ]);
 
         if ($request->hasFile('image')) {
@@ -78,8 +78,8 @@ class NewsController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'category' => ['required', 'string', 'max:100'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
-            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,wmv', 'max:20480'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:10240'],
+            'video' => ['nullable', 'file', 'mimes:mp4,mov,avi,wmv', 'max:32768'],
         ]);
 
         if ($request->hasFile('image')) {

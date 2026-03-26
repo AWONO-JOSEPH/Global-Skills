@@ -41,6 +41,9 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
 # Copier la config Nginx
 COPY nginx.conf /etc/nginx/sites-available/default
 
+# Copier la config PHP
+COPY php.ini /usr/local/etc/php/conf.d/custom.ini
+
 # Exposer le port
 EXPOSE 10000
 
