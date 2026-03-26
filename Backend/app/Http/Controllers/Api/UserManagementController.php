@@ -89,47 +89,50 @@ class UserManagementController extends Controller
 
         $tempPassword = Str::random(10);
 
-        $user = DB::transaction(function () use ($validated, $tempPassword) {
-            $user = User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
-                'role' => $validated['role'],
-                'formation_id' => $validated['formation_id'] ?? null,
-                'phone' => $validated['phone'] ?? null,
-                'password' => Hash::make($tempPassword),
-                'must_change_password' => true,
-            ]);
-
-            if ($user->role === 'student') {
-                \App\Models\Student::create([
-                    'user_id' => $user->id,
-                    'formation_id' => $user->formation_id,
-                    'matricule' => 'GS-' . strtoupper(Str::random(6)),
-                ]);
-            }
-
-            return $user;
-        });
-
-        // Always send email or at least try to
-        $shouldSendEmail = true;
-        $emailSent = false;
         try {
-            Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
-            $emailSent = true;
+            $user = DB::transaction(function () use ($validated, $tempPassword) {
+                $user = User::create([
+                    'name' => $validated['name'],
+                    'email' => $validated['email'],
+                    'role' => $validated['role'],
+                    'formation_id' => $validated['formation_id'] ?? null,
+                    'phone' => $validated['phone'] ?? null,
+                    'password' => Hash::make($tempPassword),
+                    'must_change_password' => true,
+                ]);
+
+                if ($user->role === 'student') {
+                    \App\Models\Student::create([
+                        'user_id' => $user->id,
+                        'formation_id' => $user->formation_id,
+                        'matricule' => 'GS-' . strtoupper(Str::random(6)),
+                    ]);
+                }
+
+                // Envoi du mail AVANT de confirmer la transaction
+                // Si l'envoi échoue, une exception sera levée et la transaction annulée (rollback)
+                Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
+
+                return $user;
+            });
+
+            return response()->json([
+                'user' => $user->load('formation:id,name'),
+                'temp_password' => null, // Plus besoin de le renvoyer car le mail est garanti ici
+                'email_sent' => true,
+            ], 201);
+
         } catch (\Throwable $e) {
-            Log::warning('AccountCreated email failed', [
-                'user_id' => $user->id,
-                'email' => $user->email,
+            Log::error('User creation failed due to email or database error', [
+                'email' => $validated['email'],
                 'error' => $e->getMessage(),
             ]);
-        }
 
-        return response()->json([
-            'user' => $user->load('formation:id,name'),
-            'temp_password' => $emailSent ? null : $tempPassword,
-            'email_sent' => $emailSent,
-        ], 201);
+            return response()->json([
+                'message' => 'Échec de la création du compte : l\'envoi de l\'e-mail de confirmation a échoué. Veuillez vérifier vos paramètres SMTP ou contacter le support.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function forgotPassword(Request $request): JsonResponse
@@ -142,29 +145,33 @@ class UserManagementController extends Controller
 
         $tempPassword = Str::random(10);
 
-        $user->update([
-            'password' => Hash::make($tempPassword),
-            'must_change_password' => true,
-        ]);
-
-        // Always try to send email
-        $emailSent = false;
         try {
-            Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
-            $emailSent = true;
+            DB::transaction(function () use ($user, $tempPassword) {
+                $user->update([
+                    'password' => Hash::make($tempPassword),
+                    'must_change_password' => true,
+                ]);
+
+                // Envoi du mail AVANT de confirmer la transaction
+                Mail::to($user->email)->send(new AccountCreated($user, $tempPassword));
+            });
+
+            return response()->json([
+                'message' => 'Un mot de passe temporaire a été envoyé à votre adresse email.',
+            ]);
+
         } catch (\Throwable $e) {
-            Log::warning('Forgot password email failed', [
+            Log::error('Forgot password failed', [
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'error' => $e->getMessage(),
             ]);
-        }
 
-        return response()->json([
-            'message' => $emailSent
-                ? 'Un mot de passe temporaire a été envoyé à votre adresse email.'
-                : 'Erreur lors de l\'envoi de l\'email. Contactez l\'administrateur.',
-        ]);
+            return response()->json([
+                'message' => 'Erreur lors de la réinitialisation : l\'envoi de l\'e-mail a échoué. Votre mot de passe n\'a pas été modifié.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function changePassword(Request $request): JsonResponse
