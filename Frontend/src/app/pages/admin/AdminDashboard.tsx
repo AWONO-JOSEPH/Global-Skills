@@ -1,6 +1,6 @@
 import { apiUrl } from "../../lib/api";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
@@ -44,6 +44,7 @@ import {
   X,
   Trash2,
   CheckCircle,
+  Camera,
 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Line, LineChart } from "recharts";
 import { getCurrentAuth, logout } from "../../auth";

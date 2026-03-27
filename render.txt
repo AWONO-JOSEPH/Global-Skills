@@ -1,6 +1,13 @@
-Ok créé a nouveau 3 utilisateur
-L'administrateur avec l'adresse mail: remilionara@gmail.com
-Le formateur avec l'adresse mail: axelnovasky@gmail.com
-Et l'étudiant avec l'adresse mail: rickymanfred884@gmail.com
-
-Tout en te rassurant que les mails sont partie avant de confirmer la creation des comptes 
+Unexpected Application Error!
+useRef is not defined
+ReferenceError: useRef is not defined
+    at Xoe (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:591:31206)
+    at ig (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:38:17820)
+    at m2 (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:44746)
+    at c2 (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:40334)
+    at pL (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:40262)
+    at yf (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:40115)
+    at kg (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:36398)
+    at i2 (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:35346)
+    at _ (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:25:1598)
+    at MessagePort.F (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:25:1964)

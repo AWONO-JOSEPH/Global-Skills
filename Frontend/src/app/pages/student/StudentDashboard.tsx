@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { toast } from "sonner";
 import {
   GraduationCap, DollarSign, Calendar, FileText, Download,
-  Bell, BookOpen, Award, LogOut, User, CheckCircle, Clock, Settings, Menu, X,
+  Bell, BookOpen, Award, LogOut, User, CheckCircle, Clock, Settings, Menu, X, Camera,
 } from "lucide-react";
 import logo from "../../../assets/84498a56cb9356abc2f9404869c93b519e727718.png";
 import { getCurrentAuth, logout } from "../../auth";
