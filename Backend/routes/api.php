@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AdminOverviewController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\FormationController;
@@ -7,157 +8,109 @@ use App\Http\Controllers\Api\InternationalRequestController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\StudentControllerSimple;
 use App\Http\Controllers\Api\TeacherController;
 use App\Http\Controllers\Api\TeacherFormationController;
 use App\Http\Controllers\Api\UserManagementController;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', function (Request $request) {
-    $validated = $request->validate([
-        'email' => ['required', 'string', 'email'],
-        'password' => ['required', 'string', 'min:4'],
-        'role' => ['required', 'string', 'in:student,teacher,admin'],
-    ]);
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/me', [AuthController::class, 'me'])->middleware('auth:sanctum');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
-    $user = User::where('email', $validated['email'])->first();
+// Public endpoints
+Route::get('/test', fn () => response()->json(['message' => 'API works!']));
+Route::get('/simple-test', fn () => response()->json(['status' => 'ok']));
+Route::get('/ping', fn () => response()->json(['status' => 'ok', 'timestamp' => now()]));
 
-    if ($validated['email'] === 'manuemma648@gmail.com') {
-        $user = User::where('email', $validated['email'])->first();
-        if ($user) {
-            return response()->json([
-                'message' => 'Login successful (test bypass)',
-                'user' => [
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                    'must_change_password' => $user->must_change_password,
-                ],
-                'token' => 'demo-token',
-            ]);
-        }
-    }
-
-    if (! $user || ! Hash::check($validated['password'], $user->password)) {
-        return response()->json([
-            'message' => 'Identifiants incorrects.',
-        ], 422);
-    }
-
-    if ($user->role !== $validated['role']) {
-        return response()->json([
-            'message' => "Ce compte n'est pas autorisé pour ce type d'accès.",
-        ], 403);
-    }
-
-    return response()->json([
-        'message' => 'Login successful',
-        'user' => [
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
-            'must_change_password' => $user->must_change_password,
-        ],
-        'token' => 'demo-token',
-    ]);
-});
-
-Route::apiResource('news', NewsController::class)->only(['index', 'store', 'update', 'destroy', 'show']);
-
-// Program tracking routes
-Route::get('/program-trackings', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'index']);
-Route::post('/program-trackings', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'store']);
-Route::put('/program-trackings/{programTracking}', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'update']);
-Route::delete('/program-trackings/{programTracking}', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'destroy']);
-Route::post('/program-trackings/{programTracking}/sign', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'sign']);
-
-Route::get('/profile', [ProfileController::class, 'show']);
-Route::put('/profile', [ProfileController::class, 'update']);
-Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto']);
-
-// Test endpoint
-Route::get('/test', function () {
-    return response()->json(['message' => 'API works!']);
-});
-
-// Simple test endpoint
-Route::get('/simple-test', function () {
-    return response()->json(['status' => 'ok']);
-});
-
-// Route de ping pour cron-job.org
-Route::get('/ping', function () {
-    return response()->json(['status' => 'ok', 'timestamp' => now()]);
-});
-
-// Teacher routes
-Route::prefix('teacher')->group(function () {
-    Route::get('/profile', [TeacherController::class, 'profile']);
-    Route::get('/formations', [TeacherController::class, 'formations']);
-    Route::post('/presence', [TeacherController::class, 'savePresence']);
-    Route::post('/notes', [TeacherController::class, 'saveNotes']);
-    Route::post('/profile-picture', [TeacherController::class, 'uploadProfilePicture']);
-});
-
-// Student routes
-Route::prefix('student')->group(function () {
-    Route::get('/test', function () {
-        return response()->json(['message' => 'Student API works!']);
-    });
-    Route::get('/profile', [StudentControllerSimple::class, 'profile']);
-    Route::get('/formations', [StudentControllerSimple::class, 'formations']);
-    Route::get('/paiements', [StudentControllerSimple::class, 'paiements']);
-    Route::get('/calendrier', [StudentControllerSimple::class, 'calendrier']);
-    Route::get('/documents', [StudentControllerSimple::class, 'documents']);
-    Route::get('/notifications', [StudentControllerSimple::class, 'notifications']);
-    Route::get('/notes', [StudentControllerSimple::class, 'notes']);
-    Route::get('/overview', [StudentControllerSimple::class, 'overview']);
-    Route::post('/profile-picture', [StudentControllerSimple::class, 'uploadProfilePicture']);
-});
-
-// Temporary test route for student formations
-
-
-Route::get('/formation/{formation}/students', [TeacherController::class, 'formationStudents']);
-Route::put('/students/{student}', [TeacherController::class, 'updateStudent']);
-
-Route::post('/admin/users', [UserManagementController::class, 'store']);
-Route::get('/admin/students', [UserManagementController::class, 'indexStudents']);
-Route::put('/admin/students/{user}', [UserManagementController::class, 'updateStudent']);
-Route::delete('/admin/students/{user}', [UserManagementController::class, 'destroyStudent']);
-Route::get('/admin/teachers', [UserManagementController::class, 'indexTeachers']);
-Route::put('/admin/teachers/{user}', [UserManagementController::class, 'updateTeacher']);
-Route::delete('/admin/teachers/{user}', [UserManagementController::class, 'destroyTeacher']);
+Route::apiResource('news', NewsController::class)->only(['index', 'show']);
+Route::post('/international-requests', [InternationalRequestController::class, 'store']);
+Route::post('/contact-messages', [ContactMessageController::class, 'store']);
 Route::post('/forgot-password', [UserManagementController::class, 'forgotPassword']);
 Route::post('/change-password', [UserManagementController::class, 'changePassword']);
 
-Route::get('/admin/overview', AdminOverviewController::class);
-Route::get('/admin/notifications/count', [AdminOverviewController::class, 'getNotificationsCount']);
-Route::get('/admin/reports/annual', [ReportController::class, 'generateAnnualReport']);
-Route::get('/admin/reports/tracking', [ReportController::class, 'generateTrackingReport']);
+// Authenticated (any role)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto']);
 
-Route::get('/admin/formations', [FormationController::class, 'index']);
-Route::post('/admin/formations', [FormationController::class, 'store']);
-Route::put('/admin/formations/{formation}', [FormationController::class, 'update']);
-Route::delete('/admin/formations/{formation}', [FormationController::class, 'destroy']);
-Route::get('/admin/formations/{formation}/students', [FormationController::class, 'students']);
+    // Program tracking routes (teacher/admin)
+    Route::middleware('role:teacher,admin')->group(function () {
+        Route::get('/program-trackings', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'index']);
+        Route::post('/program-trackings', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'store']);
+        Route::put('/program-trackings/{programTracking}', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'update']);
+        Route::delete('/program-trackings/{programTracking}', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'destroy']);
+    });
+    Route::post('/program-trackings/{programTracking}/sign', [\App\Http\Controllers\Api\ProgramTrackingController::class, 'sign'])
+        ->middleware('role:admin');
 
-Route::get('/admin/payments', [PaymentController::class, 'index']);
-Route::post('/admin/payments', [PaymentController::class, 'store']);
-Route::post('/admin/payments/{payment}/confirm', [PaymentController::class, 'confirm']);
+    // Teacher routes
+    Route::prefix('teacher')->middleware('role:teacher')->group(function () {
+        Route::get('/profile', [TeacherController::class, 'profile']);
+        Route::get('/formations', [TeacherController::class, 'formations']);
+        Route::post('/presence', [TeacherController::class, 'savePresence']);
+        Route::post('/notes', [TeacherController::class, 'saveNotes']);
+        Route::post('/profile-picture', [TeacherController::class, 'uploadProfilePicture']);
+    });
 
-Route::post('/international-requests', [InternationalRequestController::class, 'store']);
-Route::get('/admin/international-requests', [InternationalRequestController::class, 'index']);
-Route::get('/admin/international-requests/{internationalRequest}', [InternationalRequestController::class, 'show']);
-Route::put('/admin/international-requests/{internationalRequest}/status', [InternationalRequestController::class, 'updateStatus']);
-Route::delete('/admin/international-requests/{internationalRequest}', [InternationalRequestController::class, 'destroy']);
+    // Teacher endpoints used by the existing frontend routes
+    Route::middleware('role:teacher')->group(function () {
+        Route::get('/formation/{formation}/students', [TeacherController::class, 'formationStudents']);
+        Route::put('/students/{student}', [TeacherController::class, 'updateStudent']);
+    });
 
-Route::post('/contact-messages', [ContactMessageController::class, 'store']);
-Route::get('/admin/contact-messages', [ContactMessageController::class, 'index']);
-Route::get('/admin/contact-messages/{contactMessage}', [ContactMessageController::class, 'show']);
-Route::put('/admin/contact-messages/{contactMessage}/status', [ContactMessageController::class, 'updateStatus']);
-Route::delete('/admin/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy']);
+    // Student routes
+    Route::prefix('student')->middleware('role:student')->group(function () {
+        Route::get('/test', fn () => response()->json(['message' => 'Student API works!']));
+        Route::get('/profile', [StudentControllerSimple::class, 'profile']);
+        Route::get('/formations', [StudentControllerSimple::class, 'formations']);
+        Route::get('/paiements', [StudentControllerSimple::class, 'paiements']);
+        Route::get('/calendrier', [StudentControllerSimple::class, 'calendrier']);
+        Route::get('/documents', [StudentControllerSimple::class, 'documents']);
+        Route::get('/notifications', [StudentControllerSimple::class, 'notifications']);
+        Route::get('/notes', [StudentControllerSimple::class, 'notes']);
+        Route::get('/overview', [StudentControllerSimple::class, 'overview']);
+        Route::post('/profile-picture', [StudentControllerSimple::class, 'uploadProfilePicture']);
+    });
+
+    // Admin routes
+    Route::prefix('admin')->middleware('role:admin')->group(function () {
+        Route::post('/users', [UserManagementController::class, 'store']);
+        Route::get('/students', [UserManagementController::class, 'indexStudents']);
+        Route::put('/students/{user}', [UserManagementController::class, 'updateStudent']);
+        Route::delete('/students/{user}', [UserManagementController::class, 'destroyStudent']);
+        Route::get('/teachers', [UserManagementController::class, 'indexTeachers']);
+        Route::put('/teachers/{user}', [UserManagementController::class, 'updateTeacher']);
+        Route::delete('/teachers/{user}', [UserManagementController::class, 'destroyTeacher']);
+
+        Route::get('/overview', AdminOverviewController::class);
+        Route::get('/notifications/count', [AdminOverviewController::class, 'getNotificationsCount']);
+        Route::get('/reports/annual', [ReportController::class, 'generateAnnualReport']);
+        Route::get('/reports/tracking', [ReportController::class, 'generateTrackingReport']);
+
+        Route::get('/formations', [FormationController::class, 'index']);
+        Route::post('/formations', [FormationController::class, 'store']);
+        Route::put('/formations/{formation}', [FormationController::class, 'update']);
+        Route::delete('/formations/{formation}', [FormationController::class, 'destroy']);
+        Route::get('/formations/{formation}/students', [FormationController::class, 'students']);
+
+        Route::get('/payments', [PaymentController::class, 'index']);
+        Route::post('/payments', [PaymentController::class, 'store']);
+        Route::post('/payments/{payment}/confirm', [PaymentController::class, 'confirm']);
+
+        Route::get('/international-requests', [InternationalRequestController::class, 'index']);
+        Route::get('/international-requests/{internationalRequest}', [InternationalRequestController::class, 'show']);
+        Route::put('/international-requests/{internationalRequest}/status', [InternationalRequestController::class, 'updateStatus']);
+        Route::delete('/international-requests/{internationalRequest}', [InternationalRequestController::class, 'destroy']);
+
+        Route::get('/contact-messages', [ContactMessageController::class, 'index']);
+        Route::get('/contact-messages/{contactMessage}', [ContactMessageController::class, 'show']);
+        Route::put('/contact-messages/{contactMessage}/status', [ContactMessageController::class, 'updateStatus']);
+        Route::delete('/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy']);
+
+        Route::apiResource('news', NewsController::class)->only(['store', 'update', 'destroy']);
+    });
+});
 

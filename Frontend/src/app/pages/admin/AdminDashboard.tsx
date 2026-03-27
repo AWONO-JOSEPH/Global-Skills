@@ -85,6 +85,10 @@ type FormationRow = {
   description?: string;
   duration?: string;
   price?: number;
+  registration_fee?: number;
+  category?: string;
+  level?: string;
+  certification?: string;
 };
 
 type PaymentRow = {
@@ -128,12 +132,33 @@ export default function AdminDashboard() {
   const [payments, setPayments] = useState<PaymentRow[]>([]);
   const [trackings, setTrackings] = useState<ProgramTracking[]>([]);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
   const [isLoadingFormations, setIsLoadingFormations] = useState(false);
   const [isLoadingPayments, setIsLoadingPayments] = useState(false);
   const [isLoadingTrackings, setIsLoadingTrackings] = useState(false);
   const [isLoadingOverview, setIsLoadingOverview] = useState(false);
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('photo', file);
+    try {
+      const auth = getCurrentAuth();
+      if (!auth) return;
+      formData.append('email', auth.email);
+      const response = await fetch(apiUrl("/api/profile/photo"), { method: 'POST', body: formData });
+      if (response.ok) { 
+        const data = await response.json(); 
+        setStats((prev: any) => prev ? { ...prev, photo: data.photo } : null); 
+        toast.success("Photo de profil mise à jour avec succès"); 
+      }
+      else toast.error("Erreur lors du téléchargement de la photo");
+    } catch { toast.error("Erreur de connexion"); }
+  };
 
   const loadOverview = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingOverview(true);
@@ -210,14 +235,26 @@ export default function AdminDashboard() {
       return;
     }
 
-    loadAllData();
+    // Load only data for the initial active tab
+    if (activeTab === "overview") loadOverview();
+    else if (activeTab === "students") loadStudents();
+    else if (activeTab === "teachers") loadTeachers();
+    else if (activeTab === "formations") loadFormations();
+    else if (activeTab === "payments") loadPayments();
+    else if (activeTab === "tracking") loadTrackings();
 
     const interval = setInterval(() => {
-      loadAllData(true);
+      // Background refresh only for current tab
+      if (activeTab === "overview") loadOverview(true);
+      else if (activeTab === "students") loadStudents(true);
+      else if (activeTab === "teachers") loadTeachers(true);
+      else if (activeTab === "formations") loadFormations(true);
+      else if (activeTab === "payments") loadPayments(true);
+      else if (activeTab === "tracking") loadTrackings(true);
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [navigate, loadAllData]);
+  }, [navigate, activeTab, loadOverview, loadStudents, loadTeachers, loadFormations, loadPayments, loadTrackings]);
 
   const handleDeleteStudent = async (studentId: number) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cet étudiant ?")) return;
@@ -305,6 +342,10 @@ export default function AdminDashboard() {
     description: "",
     price: "",
     duration: "",
+    registration_fee: "",
+    category: "",
+    level: "",
+    certification: "",
     amount: "",
     student_id: "" as number | "",
   });
@@ -318,6 +359,7 @@ export default function AdminDashboard() {
       name: "", email: "", phone: "", role: "student",
       formation_id: "", specialite: "",
       title: "", description: "", price: "", duration: "",
+      registration_fee: "", category: "", level: "", certification: "",
       amount: "", student_id: "",
     });
   };
@@ -368,7 +410,11 @@ export default function AdminDashboard() {
           name: formData.title,
           description: formData.description,
           price: formData.price,
+          registration_fee: formData.registration_fee || 25000,
           duration: formData.duration,
+          category: formData.category,
+          level: formData.level,
+          certification: formData.certification,
         }),
       });
       if (response.ok) {
@@ -385,13 +431,14 @@ export default function AdminDashboard() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
+      const student = students.find(s => s.id === formData.student_id);
       const response = await fetch(apiUrl("/api/admin/payments"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           user_id: formData.student_id,
           amount: formData.amount,
-          formation_id: students.find(s => s.id === formData.student_id)?.formation_id,
+          formation_id: student?.formation_id,
         }),
       });
       if (response.ok) {
@@ -400,9 +447,27 @@ export default function AdminDashboard() {
         resetForm();
         loadPayments(true);
         loadOverview(true);
-      } else throw new Error();
-    } catch { toast.error("Erreur lors de l'enregistrement."); }
+      } else {
+        const err = await response.json();
+        toast.error(err.message || "Erreur lors de l'enregistrement.");
+      }
+    } catch { toast.error("Erreur de connexion."); }
     finally { setIsSubmitting(false); }
+  };
+
+  const handleSignTracking = async (id: number) => {
+    try {
+      const auth = getCurrentAuth();
+      if (!auth) return;
+      const response = await fetch(apiUrl(`/api/program-trackings/${id}/sign?email=${encodeURIComponent(auth.email)}`), {
+        method: "POST",
+        headers: { Accept: "application/json" },
+      });
+      if (response.ok) {
+        setTrackings(prev => prev.map(t => t.id === id ? { ...t, admin_signed_at: new Date().toISOString() } : t));
+        toast.success("Fiche de suivi signée.");
+      } else throw new Error();
+    } catch { toast.error("Erreur lors de la signature."); }
   };
 
   const handleEditStudent = (student: StudentRow) => {
@@ -413,7 +478,7 @@ export default function AdminDashboard() {
       email: student.email,
       phone: student.phone || "",
       role: "student",
-      formation_id: students.find(s => s.id === student.id)?.formation_id || "",
+      formation_id: student.formation_id || "",
     });
     setIsStudentDialogOpen(true);
   };
@@ -478,14 +543,45 @@ export default function AdminDashboard() {
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0">
-            <div className="h-9 w-9 bg-white/15 rounded-xl flex items-center justify-center border border-white/20">
-              <span className="text-white font-bold text-sm tracking-wide">GS</span>
+            <div className="relative flex-shrink-0 group">
+              <img
+                src={stats?.photo || `https://ui-avatars.com/api/?name=Admin&background=1e3a8a&color=fff`}
+                alt="Admin"
+                className="h-9 w-9 rounded-xl object-cover cursor-pointer border border-white/20 hover:opacity-90 transition-opacity"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const img = new Image();
+                  img.src = stats?.photo || '';
+                  img.onload = () => {
+                    const modal = document.createElement('div');
+                    modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
+                    modal.onclick = () => modal.remove();
+                    const modalImg = document.createElement('img');
+                    modalImg.src = img.src;
+                    modalImg.className = 'max-w-full max-h-full rounded-2xl';
+                    modal.appendChild(modalImg);
+                    document.body.appendChild(modal);
+                  };
+                }}
+              />
+              <button 
+                onClick={(e) => { e.preventDefault(); fileInputRef.current?.click(); }}
+                className="absolute -bottom-1 -right-1 h-4 w-4 bg-white rounded-md shadow-sm border border-gray-100 flex items-center justify-center text-gray-500 hover:text-primary transition-colors"
+              >
+                <Camera className="h-2 w-2" />
+              </button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handlePhotoUpload} 
+                className="hidden" 
+                accept="image/*" 
+              />
             </div>
             <div className="hidden sm:block leading-tight">
               <p className="text-white font-bold text-sm tracking-wider">GLOBAL SKILLS</p>
               <p className="text-white/60 text-[10px] uppercase tracking-widest">Administration</p>
             </div>
-            <p className="sm:hidden text-white font-bold text-sm tracking-widest">ADMIN</p>
           </Link>
 
           {/* Desktop nav */}
@@ -1005,22 +1101,53 @@ export default function AdminDashboard() {
                       {formations.map((f) => (
                         <div key={f.id} className="border border-gray-100 rounded-xl p-4 hover:shadow-md hover:border-gray-200 transition-all duration-200 flex flex-col gap-3">
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="font-semibold text-gray-900 text-sm leading-snug">{f.name}</h4>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 text-sm leading-snug">{f.name}</h4>
+                              {f.category && (
+                                <span className="text-[10px] font-semibold text-gray-500 bg-gray-50 px-2 py-1 rounded-full inline-block mt-1">
+                                  {f.category}
+                                </span>
+                              )}
+                            </div>
                             <span className="text-[10px] font-semibold text-secondary bg-secondary/8 px-2 py-1 rounded-full flex-shrink-0">{f.duration || 'N/A'}</span>
                           </div>
                           <p className="text-xs text-gray-400 line-clamp-2 flex-1">{f.description || 'Aucune description'}</p>
-                          <div className="flex items-center justify-between pt-1 border-t border-gray-50">
-                            <span className="text-sm font-semibold text-gray-700">
-                              {f.price ? f.price.toLocaleString() + ' FCFA' : 'Gratuit'}
-                            </span>
-                            <div className="flex gap-2">
-                              <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-gray-100 hover:border-secondary/30 hover:bg-secondary/5" onClick={() => handleEditFormation(f)}>
-                                Modifier
-                              </Button>
-                              <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-red-100 text-red-600 hover:bg-red-50" onClick={() => handleDeleteFormation(f.id)}>
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                          
+                          {/* Tarifs détaillés */}
+                          <div className="space-y-2 pt-1 border-t border-gray-50">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-gray-500">Coût formation:</span>
+                              <span className="text-sm font-bold text-gray-900">
+                                {f.price ? f.price.toLocaleString() + ' FCFA' : '—'}
+                              </span>
                             </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-gray-500">Frais inscription:</span>
+                              <span className="text-sm font-semibold text-orange-600">
+                                {f.registration_fee ? f.registration_fee.toLocaleString() + ' FCFA' : '25 000 FCFA'}
+                              </span>
+                            </div>
+                            {f.level && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-500">Niveau:</span>
+                                <span className="text-xs font-semibold text-gray-700 bg-gray-50 px-2 py-0.5 rounded">{f.level}</span>
+                              </div>
+                            )}
+                            {f.certification && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-gray-500">Certification:</span>
+                                <span className="text-xs font-semibold text-primary bg-primary/8 px-2 py-0.5 rounded">{f.certification}</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex gap-2 mt-auto pt-1">
+                            <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-gray-100 hover:border-secondary/30 hover:bg-secondary/5 flex-1" onClick={() => handleEditFormation(f)}>
+                              Modifier
+                            </Button>
+                            <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg border-red-100 text-red-600 hover:bg-red-50" onClick={() => handleDeleteFormation(f.id)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         </div>
                       ))}
@@ -1172,11 +1299,24 @@ export default function AdminDashboard() {
                           <TableBody>
                             {trackings.map((t) => (
                               <TableRow key={t.id} className="border-gray-50 hover:bg-gray-50/50 transition-colors">
-                                <TableCell className="font-medium text-gray-900 text-sm">{t.formation_name}</TableCell>
+                                <TableCell className="font-medium text-gray-900 text-sm">{t.formation?.name}</TableCell>
                                 <TableCell className="text-gray-500 text-sm hidden md:table-cell">{t.subject}</TableCell>
-                                <TableCell className="text-gray-500 text-sm">{t.date}</TableCell>
+                                <TableCell className="text-gray-500 text-sm">{new Date(t.date).toLocaleDateString()}</TableCell>
                                 <TableCell className="text-right">
-                                  <span className="text-[10px] font-semibold text-accent bg-accent/8 px-2.5 py-1 rounded-full">{t.status || 'Complété'}</span>
+                                  {t.admin_signed_at ? (
+                                    <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 flex items-center gap-1 justify-end">
+                                      <CheckCircle className="h-3 w-3" /> Signé
+                                    </span>
+                                  ) : (
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      className="h-7 text-[10px] border-amber-200 text-amber-700 hover:bg-amber-50"
+                                      onClick={() => handleSignTracking(t.id)}
+                                    >
+                                      Signer
+                                    </Button>
+                                  )}
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -1331,15 +1471,79 @@ export default function AdminDashboard() {
               <Label htmlFor="f-desc">Description</Label>
               <Textarea id="f-desc" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="f-category">Catégorie</Label>
+              <Select value={formData.category || ""} onValueChange={v => setFormData({...formData, category: v})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner une catégorie" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Formations générales">Formations générales</SelectItem>
+                  <SelectItem value="Formations fortement liées à l'informatique">Formations fortement liées à l'informatique</SelectItem>
+                  <SelectItem value="Formations purement informatiques">Formations purement informatiques</SelectItem>
+                  <SelectItem value="Formations en langues">Formations en langues</SelectItem>
+                  <SelectItem value="Auto-école">Auto-école</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="f-price">Prix (FCFA)</Label>
                 <Input id="f-price" type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="f-dur">Durée</Label>
-                <Input id="f-dur" placeholder="ex: 6 mois" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} required />
+                <Label htmlFor="f-registration">Frais d'inscription (FCFA)</Label>
+                <Input id="f-registration" type="number" value={formData.registration_fee || "25000"} onChange={e => setFormData({...formData, registration_fee: e.target.value})} />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="f-dur">Durée</Label>
+                <Input id="f-dur" placeholder="ex: 12 mois" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="f-level">Niveau</Label>
+                <Select value={formData.level || ""} onValueChange={v => setFormData({...formData, level: v})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner le niveau" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A1">A1 (débutant)</SelectItem>
+                    <SelectItem value="A2">A2</SelectItem>
+                    <SelectItem value="B1">B1</SelectItem>
+                    <SelectItem value="B2">B2</SelectItem>
+                    <SelectItem value="C1">C1</SelectItem>
+                    <SelectItem value="C2">C2</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="f-certification">Certification</Label>
+              <Select value={formData.certification || ""} onValueChange={v => setFormData({...formData, certification: v})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sélectionner la certification" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DQP">DQP (Diplôme de Qualification Professionnelle)</SelectItem>
+                  <SelectItem value="CQP">CQP (Certificat de Qualification Professionnelle)</SelectItem>
+                  <SelectItem value="GOETHE">GOETHE</SelectItem>
+                  <SelectItem value="ECL">ECL</SelectItem>
+                  <SelectItem value="ÖSD">ÖSD</SelectItem>
+                  <SelectItem value="IELTS">IELTS</SelectItem>
+                  <SelectItem value="TOEFL">TOEFL</SelectItem>
+                  <SelectItem value="TOEIC">TOEIC</SelectItem>
+                  <SelectItem value="CIMA">CIMA</SelectItem>
+                  <SelectItem value="DELE">DELE</SelectItem>
+                  <SelectItem value="TCF">TCF</SelectItem>
+                  <SelectItem value="TEF">TEF</SelectItem>
+                  <SelectItem value="DALF">DALF</SelectItem>
+                  <SelectItem value="DELF">DELF</SelectItem>
+                  <SelectItem value="CILS">CILS</SelectItem>
+                  <SelectItem value="CELI">CELI</SelectItem>
+                  <SelectItem value="TORFL">TORFL</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <DialogFooter>
               <Button type="submit" disabled={isSubmitting} className="w-full bg-secondary">

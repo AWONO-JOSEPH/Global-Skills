@@ -110,6 +110,13 @@ class NewsController extends Controller
 
     public function destroy(News $news): JsonResponse
     {
+        if ($news->image) {
+            Storage::disk('public')->delete($news->image);
+        }
+        if ($news->video) {
+            Storage::disk('public')->delete($news->video);
+        }
+
         $news->delete();
 
         return response()->json(['message' => 'Deleted'], 204);

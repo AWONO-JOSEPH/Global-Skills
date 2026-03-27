@@ -56,8 +56,9 @@ export default function Settings() {
     const loadProfile = async () => {
       try {
         const response = await fetch(
-          apiUrl(`/api/profile?email=${encodeURIComponent(auth.email)}`),
+          apiUrl(`/api/profile`),
           {
+            credentials: "include",
             headers: {
               Accept: "application/json",
             },
@@ -119,12 +120,11 @@ export default function Settings() {
     try {
       const auth = getCurrentAuth();
       if (!auth) return;
-
-      formData.append('email', auth.email);
       const endpoint = '/api/profile/photo';
       
       const response = await fetch(apiUrl(endpoint), {
         method: 'POST',
+        credentials: "include",
         body: formData,
       });
 
@@ -147,6 +147,7 @@ export default function Settings() {
     try {
       const response = await fetch(apiUrl("/api/profile"), {
         method: "PUT",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -154,7 +155,6 @@ export default function Settings() {
         body: JSON.stringify({
           first_name: personalInfo.firstName,
           last_name: personalInfo.lastName,
-          email: personalInfo.email,
           phone: personalInfo.phone,
         }),
       });

@@ -7,19 +7,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
-use App\Models\User;
 
 class StudentControllerSimple extends Controller
 {
     private function getStudent(Request $request)
     {
         $user = Auth::user();
-        if (!$user) {
-            $email = $request->query('email');
-            if ($email) {
-                $user = User::where('email', $email)->first();
-            }
-        }
         return ($user && $user->role === 'student') ? $user : null;
     }
 

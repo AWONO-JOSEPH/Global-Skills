@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Formation;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -16,12 +15,6 @@ class TeacherController extends Controller
     private function getTeacher(Request $request)
     {
         $user = Auth::user();
-        if (!$user) {
-            $email = $request->query('email') ?? $request->input('email');
-            if ($email) {
-                $user = User::where('email', $email)->first();
-            }
-        }
         return ($user && $user->role === 'teacher') ? $user : null;
     }
 

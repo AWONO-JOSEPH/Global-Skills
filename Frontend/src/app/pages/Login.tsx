@@ -32,8 +32,12 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
+      // Sanctum SPA auth requires CSRF cookie first (session-based, httpOnly cookies).
+      await fetch(apiUrl("/sanctum/csrf-cookie"), { credentials: "include" });
+
       const response = await fetch(apiUrl("/api/login"), {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -51,7 +55,6 @@ export default function Login() {
       }
 
       const data = await response.json();
-      localStorage.setItem("gs_token", data.token ?? "");
       localStorage.setItem("gs_role", data.user?.role ?? role);
       if (data.user?.email) {
         localStorage.setItem("gs_email", data.user.email);

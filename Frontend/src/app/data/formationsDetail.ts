@@ -59,10 +59,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 1,
     title: "QHSE",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Maîtrisez les systèmes de management Qualité, Hygiène, Sécurité et Environnement pour garantir la conformité et la performance des organisations.",
@@ -105,10 +105,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 2,
     title: "Douane et Transit",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Acquérez les compétences nécessaires pour gérer les opérations douanières, le transit international et la réglementation du commerce extérieur.",
@@ -151,10 +151,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 3,
     title: "Logistique et Transport",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Formez-vous à la gestion de la chaîne logistique, du transport de marchandises et de l'optimisation des flux pour les entreprises.",
@@ -197,10 +197,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 4,
     title: "Entrepreneuriat",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Développez les compétences essentielles pour créer, lancer et gérer votre propre entreprise avec succès.",
@@ -243,10 +243,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 5,
     title: "Gestion des Projets",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Maîtrisez les méthodes et outils de gestion de projets pour planifier, exécuter et livrer des projets dans les délais et budgets impartis.",
@@ -289,10 +289,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 6,
     title: "Comptabilité Informatisée",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Maîtrisez la comptabilité générale et analytique avec les logiciels spécialisés utilisés par les entreprises modernes.",
@@ -335,10 +335,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 7,
     title: "Fiscalité",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Acquérez une expertise en droit fiscal, gestion des impôts et déclarations fiscales pour accompagner les entreprises dans leurs obligations.",
@@ -381,10 +381,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 8,
     title: "Marketing Digital",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_DIGITAL,
     description:
       "Maîtrisez les stratégies et outils du marketing digital pour développer la présence en ligne des entreprises et booster leur croissance.",
@@ -436,10 +436,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 9,
     title: "Secrétariat Bureautique",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Formez-vous aux métiers du secrétariat et de la bureautique pour assurer la gestion administrative et organisationnelle des entreprises.",
@@ -482,10 +482,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 10,
     title: "Secrétariat Comptable",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Combinez les compétences de secrétariat et de comptabilité pour assurer la gestion administrative et financière des entreprises.",
@@ -528,10 +528,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 11,
     title: "Secrétariat de Direction",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_PRO,
     description:
       "Devenez un assistant de direction efficace, capable de gérer les activités d'un dirigeant et de coordonner les équipes.",
@@ -574,10 +574,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 12,
     title: "Développeur d'Application",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_DIGITAL,
     description:
       "Apprenez à concevoir et développer des applications web et mobiles modernes adaptées aux besoins des entreprises.",
@@ -629,10 +629,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 13,
     title: "Graphisme de Production",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_DIGITAL,
     description:
       "Maîtrisez les outils de design graphique et de production visuelle pour créer des supports de communication percutants.",
@@ -675,10 +675,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 14,
     title: "Maintenance des Réseaux",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_DIGITAL,
     description:
       "Formez-vous à l'installation, la configuration et la maintenance des réseaux informatiques et des systèmes d'information.",
@@ -721,10 +721,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 15,
     title: "Montage Audiovisuel",
-    category: "Formation Professionnelle 14 mois",
-    duration: "14 mois",
+    category: "Formation Professionnelle 12 mois",
+    duration: "12 mois",
     price: "À partir de 150,000 FCFA",
-    level: "Tous niveaux",
+    level: "baccalaureat/GCE A level",
     image: IMG_DIGITAL,
     description:
       "Maîtrisez les techniques de montage vidéo et de production audiovisuelle pour créer des contenus professionnels de qualité.",
@@ -767,13 +767,13 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 101,
     title: "Langues Internationales",
-    category: "Formation Courte Durée 4 mois",
-    duration: "4 mois",
-    price: "À partir de 50,000 FCFA",
-    level: "Tous niveaux",
+    category: "Formation Courte Durée 12 mois",
+    duration: "12 mois",
+    price: "Voir détails par langue",
+    level: "baccalaureat/GCE A level",
     image: IMG_LANG,
     description:
-      "Perfectionnez votre niveau de langues étrangères (allemand, anglais, arabe, chinois, français, espagnol, italien, russe) pour booster votre carrière à l'international.",
+      "Perfectionnez votre niveau de langues étrangères pour booster votre carrière à l'international avec des certifications reconnues.",
     objectifs: [
       "Améliorer la compréhension orale et écrite",
       "Renforcer l'expression orale et la fluidité",
@@ -783,14 +783,65 @@ export const formationsDetail: FormationDetailItem[] = [
     ],
     programme: [
       {
-        phase: "Modules principaux",
+        phase: "🇩🇪 Allemand",
         modules: [
-          "Compréhension orale",
-          "Expression orale",
-          "Lecture et compréhension écrite",
-          "Écriture et rédaction",
-          "Vocabulaire professionnel",
-          "Grammaire et syntaxe",
+          "Niveaux A1 → C2 disponibles",
+          "Inscription : 20 000 FCFA",
+          "Prix par niveau :",
+          "• A1 : 100 000 FCFA",
+          "• A2 : 110 000 FCFA",
+          "• B1 : 115 000 FCFA",
+          "• B2 : 120 000 FCFA",
+          "• C1 : 130 000 FCFA",
+          "• C2 (Préparation) : 120 000 + 10 000 FCFA",
+          "Certifications : GOETHE, ECL, ÖSD",
+        ],
+      },
+      {
+        phase: "🇬🇧 Anglais",
+        modules: [
+          "A1 (débutant) : 35 000 FCFA + 10 000 FCFA inscription",
+          "Préparations aux certifications :",
+          "• IELTS",
+          "• TOEFL",
+          "• TOEIC",
+        ],
+      },
+      {
+        phase: "🇸🇦 Arabe",
+        modules: [
+          "Programme : CIMA",
+        ],
+      },
+      {
+        phase: "🇨🇳 Chinois",
+        modules: [
+          "Programme : Mandarin",
+        ],
+      },
+      {
+        phase: "🇪🇸 Espagnol",
+        modules: [
+          "Niveaux A1 → C2 disponibles",
+          "Certification : DELE",
+        ],
+      },
+      {
+        phase: "🇫🇷 Français",
+        modules: [
+          "Certifications : TCF, TEF, DALF, DELF",
+        ],
+      },
+      {
+        phase: "🇮🇹 Italien",
+        modules: [
+          "Certifications : CILS, CELI",
+        ],
+      },
+      {
+        phase: "🇷🇺 Russe",
+        modules: [
+          "Certification : TORFL",
         ],
       },
     ],
@@ -805,10 +856,10 @@ export const formationsDetail: FormationDetailItem[] = [
   {
     id: 102,
     title: "Auto-École",
-    category: "Formation Courte Durée 2 mois",
-    duration: "2 mois",
-    price: "À partir de 80,000 FCFA",
-    level: "Débutant",
+    category: "Formation Courte Durée 12 mois",
+    duration: "12 mois",
+    price: "110 000 FCFA au total",
+    level: "baccalaureat/GCE A level",
     image: IMG_CAR,
     description:
       "Préparez-vous efficacement à l'examen du permis de conduire avec des cours théoriques et pratiques dispensés par des moniteurs expérimentés.",
@@ -819,6 +870,15 @@ export const formationsDetail: FormationDetailItem[] = [
       "Réussir l'épreuve pratique de conduite",
     ],
     programme: [
+      {
+        phase: "Frais détaillés",
+        modules: [
+          "💵 Frais de formation : 70 000 FCFA",
+          "🧾 Frais d'inscription : 10 000 FCFA",
+          "📝 Frais d'examen : 30 000 FCFA",
+          "Total : 110 000 FCFA",
+        ],
+      },
       {
         phase: "Théorie",
         modules: [

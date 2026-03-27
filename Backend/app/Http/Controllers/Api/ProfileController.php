@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,11 +12,8 @@ class ProfileController extends Controller
 {
     public function show(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'email' => ['required', 'string', 'email'],
-        ]);
-
-        $user = User::where('email', $validated['email'])->firstOrFail();
+        /** @var \App\Models\User $user */
+        $user = $request->user();
 
         if ($user->avatar_url) {
             $user->avatar_url = url($user->avatar_url);
@@ -29,14 +25,14 @@ class ProfileController extends Controller
     public function update(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'email' => ['required', 'string', 'email'],
             'first_name' => ['nullable', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:255'],
             'avatar_url' => ['nullable', 'string'],
         ]);
 
-        $user = User::where('email', $validated['email'])->firstOrFail();
+        /** @var \App\Models\User $user */
+        $user = $request->user();
 
         $user->fill([
             'first_name' => $validated['first_name'] ?? $user->first_name,
@@ -56,13 +52,6 @@ class ProfileController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-
-        if (!$user) {
-            $validated = $request->validate([
-                'email' => ['required', 'string', 'email'],
-            ]);
-            $user = User::where('email', $validated['email'])->firstOrFail();
-        }
 
         $request->validate([
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',

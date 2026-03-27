@@ -39,8 +39,9 @@ export default function Header() {
 
       try {
         const response = await fetch(
-          apiUrl(`/api/profile?email=${encodeURIComponent(auth.email)}`),
+          apiUrl(`/api/profile`),
           {
+            credentials: "include",
             headers: {
               Accept: "application/json",
             },

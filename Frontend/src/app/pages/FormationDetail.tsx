@@ -9,6 +9,7 @@ import {
   Calendar,
   DollarSign,
   FileText,
+  GraduationCap,
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { formationsDetail } from "../data/formationsDetail";
@@ -35,6 +36,19 @@ export default function FormationDetail() {
       </div>
     );
   }
+
+  // Déterminer la durée réelle et le prix selon la catégorie
+  const isCourteDuree = formation.id === 101 || formation.id === 102;
+  const isInfoPure = [12, 14, 15].includes(formation.id);
+
+  const prixFormation = isCourteDuree
+    ? formation.price
+    : isInfoPure
+    ? "400 000 FCFA"
+    : "350 000 FCFA";
+
+  const dureeFormation = isCourteDuree ? formation.duration : "12 mois";
+  const dureeOption = isCourteDuree ? null : "4 mois (attestation)";
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f1f5f9]">
@@ -81,33 +95,46 @@ export default function FormationDetail() {
 
                 {/* Stats grid */}
                 <div className="grid grid-cols-2 gap-4 mb-8">
+                  {/* Durée principale */}
                   <div className="flex items-start gap-3">
                     <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
                       <Clock className="h-4 w-4 text-[#f97316]" />
                     </div>
                     <div>
                       <p className="text-xs text-white/50 mb-0.5">Durée</p>
-                      <p className="text-sm font-semibold text-white">{formation.duration}</p>
+                      <p className="text-sm font-semibold text-white">{dureeFormation}</p>
+                      {dureeOption && (
+                        <p className="text-xs text-white/50">ou {dureeOption}</p>
+                      )}
                     </div>
                   </div>
+
+                  {/* Niveau */}
                   <div className="flex items-start gap-3">
                     <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
-                      <Award className="h-4 w-4 text-[#f97316]" />
+                      <GraduationCap className="h-4 w-4 text-[#f97316]" />
                     </div>
                     <div>
-                      <p className="text-xs text-white/50 mb-0.5">Niveau</p>
+                      <p className="text-xs text-white/50 mb-0.5">Niveau requis</p>
                       <p className="text-sm font-semibold text-white">{formation.level}</p>
                     </div>
                   </div>
+
+                  {/* Prix */}
                   <div className="flex items-start gap-3">
                     <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
                       <DollarSign className="h-4 w-4 text-[#f97316]" />
                     </div>
                     <div>
-                      <p className="text-xs text-white/50 mb-0.5">Prix</p>
-                      <p className="text-sm font-semibold text-white">{formation.price}</p>
+                      <p className="text-xs text-white/50 mb-0.5">Frais de formation</p>
+                      <p className="text-sm font-semibold text-white">{prixFormation}</p>
+                      {!isCourteDuree && (
+                        <p className="text-xs text-white/50">+ 25 000 FCFA inscription</p>
+                      )}
                     </div>
                   </div>
+
+                  {/* Prochaine session */}
                   <div className="flex items-start gap-3">
                     <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 shrink-0">
                       <Calendar className="h-4 w-4 text-[#f97316]" />
@@ -157,7 +184,7 @@ export default function FormationDetail() {
                     <h2 className="text-lg font-semibold text-[#1e3a8a]">Objectifs de la Formation</h2>
                   </div>
                   <ul className="space-y-3">
-                    {formation.objectifs.map((objectif, index) => (
+                    {formation.objectifs.map((objectif: string, index: number) => (
                       <li key={index} className="flex items-start gap-3">
                         <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#f97316]/10 shrink-0 mt-0.5">
                           <CheckCircle className="h-3 w-3 text-[#f97316]" />
@@ -175,7 +202,7 @@ export default function FormationDetail() {
                     <h2 className="text-lg font-semibold text-[#1e3a8a]">Programme de Formation</h2>
                   </div>
                   <div className="space-y-6">
-                    {formation.programme.map((phase, index) => (
+                    {formation.programme.map((phase: any, index: number) => (
                       <div key={index}>
                         <div className="flex items-center gap-2 mb-3">
                           <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#1e3a8a] text-white text-xs font-bold shrink-0">
@@ -184,7 +211,7 @@ export default function FormationDetail() {
                           <h4 className="font-semibold text-[#1e3a8a] text-sm">{phase.phase}</h4>
                         </div>
                         <ul className="ml-8 space-y-2">
-                          {phase.modules.map((module, idx) => (
+                          {phase.modules.map((module: string, idx: number) => (
                             <li key={idx} className="flex items-start gap-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-[#f97316] shrink-0 mt-2" />
                               <span className="text-sm text-[#64748b] leading-relaxed">{module}</span>
@@ -206,7 +233,7 @@ export default function FormationDetail() {
                     <h2 className="text-lg font-semibold text-[#1e3a8a]">Débouchés Professionnels</h2>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {formation.debouches.map((debouche, index) => (
+                    {formation.debouches.map((debouche: string, index: number) => (
                       <span
                         key={index}
                         className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-[#1e3a8a]/5 text-[#1e3a8a] border border-[#1e3a8a]/10"
@@ -230,13 +257,48 @@ export default function FormationDetail() {
                     </h3>
                   </div>
                   <ul className="space-y-3">
-                    {formation.prerequis.map((prerequis, index) => (
+                    {formation.prerequis.map((prerequis: string, index: number) => (
                       <li key={index} className="flex items-start gap-2.5">
                         <CheckCircle className="h-4 w-4 text-[#f97316] shrink-0 mt-0.5" />
                         <span className="text-sm text-[#1a1a1a] leading-relaxed">{prerequis}</span>
                       </li>
                     ))}
                   </ul>
+                </div>
+
+                {/* Récap tarifaire */}
+                <div className="rounded-2xl bg-white shadow-sm p-6 border border-[#f97316]/20">
+                  <div className="flex items-center gap-2 mb-4">
+                    <DollarSign className="h-4 w-4 text-[#f97316] shrink-0" />
+                    <h3 className="text-sm font-semibold text-[#1e3a8a] uppercase tracking-wider">
+                      Récap Tarifaire
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-[#64748b]">Frais de formation</span>
+                      <span className="font-bold text-[#f97316]">{prixFormation}</span>
+                    </div>
+                    {!isCourteDuree && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-[#64748b]">Inscription</span>
+                        <span className="font-semibold text-[#1e3a8a]">25 000 FCFA</span>
+                      </div>
+                    )}
+                    {formation.examFee && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-[#64748b]">Frais d'examen</span>
+                        <span className="font-semibold text-[#1e3a8a]">{formation.examFee}</span>
+                      </div>
+                    )}
+                    {!isCourteDuree && (
+                      <div className="pt-2 border-t border-[#f1f5f9]">
+                        <p className="text-xs text-[#64748b]">
+                          Option courte : <span className="font-semibold text-[#1e3a8a]">4 mois</span> → Attestation de fin de formation
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Informations pratiques */}
@@ -251,7 +313,9 @@ export default function FormationDetail() {
                     </div>
                     <div className="border-b border-white/10 pb-3">
                       <p className="text-xs text-white/50 mb-1">Certification</p>
-                      <p className="text-sm font-semibold text-white">Attestation reconnue</p>
+                      <p className="text-sm font-semibold text-white">
+                        {isCourteDuree ? "Attestation de fin de formation" : "DQP / CQP reconnu"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs text-white/50 mb-1">Effectif</p>

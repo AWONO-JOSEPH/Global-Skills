@@ -13,23 +13,27 @@ services:
       - key: APP_KEY
         generateValue: true
       - key: FRONTEND_URL
-        sync: false
+        value: https://global-skills.vercel.app
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_SSLMODE
         value: require
       - key: DB_HOST
-        value: dpg-d719mq94tr6s73e8kpv0-a
+        sync: false
       - key: DB_PORT
         value: 5432
       - key: DB_DATABASE
-        value: globalskillsdb_wt3x
+        sync: false
       - key: DB_USERNAME
-        value: joseph
+        sync: false
       - key: DB_PASSWORD
-        value: gbtMynlQTtSQjw14gI6CACqppwy0gYnJ
+        sync: false
       - key: DATABASE_URL
-        value: postgresql://joseph:gbtMynlQTtSQjw14gI6CACqppwy0gYnJ@dpg-d719mq94tr6s73e8kpv0-a/globalskillsdb_wt3x
+        sync: false
+      - key: SANCTUM_STATEFUL_DOMAINS
+        value: global-skills.vercel.app
+      - key: SESSION_DRIVER
+        value: database
 
   - type: web
     name: global-skills-frontend
