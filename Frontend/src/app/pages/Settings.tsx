@@ -155,6 +155,7 @@ export default function Settings() {
         body: JSON.stringify({
           first_name: personalInfo.firstName,
           last_name: personalInfo.lastName,
+          email: personalInfo.email,
           phone: personalInfo.phone,
         }),
       });

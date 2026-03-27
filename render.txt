@@ -1,13 +1,5 @@
-Unexpected Application Error!
-useRef is not defined
-ReferenceError: useRef is not defined
-    at Xoe (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:591:31206)
-    at ig (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:38:17820)
-    at m2 (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:44746)
-    at c2 (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:40334)
-    at pL (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:40262)
-    at yf (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:40115)
-    at kg (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:36398)
-    at i2 (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:40:35346)
-    at _ (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:25:1598)
-    at MessagePort.F (https://global-skills.vercel.app/assets/index-39Jy7m6f.js:25:1964)
+Failed to load resource: the server responded with a status of 422 ()Understand this error
+global-skills.onrender.com/api/profile:1  Failed to load resource: the server responded with a status of 422 ()Understand this error
+global-skills.onrender.com/api/profile:1  Failed to load resource: the server responded with a status of 422 ()Understand this error
+global-skills.onrender.com/api/profile:1  Failed to load resource: the server responded with a status of 422 ()Understand this error
+global-skills.onrender.com/api/profile:1  Failed to load resource: the server responded with a status of 422 ()

@@ -24,21 +24,24 @@ class ProfileController extends Controller
 
     public function update(Request $request): JsonResponse
     {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
         $validated = $request->validate([
             'first_name' => ['nullable', 'string', 'max:255'],
             'last_name' => ['nullable', 'string', 'max:255'],
+            'email' => ['sometimes', 'required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
             'phone' => ['nullable', 'string', 'max:255'],
             'avatar_url' => ['nullable', 'string'],
         ]);
 
-        /** @var \App\Models\User $user */
-        $user = $request->user();
-
         $user->fill([
             'first_name' => $validated['first_name'] ?? $user->first_name,
             'last_name' => $validated['last_name'] ?? $user->last_name,
+            'email' => $validated['email'] ?? $user->email,
             'phone' => $validated['phone'] ?? $user->phone,
             'avatar_url' => $validated['avatar_url'] ?? $user->avatar_url,
+            'name' => trim(($validated['first_name'] ?? $user->first_name) . ' ' . ($validated['last_name'] ?? $user->last_name)) ?: $user->name,
         ])->save();
 
         if ($user->avatar_url) {
