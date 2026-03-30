@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { User, Lock, GraduationCap, Eye, EyeOff } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 const logo = "https://raw.githubusercontent.com/AWONO-JOSEPH/Global-Skills/main/Frontend/src/assets/84498a56cb9356abc2f9404869c93b519e727718.png";
@@ -217,9 +218,11 @@ export default function Login() {
 
             <div className="mt-6 text-center">
               <Dialog>
-                <button className="text-sm text-primary hover:underline font-medium">
-                  Mot de passe oublié ?
-                </button>
+                <DialogTrigger asChild>
+                  <button className="text-sm text-primary hover:underline font-medium">
+                    Mot de passe oublié ?
+                  </button>
+                </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Réinitialiser mon mot de passe</DialogTitle>
