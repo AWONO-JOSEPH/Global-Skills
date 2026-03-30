@@ -1,5 +1,1 @@
-index-DW3Bo8xu.js:505 
- POST https://global-skills.onrender.com/api/login 419
-
-﻿
-CSRF token mismatch
+index-DW3Bo8xu.js:505  POST https://global-skills.onrender.com/api/login 419

@@ -20,6 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
             EnsureFrontendRequestsAreStateful::class,
         ]);
 
+        // Disable CSRF for API routes specifically
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+            'sanctum/csrf-cookie',
+        ]);
+
         $middleware->alias([
             'role' => \App\Http\Middleware\RequireRole::class,
         ]);
