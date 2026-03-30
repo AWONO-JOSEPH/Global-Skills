@@ -1,22 +1,42 @@
-index-DW3Bo8xu.js:457 
- GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
-
-index-DW3Bo8xu.js:591 
- GET https://global-skills.onrender.com/api/admin/overview 401 (Unauthorized)
-index-DW3Bo8xu.js:591 
- GET https://global-skills.onrender.com/api/admin/students 401 (Unauthorized)
-index-DW3Bo8xu.js:457 
- GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
-index-DW3Bo8xu.js:594 
- GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
-index-DW3Bo8xu.js:594 
- PUT https://global-skills.onrender.com/api/profile 401 (Unauthorized)
-index-DW3Bo8xu.js:594 
- PUT https://global-skills.onrender.com/api/profile 401 (Unauthorized)
-﻿
-
-Press ctrl i to turn on code suggestions. Press ctrl x to disable code suggestions.
-ctrl
-i
- to turn on code suggestions. Don't show again NEW
-
+GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
+(anonymous) @ index-DG0c-968.js:457
+(anonymous) @ index-DG0c-968.js:457
+df @ index-DG0c-968.js:40
+Qs @ index-DG0c-968.js:40
+(anonymous) @ index-DG0c-968.js:40
+_ @ index-DG0c-968.js:25
+F @ index-DG0c-968.js:25Understand this error
+index-DG0c-968.js:594  GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
+(anonymous) @ index-DG0c-968.js:594
+(anonymous) @ index-DG0c-968.js:594
+df @ index-DG0c-968.js:40
+Qs @ index-DG0c-968.js:40
+(anonymous) @ index-DG0c-968.js:40
+_ @ index-DG0c-968.js:25
+F @ index-DG0c-968.js:25Understand this error
+index-DG0c-968.js:594  PUT https://global-skills.onrender.com/api/profile 401 (Unauthorized)
+P @ index-DG0c-968.js:594
+te @ index-DG0c-968.js:37
+Te @ index-DG0c-968.js:37
+Ie @ index-DG0c-968.js:37
+DN @ index-DG0c-968.js:37
+LN @ index-DG0c-968.js:37
+(anonymous) @ index-DG0c-968.js:37
+Rg @ index-DG0c-968.js:40
+Ee @ index-DG0c-968.js:37
+Rp @ index-DG0c-968.js:37
+gp @ index-DG0c-968.js:37
+tD @ index-DG0c-968.js:37Understand this error
+index-DG0c-968.js:594  PUT https://global-skills.onrender.com/api/profile 401 (Unauthorized)
+P @ index-DG0c-968.js:594
+te @ index-DG0c-968.js:37
+Te @ index-DG0c-968.js:37
+Ie @ index-DG0c-968.js:37
+DN @ index-DG0c-968.js:37
+LN @ index-DG0c-968.js:37
+(anonymous) @ index-DG0c-968.js:37
+Rg @ index-DG0c-968.js:40
+Ee @ index-DG0c-968.js:37
+Rp @ index-DG0c-968.js:37
+gp @ index-DG0c-968.js:37
+tD @ index-DG0c-968.js:37Understand this error
