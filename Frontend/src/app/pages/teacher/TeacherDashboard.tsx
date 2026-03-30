@@ -173,10 +173,8 @@ export default function TeacherDashboard() {
 
   const handleSaveTracking = async () => {
     try {
-      const response = await fetch(apiUrl("/api/program-trackings"), {
+      const response = await apiFetch("/api/program-trackings", {
         method: 'POST',
-        credentials: "include",
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify(newTracking),
       });
       if (response.ok) {
@@ -197,7 +195,7 @@ export default function TeacherDashboard() {
     try {
       const auth = getCurrentAuth();
       if (!auth) return;
-      const response = await fetch(apiUrl("/api/profile/photo"), { method: 'POST', body: formData, credentials: "include" });
+      const response = await apiFetch("/api/profile/photo", { method: 'POST', body: formData });
       if (response.ok) { 
         const data = await response.json(); 
         setTeacherInfo(prev => prev ? { ...prev, photo: data.photo } : null); 

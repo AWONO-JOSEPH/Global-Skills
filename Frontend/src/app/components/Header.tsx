@@ -1,4 +1,4 @@
-import { apiUrl } from "../lib/api";
+import { apiUrl, apiFetch } from "../lib/api";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -38,15 +38,7 @@ export default function Header() {
       }
 
       try {
-        const response = await fetch(
-          apiUrl(`/api/profile`),
-          {
-            credentials: "include",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
+        const response = await apiFetch(`/api/profile`);
 
         if (!response.ok) {
           throw new Error("Erreur profil");
