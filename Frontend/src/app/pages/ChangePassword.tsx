@@ -1,4 +1,4 @@
-import { apiUrl } from "../lib/api";
+import { apiUrl, apiFetch } from "../lib/api";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -50,13 +50,8 @@ export default function ChangePassword() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(apiUrl("/api/change-password"), {
+      const response = await apiFetch("/api/change-password", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify({
           email: auth.email,
           current_password: formData.current_password,

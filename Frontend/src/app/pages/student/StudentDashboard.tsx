@@ -1,4 +1,4 @@
-import { apiUrl } from "../../lib/api";
+import { apiUrl, apiFetch } from "../../lib/api";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
@@ -46,7 +46,7 @@ export default function StudentDashboard() {
       const auth = getCurrentAuth();
       if (!auth) return;
       formData.append('email', auth.email);
-      const response = await fetch(apiUrl("/api/profile/photo"), { method: 'POST', body: formData, credentials: "include" });
+      const response = await apiFetch("/api/profile/photo", { method: 'POST', body: formData });
       if (response.ok) { 
         const data = await response.json(); 
         setStudentInfo((prev: any) => prev ? { ...prev, photo: data.photo } : null); 
@@ -61,7 +61,7 @@ export default function StudentDashboard() {
       if (!silent) setLoading(true);
       const auth = getCurrentAuth();
       if (!auth) return;
-      const baseUrl = apiUrl("/api/student");
+      const baseUrl = "/api/student";
       const emailParam = `?email=${encodeURIComponent(auth.email)}`;
       
       // Define all endpoints
@@ -77,33 +77,33 @@ export default function StudentDashboard() {
       };
 
       // Load essential data (profile) always, and others based on active tab
-      const profileRes = await fetch(endpoints.profile, { credentials: "include" });
+      const profileRes = await apiFetch(endpoints.profile);
       if (profileRes.ok) setStudentInfo(await profileRes.json());
 
       // Load specific tab data
       if (activeTab === "overview") {
-        const res = await fetch(endpoints.overview, { credentials: "include" });
+        const res = await apiFetch(endpoints.overview);
         if (res.ok) setOverview(await res.json());
       } else if (activeTab === "formations") {
-        const res = await fetch(endpoints.formations, { credentials: "include" });
+        const res = await apiFetch(endpoints.formations);
         if (res.ok) setFormations(await res.json());
       } else if (activeTab === "paiements") {
-        const res = await fetch(endpoints.paiements, { credentials: "include" });
+        const res = await apiFetch(endpoints.paiements);
         if (res.ok) setPaiements(await res.json());
       } else if (activeTab === "calendrier") {
-        const res = await fetch(endpoints.calendrier, { credentials: "include" });
+        const res = await apiFetch(endpoints.calendrier);
         if (res.ok) setCalendrier(await res.json());
       } else if (activeTab === "documents") {
-        const res = await fetch(endpoints.documents, { credentials: "include" });
+        const res = await apiFetch(endpoints.documents);
         if (res.ok) setDocuments(await res.json());
       } else if (activeTab === "notifications") {
-        const res = await fetch(endpoints.notifications, { credentials: "include" });
+        const res = await apiFetch(endpoints.notifications);
         if (res.ok) setNotifications(await res.json());
       }
       
       // Always load notes for stats if in overview
       if (activeTab === "overview") {
-        const res = await fetch(endpoints.notes, { credentials: "include" });
+        const res = await apiFetch(endpoints.notes);
         if (res.ok) setNotes(await res.json());
       }
 

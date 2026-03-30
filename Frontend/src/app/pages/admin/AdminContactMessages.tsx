@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
-import { apiUrl } from "../../lib/api";
+import { apiUrl, apiFetch } from "../../lib/api";
 
 interface ContactMessage {
   id: number;
@@ -77,9 +77,7 @@ export default function AdminContactMessages() {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const response = await fetch(apiUrl("/api/admin/contact-messages"), {
-        credentials: "include",
-      });
+      const response = await apiFetch("/api/admin/contact-messages");
       if (response.ok) {
         const data = await response.json();
         const filteredMessages = statusFilter === "all" 
@@ -99,9 +97,7 @@ export default function AdminContactMessages() {
   const fetchMessageDetail = async (id: number) => {
     try {
       setSelectedMessage(null);
-      const response = await fetch(apiUrl(`/api/admin/contact-messages/${id}`), {
-        credentials: "include",
-      });
+      const response = await apiFetch(`/api/admin/contact-messages/${id}`);
       if (response.ok) {
         const data = await response.json();
         setSelectedMessage(data.message);
@@ -118,12 +114,8 @@ export default function AdminContactMessages() {
   const updateStatus = async (id: number, newStatus: string) => {
     try {
       setUpdatingStatus(id);
-      const response = await fetch(apiUrl(`/api/admin/contact-messages/${id}/status`), {
+      const response = await apiFetch(`/api/admin/contact-messages/${id}/status`, {
         method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({ status: newStatus }),
       });
 
@@ -149,9 +141,8 @@ export default function AdminContactMessages() {
     }
 
     try {
-      const response = await fetch(apiUrl(`/api/admin/contact-messages/${id}`), {
+      const response = await apiFetch(`/api/admin/contact-messages/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
 
       if (response.ok) {

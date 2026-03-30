@@ -1,4 +1,4 @@
-import { apiUrl } from "../lib/api";
+import { apiUrl, apiFetch } from "../lib/api";
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -55,15 +55,7 @@ export default function Settings() {
 
     const loadProfile = async () => {
       try {
-        const response = await fetch(
-          apiUrl(`/api/profile`),
-          {
-            credentials: "include",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
+        const response = await apiFetch(`/api/profile`);
 
         if (!response.ok) {
           throw new Error("Erreur lors du chargement du profil");
@@ -122,9 +114,8 @@ export default function Settings() {
       if (!auth) return;
       const endpoint = '/api/profile/photo';
       
-      const response = await fetch(apiUrl(endpoint), {
+      const response = await apiFetch(endpoint, {
         method: 'POST',
-        credentials: "include",
         body: formData,
       });
 
@@ -145,13 +136,8 @@ export default function Settings() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(apiUrl("/api/profile"), {
+      const response = await apiFetch("/api/profile", {
         method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify({
           first_name: personalInfo.firstName,
           last_name: personalInfo.lastName,
@@ -196,13 +182,8 @@ export default function Settings() {
     }
 
     try {
-      const response = await fetch(apiUrl("/api/change-password"), {
+      const response = await apiFetch("/api/change-password", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
         body: JSON.stringify({
           email: personalInfo.email,
           current_password: passwordData.currentPassword,

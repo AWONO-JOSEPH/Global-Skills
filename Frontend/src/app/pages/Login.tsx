@@ -1,4 +1,5 @@
 import { apiUrl } from "../lib/api";
+import { saveAuth } from "../auth";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
@@ -32,12 +33,8 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      // Sanctum SPA auth requires CSRF cookie first (session-based, httpOnly cookies).
-      await fetch(apiUrl("/sanctum/csrf-cookie"), { credentials: "include" });
-
       const response = await fetch(apiUrl("/api/login"), {
         method: "POST",
-        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
@@ -55,9 +52,12 @@ export default function Login() {
       }
 
       const data = await response.json();
-      localStorage.setItem("gs_role", data.user?.role ?? role);
-      if (data.user?.email) {
-        localStorage.setItem("gs_email", data.user.email);
+      
+      // Save token and user info
+      if (data.token && data.user) {
+        saveAuth(data.token, data.user);
+      } else {
+        throw new Error("Invalid response from server");
       }
 
       if (data.user?.must_change_password) {
@@ -200,54 +200,60 @@ export default function Login() {
                         </button>
                       </div>
                     </div>
-                    <Button
-                      type="submit"
-                      className="w-full bg-primary hover:bg-primary/90"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Connexion..." : "Se Connecter"}
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                          Connexion en cours...
+                        </>
+                      ) : (
+                        "Se connecter"
+                      )}
                     </Button>
-                    <div className="text-center text-sm">
-                      <form
-                        onSubmit={handleForgotPassword}
-                        className="flex flex-col gap-2 items-center"
-                      >
-                        <Input
-                          type="email"
-                          placeholder="Votre email pour réinitialiser"
-                          value={forgotEmail}
-                          onChange={(e) => setForgotEmail(e.target.value)}
-                          className="h-8 text-xs max-w-xs"
-                        />
-                        <Button
-                          type="submit"
-                          variant="ghost"
-                          className="h-8 px-2 text-xs text-primary"
-                          disabled={isSendingReset}
-                        >
-                          {isSendingReset ? "Envoi..." : "Mot de passe oublié ?"}
-                        </Button>
-                      </form>
-                    </div>
                   </form>
                 </TabsContent>
               ))}
             </Tabs>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Pas encore de compte ?{" "}
-                <a href="/contact" className="text-primary hover:underline font-semibold">
-                  Contactez-nous
-                </a>
-              </p>
+              <Dialog>
+                <button className="text-sm text-primary hover:underline font-medium">
+                  Mot de passe oublié ?
+                </button>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Réinitialiser mon mot de passe</DialogTitle>
+                    <DialogDescription>
+                      Saisissez votre adresse email pour recevoir un nouveau mot de passe temporaire.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleForgotPassword} className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="forgot-email">Adresse email</Label>
+                      <Input
+                        id="forgot-email"
+                        type="email"
+                        placeholder="votre.email@exemple.com"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit" disabled={isSendingReset}>
+                        {isSendingReset ? "Envoi en cours..." : "Envoyer"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>
 
-        <div className="mt-6 text-center text-white/80 text-sm">
-          <p>© 2026 Global Skills. Tous droits réservés.</p>
-        </div>
+        <p className="mt-8 text-center text-white/60 text-sm">
+          &copy; 2026 Global Skills Vocational Training Institute. Tous droits réservés.
+        </p>
       </div>
     </div>
   );

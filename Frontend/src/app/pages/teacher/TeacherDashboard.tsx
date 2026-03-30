@@ -1,4 +1,4 @@
-import { apiUrl } from "../../lib/api";
+import { apiUrl, apiFetch } from "../../lib/api";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -71,12 +71,12 @@ export default function TeacherDashboard() {
       if (!auth) return;
       
       // Toujours charger le profil
-      const teacherResponse = await fetch(apiUrl(`/api/teacher/profile`), { credentials: "include", headers: { Accept: "application/json" } });
+      const teacherResponse = await apiFetch(`/api/teacher/profile`);
       if (teacherResponse.ok) setTeacherInfo(await teacherResponse.json());
 
       // Chargement conditionnel par onglet
       if (activeTab === "students" || activeTab === "presence" || activeTab === "notes" || activeTab === "courses") {
-        const formationsResponse = await fetch(apiUrl(`/api/teacher/formations`), { credentials: "include", headers: { Accept: "application/json" } });
+        const formationsResponse = await apiFetch(`/api/teacher/formations`);
         if (formationsResponse.ok) {
           const formationsData = await formationsResponse.json();
           setFormations(formationsData);
@@ -85,7 +85,7 @@ export default function TeacherDashboard() {
       }
 
       if (activeTab === "tracking") {
-        const trackingsResponse = await fetch(apiUrl(`/api/program-trackings`), { credentials: "include", headers: { Accept: "application/json" } });
+        const trackingsResponse = await apiFetch(`/api/program-trackings`);
         if (trackingsResponse.ok) setTrackings(await trackingsResponse.json());
       }
     } catch (error) { console.error("Erreur lors du chargement des données:", error); }
@@ -97,7 +97,7 @@ export default function TeacherDashboard() {
     try {
       const allStudents: Student[] = [];
       for (const formation of formationsList) {
-        const studentsResponse = await fetch(apiUrl(`/api/formation/${formation.id}/students`), { credentials: "include", headers: { Accept: "application/json" } });
+        const studentsResponse = await apiFetch(`/api/formation/${formation.id}/students`);
         if (studentsResponse.ok) {
           const formationStudents = await studentsResponse.json();
           allStudents.push(...formationStudents.map((student: any) => ({ ...student, formation_name: formation.name })));
@@ -122,10 +122,8 @@ export default function TeacherDashboard() {
   const handleSaveStudent = async () => {
     if (!editedStudent) return;
     try {
-      const response = await fetch(apiUrl(`/api/students/${editedStudent.id}`), {
+      const response = await apiFetch(`/api/students/${editedStudent.id}`, {
         method: 'PUT',
-        credentials: "include",
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ name: editedStudent.name, email: editedStudent.email, matricule: editedStudent.matricule }),
       });
       if (response.ok) { setStudents(students.map(s => s.id === editedStudent.id ? editedStudent : s)); setIsEditDialogOpen(false); toast.success("Informations de l'étudiant mises à jour avec succès"); }
@@ -141,10 +139,8 @@ export default function TeacherDashboard() {
 
   const handleSavePresence = async () => {
     try {
-      const response = await fetch(apiUrl(`/api/teacher/presence`), {
+      const response = await apiFetch(`/api/teacher/presence`, {
         method: 'POST',
-        credentials: "include",
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ presences: presenceRecords }),
       });
       if (response.ok) {
@@ -161,10 +157,8 @@ export default function TeacherDashboard() {
 
   const handleSaveNotes = async () => {
     try {
-      const response = await fetch(apiUrl(`/api/teacher/notes`), {
+      const response = await apiFetch(`/api/teacher/notes`, {
         method: 'POST',
-        credentials: "include",
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ notes: noteRecords }),
       });
       if (response.ok) {

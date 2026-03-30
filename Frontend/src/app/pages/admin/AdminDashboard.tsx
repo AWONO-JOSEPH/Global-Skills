@@ -1,4 +1,4 @@
-import { apiUrl } from "../../lib/api";
+import { apiUrl, apiFetch } from "../../lib/api";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
@@ -151,7 +151,7 @@ export default function AdminDashboard() {
       const auth = getCurrentAuth();
       if (!auth) return;
       formData.append('email', auth.email);
-      const response = await fetch(apiUrl("/api/profile/photo"), { method: 'POST', body: formData, credentials: "include" });
+      const response = await apiFetch("/api/profile/photo", { method: 'POST', body: formData });
       if (response.ok) { 
         const data = await response.json(); 
         setStats((prev: any) => prev ? { ...prev, photo: data.photo } : null); 
@@ -164,10 +164,7 @@ export default function AdminDashboard() {
   const loadOverview = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingOverview(true);
     try {
-      const response = await fetch(apiUrl("/api/admin/overview"), {
-        credentials: "include",
-        headers: { Accept: "application/json" },
-      });
+      const response = await apiFetch("/api/admin/overview");
       if (!response.ok) throw new Error("Erreur");
       const data = await response.json();
       setStats(data.stats);
@@ -181,10 +178,7 @@ export default function AdminDashboard() {
   const loadStudents = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingStudents(true);
     try {
-      const r = await fetch(apiUrl("/api/admin/students"), { 
-        credentials: "include",
-        headers: { Accept: "application/json" } 
-      });
+      const r = await apiFetch("/api/admin/students");
       if (r.ok) setStudents(await r.json());
     } catch {} finally { if (!silent) setIsLoadingStudents(false); }
   }, []);
@@ -192,10 +186,7 @@ export default function AdminDashboard() {
   const loadTeachers = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingTeachers(true);
     try {
-      const r = await fetch(apiUrl("/api/admin/teachers"), { 
-        credentials: "include",
-        headers: { Accept: "application/json" } 
-      });
+      const r = await apiFetch("/api/admin/teachers");
       if (r.ok) setTeachers(await r.json());
     } catch {} finally { if (!silent) setIsLoadingTeachers(false); }
   }, []);
@@ -203,10 +194,7 @@ export default function AdminDashboard() {
   const loadFormations = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingFormations(true);
     try {
-      const r = await fetch(apiUrl("/api/admin/formations"), { 
-        credentials: "include",
-        headers: { Accept: "application/json" } 
-      });
+      const r = await apiFetch("/api/admin/formations");
       if (r.ok) setFormations(await r.json());
     } catch {} finally { if (!silent) setIsLoadingFormations(false); }
   }, []);
@@ -214,10 +202,7 @@ export default function AdminDashboard() {
   const loadPayments = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingPayments(true);
     try {
-      const r = await fetch(apiUrl("/api/admin/payments"), { 
-        credentials: "include",
-        headers: { Accept: "application/json" } 
-      });
+      const r = await apiFetch("/api/admin/payments");
       if (r.ok) setPayments(await r.json());
     } catch {} finally { if (!silent) setIsLoadingPayments(false); }
   }, []);
@@ -225,10 +210,7 @@ export default function AdminDashboard() {
   const loadTrackings = useCallback(async (silent = false) => {
     if (!silent) setIsLoadingTrackings(true);
     try {
-      const r = await fetch(apiUrl("/api/program-trackings"), { 
-        credentials: "include",
-        headers: { Accept: "application/json" } 
-      });
+      const r = await apiFetch("/api/program-trackings");
       if (r.ok) setTrackings(await r.json());
     } catch (err) { console.error(err); } finally { if (!silent) setIsLoadingTrackings(false); }
   }, []);
@@ -276,10 +258,8 @@ export default function AdminDashboard() {
   const handleDeleteStudent = async (studentId: number) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cet étudiant ?")) return;
     try {
-      const response = await fetch(apiUrl(`/api/admin/students/${studentId}`), {
+      const response = await apiFetch(`/api/admin/students/${studentId}`, {
         method: "DELETE",
-        credentials: "include",
-        headers: { Accept: "application/json" },
       });
       if (response.ok) {
         setStudents(prev => prev.filter(s => s.id !== studentId));
@@ -291,10 +271,8 @@ export default function AdminDashboard() {
   const handleDeleteTeacher = async (teacherId: number) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cet enseignant ?")) return;
     try {
-      const response = await fetch(apiUrl(`/api/admin/teachers/${teacherId}`), {
+      const response = await apiFetch(`/api/admin/teachers/${teacherId}`, {
         method: "DELETE",
-        credentials: "include",
-        headers: { Accept: "application/json" },
       });
       if (response.ok) {
         setTeachers(prev => prev.filter(t => t.id !== teacherId));
@@ -306,10 +284,8 @@ export default function AdminDashboard() {
   const handleDeleteFormation = async (id: number) => {
     if (!confirm("Supprimer cette formation ?")) return;
     try {
-      const response = await fetch(apiUrl(`/api/admin/formations/${id}`), {
+      const response = await apiFetch(`/api/admin/formations/${id}`, {
         method: "DELETE",
-        credentials: "include",
-        headers: { Accept: "application/json" },
       });
       if (response.ok) {
         setFormations(prev => prev.filter(f => f.id !== id));
@@ -320,10 +296,8 @@ export default function AdminDashboard() {
 
   const handleConfirmPayment = async (paymentId: number) => {
     try {
-      const response = await fetch(apiUrl(`/api/admin/payments/${paymentId}/confirm`), {
+      const response = await apiFetch(`/api/admin/payments/${paymentId}/confirm`, {
         method: "POST",
-        credentials: "include",
-        headers: { Accept: "application/json" },
       });
       if (response.ok) {
         setPayments(prev => prev.map(p => p.id === paymentId ? { ...p, status: "Payé" } : p));
@@ -335,10 +309,7 @@ export default function AdminDashboard() {
 
   const handleGenerateReport = async (type: "annual" | "tracking") => {
     try {
-      const response = await fetch(apiUrl(`/api/admin/reports/${type}`), {
-        credentials: "include",
-        headers: { Accept: "application/json" },
-      });
+      const response = await apiFetch(`/api/admin/reports/${type}`);
       if (response.ok) {
         const data = await response.json();
         if (data.url) window.open(data.url, "_blank");
@@ -391,13 +362,11 @@ export default function AdminDashboard() {
     setIsSubmitting(true);
     try {
       const url = editingId 
-        ? apiUrl(`/api/admin/${formData.role === 'student' ? 'students' : 'teachers'}/${editingId}`)
-        : apiUrl("/api/admin/users");
+        ? `/api/admin/${formData.role === 'student' ? 'students' : 'teachers'}/${editingId}`
+        : "/api/admin/users";
       
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method: editingId ? "PUT" : "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
@@ -425,11 +394,9 @@ export default function AdminDashboard() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const url = editingId ? apiUrl(`/api/admin/formations/${editingId}`) : apiUrl("/api/admin/formations");
-      const response = await fetch(url, {
+      const url = editingId ? `/api/admin/formations/${editingId}` : "/api/admin/formations";
+      const response = await apiFetch(url, {
         method: editingId ? "PUT" : "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           name: formData.title,
           description: formData.description,
@@ -456,10 +423,8 @@ export default function AdminDashboard() {
     setIsSubmitting(true);
     try {
       const student = students.find(s => s.id === formData.student_id);
-      const response = await fetch(apiUrl("/api/admin/payments"), {
+      const response = await apiFetch("/api/admin/payments", {
         method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           user_id: formData.student_id,
           amount: formData.amount,
@@ -484,10 +449,8 @@ export default function AdminDashboard() {
     try {
       const auth = getCurrentAuth();
       if (!auth) return;
-      const response = await fetch(apiUrl(`/api/program-trackings/${id}/sign?email=${encodeURIComponent(auth.email)}`), {
+      const response = await apiFetch(`/api/program-trackings/${id}/sign?email=${encodeURIComponent(auth.email)}`, {
         method: "POST",
-        credentials: "include",
-        headers: { Accept: "application/json" },
       });
       if (response.ok) {
         setTrackings(prev => prev.map(t => t.id === id ? { ...t, admin_signed_at: new Date().toISOString() } : t));

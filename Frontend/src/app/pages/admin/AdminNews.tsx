@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useToast } from "../../components/ui/use-toast";
 import logo from "../../../assets/84498a56cb9356abc2f9404869c93b519e727718.png";
-import { apiUrl } from "../../lib/api";
+import { apiUrl, apiFetch } from "../../lib/api";
 
 type NewsPublication = {
   id: number;
@@ -68,10 +68,7 @@ export default function AdminNews() {
     const fetchPublications = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(apiUrl("/api/news"), {
-          credentials: "include",
-          headers: { Accept: "application/json" },
-        });
+        const response = await apiFetch("/api/news");
         if (!response.ok) throw new Error("Erreur lors du chargement des actualités");
         const data: NewsPublication[] = await response.json();
         setPublications(data);
@@ -98,51 +95,49 @@ export default function AdminNews() {
       });
       return;
     }
+    
+    setIsLoading(true);
     try {
       const data = new FormData();
       data.append('title', formData.title);
       data.append('description', formData.description);
       data.append('category', formData.category);
       if (mediaFile) {
-        if (mediaType === 'image') data.append('image', mediaFile);
-        else if (mediaType === 'video') data.append('video', mediaFile);
+        data.append('media', mediaFile);
       }
-      let response: Response;
-      if (editingId) {
-        data.append('_method', 'PUT');
-        response = await fetch(apiUrl(`/api/news/${editingId}`), {
-          method: "POST",
-          credentials: "include",
-          headers: { Accept: "application/json" },
-          body: data,
-        });
-      } else {
-        response = await fetch(apiUrl("/api/news"), {
-          method: "POST",
-          credentials: "include",
-          headers: { Accept: "application/json" },
-          body: data,
-        });
-      }
-      if (!response.ok) throw new Error("Erreur lors de l'enregistrement de l'actualité");
-      const saved: NewsPublication = await response.json();
-      if (editingId) {
-        setPublications((prev) => prev.map((pub) => (pub.id === editingId ? saved : pub)));
-        toast({ title: "Publication modifiée", description: "L'actualité a été mise à jour avec succès." });
-        setEditingId(null);
-      } else {
-        setPublications((prev) => [saved, ...prev]);
-        toast({ title: "Publication créée", description: "La nouvelle actualité a été publiée avec succès." });
-      }
+
+      const url = editingId ? `/api/news/${editingId}` : "/api/news";
+      const response = await apiFetch(url, {
+        method: "POST", // Laravel uses POST for updates with files (sometimes with _method=PUT)
+        body: data,
+      });
+
+      if (!response.ok) throw new Error("Erreur lors de l'enregistrement");
+
+      toast({
+        title: "Succès",
+        description: editingId ? "Actualité mise à jour." : "Nouvelle actualité publiée.",
+      });
+
+      setFormData({ title: "", description: "", category: "Annonce" });
+      setMediaFile(null);
+      setMediaPreview("");
+      setMediaType(null);
+      setShowCreateForm(false);
+      setEditingId(null);
+      
+      // Refresh list
+      const updatedResponse = await apiFetch("/api/news");
+      if (updatedResponse.ok) setPublications(await updatedResponse.json());
     } catch (error) {
-      toast({ title: "Erreur", description: "Impossible d'enregistrer l'actualité.", variant: "destructive" });
-      return;
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'enregistrement.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    setFormData({ title: "", description: "", category: "Annonce" });
-    setMediaPreview("");
-    setMediaType(null);
-    setMediaFile(null);
-    setShowCreateForm(false);
   };
 
   const handleEdit = (publication: NewsPublication) => {
@@ -154,19 +149,26 @@ export default function AdminNews() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette actualité ?")) {
-      try {
-        const response = await fetch(apiUrl(`/api/news/${id}`), {
-          method: "DELETE",
-          credentials: "include",
-          headers: { Accept: "application/json" },
-        });
-        if (!response.ok && response.status !== 204) throw new Error("Erreur lors de la suppression");
-        setPublications((prev) => prev.filter((pub) => pub.id !== id));
-        toast({ title: "Publication supprimée", description: "L'actualité a été supprimée avec succès." });
-      } catch (error) {
-        toast({ title: "Erreur", description: "Impossible de supprimer l'actualité.", variant: "destructive" });
-      }
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette actualité ?")) return;
+    
+    try {
+      const response = await apiFetch(`/api/news/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Erreur lors de la suppression");
+
+      toast({
+        title: "Succès",
+        description: "Actualité supprimée.",
+      });
+      setPublications(publications.filter(p => p.id !== id));
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer l'actualité.",
+        variant: "destructive",
+      });
     }
   };
 

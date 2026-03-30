@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router";
 import { toast } from "sonner";
-import { apiUrl } from "../../lib/api";
+import { apiUrl, apiFetch } from "../../lib/api";
 
 interface InternationalRequest {
   id: number;
@@ -86,9 +86,7 @@ export default function AdminInternationalRequests() {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch(apiUrl("/api/admin/international-requests"), {
-        credentials: "include",
-      });
+      const response = await apiFetch("/api/admin/international-requests");
       if (response.ok) {
         const data = await response.json();
         const filteredRequests = statusFilter === "all"
@@ -108,9 +106,7 @@ export default function AdminInternationalRequests() {
   const fetchRequestDetail = async (id: number) => {
     try {
       setSelectedRequest(null);
-      const response = await fetch(apiUrl(`/api/admin/international-requests/${id}`), {
-        credentials: "include",
-      });
+      const response = await apiFetch(`/api/admin/international-requests/${id}`);
       if (response.ok) {
         const data = await response.json();
         setSelectedRequest(data.request);
@@ -125,10 +121,8 @@ export default function AdminInternationalRequests() {
   const updateStatus = async (id: number, newStatus: string) => {
     try {
       setUpdatingStatus(id);
-      const response = await fetch(apiUrl(`/api/admin/international-requests/${id}/status`), {
+      const response = await apiFetch(`/api/admin/international-requests/${id}/status`, {
         method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
       if (response.ok) {
@@ -150,9 +144,8 @@ export default function AdminInternationalRequests() {
   const deleteRequest = async (id: number) => {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette demande ?")) return;
     try {
-      const response = await fetch(apiUrl(`/api/admin/international-requests/${id}`), {
+      const response = await apiFetch(`/api/admin/international-requests/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
       if (response.ok) {
         toast.success("Demande supprimée avec succès");

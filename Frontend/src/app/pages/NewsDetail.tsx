@@ -5,7 +5,7 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { CalendarDays, Clock, ArrowLeft, Globe2, Share2, Volume2, VolumeX, Play, Pause } from "lucide-react";
 import { toast } from "sonner";
-import { apiUrl } from "../lib/api";
+import { apiUrl, apiFetch } from "../lib/api";
 
 type NewsItem = {
   id: number;
@@ -36,11 +36,7 @@ export default function NewsDetail() {
 
       setIsLoading(true);
       try {
-        const response = await fetch(apiUrl(`/api/news/${id}`), {
-          headers: {
-            Accept: "application/json",
-          },
-        });
+        const response = await apiFetch(`/api/news/${id}`);
 
         if (!response.ok) {
           throw new Error("Erreur lors du chargement de l'actualité");

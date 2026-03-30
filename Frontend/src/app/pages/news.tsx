@@ -5,7 +5,7 @@ import { Button } from "../components/ui/button";
 import { Link } from "react-router";
 import { CalendarDays, Clock, ArrowRight, Newspaper, Globe2, Volume2, VolumeX, Play, Pause } from "lucide-react";
 import { useToast } from "../components/ui/use-toast";
-import { apiUrl } from "../lib/api";
+import { apiUrl, apiFetch } from "../lib/api";
 
 type NewsItem = {
   id: number;
@@ -61,11 +61,7 @@ export default function News() {
     const fetchNews = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(apiUrl("/api/news"), {
-          headers: {
-            Accept: "application/json",
-          },
-        });
+        const response = await apiFetch("/api/news");
 
         if (!response.ok) {
           throw new Error("Erreur lors du chargement des actualités");

@@ -1,42 +1,97 @@
-GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
-(anonymous) @ index-DG0c-968.js:457
-(anonymous) @ index-DG0c-968.js:457
-df @ index-DG0c-968.js:40
-Qs @ index-DG0c-968.js:40
-(anonymous) @ index-DG0c-968.js:40
-_ @ index-DG0c-968.js:25
-F @ index-DG0c-968.js:25Understand this error
-index-DG0c-968.js:594  GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
-(anonymous) @ index-DG0c-968.js:594
-(anonymous) @ index-DG0c-968.js:594
-df @ index-DG0c-968.js:40
-Qs @ index-DG0c-968.js:40
-(anonymous) @ index-DG0c-968.js:40
-_ @ index-DG0c-968.js:25
-F @ index-DG0c-968.js:25Understand this error
-index-DG0c-968.js:594  PUT https://global-skills.onrender.com/api/profile 401 (Unauthorized)
-P @ index-DG0c-968.js:594
-te @ index-DG0c-968.js:37
-Te @ index-DG0c-968.js:37
-Ie @ index-DG0c-968.js:37
-DN @ index-DG0c-968.js:37
-LN @ index-DG0c-968.js:37
-(anonymous) @ index-DG0c-968.js:37
-Rg @ index-DG0c-968.js:40
-Ee @ index-DG0c-968.js:37
-Rp @ index-DG0c-968.js:37
-gp @ index-DG0c-968.js:37
-tD @ index-DG0c-968.js:37Understand this error
-index-DG0c-968.js:594  PUT https://global-skills.onrender.com/api/profile 401 (Unauthorized)
-P @ index-DG0c-968.js:594
-te @ index-DG0c-968.js:37
-Te @ index-DG0c-968.js:37
-Ie @ index-DG0c-968.js:37
-DN @ index-DG0c-968.js:37
-LN @ index-DG0c-968.js:37
-(anonymous) @ index-DG0c-968.js:37
-Rg @ index-DG0c-968.js:40
-Ee @ index-DG0c-968.js:37
-Rp @ index-DG0c-968.js:37
-gp @ index-DG0c-968.js:37
-tD @ index-DG0c-968.js:37Understand this error
+2. config/cors.php
+Change uniquement supports_credentials à false :
+php<?php
+
+return [
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        env('FRONTEND_URL', 'https://global-skills.vercel.app'),
+    ],
+    'allowed_origins_patterns' => [],
+    'allowed_headers' => ['*'],
+    'exposed_headers' => [],
+    'max_age' => 0,
+    'supports_credentials' => false, // ← était true, maintenant false
+];
+
+3. Frontend/src/app/lib/api.ts
+Crée une fonction centrale qui attache le token :
+typescriptexport function apiUrl(path: string): string {
+  const base = process.env.NEXT_PUBLIC_API_URL || 'https://global-skills.onrender.com';
+  return `${base}${path}`;
+}
+
+// Fonction fetch centralisée avec token automatique
+export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
+  const token = localStorage.getItem('auth_token');
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  return fetch(apiUrl(path), {
+    ...options,
+    headers,
+    // NE PLUS mettre credentials: "include"
+  });
+}
+
+4. Frontend/src/app/auth.ts
+Modifie la fonction de login pour sauvegarder le token :
+typescriptimport { apiUrl, apiFetch } from './lib/api';
+
+export async function login(email: string, password: string, role: string) {
+  const response = await fetch(apiUrl('/api/login'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, role }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Erreur de connexion');
+  }
+
+  // Sauvegarder le token dans localStorage
+  localStorage.setItem('auth_token', data.token);
+  localStorage.setItem('user', JSON.stringify(data.user));
+
+  return data;
+}
+
+export function logout() {
+  apiFetch('/api/logout', { method: 'POST' });
+  localStorage.removeItem('auth_token');
+  localStorage.removeItem('user');
+}
+
+export function getUser() {
+  const user = localStorage.getItem('user');
+  return user ? JSON.parse(user) : null;
+}
+
+export function getToken() {
+  return localStorage.getItem('auth_token');
+}
+
+5. Dans tous tes composants — Remplacer fetch par apiFetch
+Partout où tu as :
+typescript// ❌ Avant
+const response = await fetch(apiUrl("/api/quelquechose"), {
+  credentials: "include",
+  headers: { "Content-Type": "application/json" },
+});
+Remplace par :
+typescript// ✅ Après
+import { apiFetch } from '../lib/api';
+
+const response = await apiFetch("/api/quelquechose");
+
+Résumé des changements
+FichierChangementAuthController.phpSession → Token Bearercors.phpsupports_credentials: true → falseapi.tsAjouter apiFetch avec header Authorizationauth.tsSauvegarder le token dans localStorageComposantsfetch + credentials:include → apiFetch
