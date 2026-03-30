@@ -77,7 +77,9 @@ export default function AdminContactMessages() {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const response = await fetch(apiUrl("/api/admin/contact-messages"));
+      const response = await fetch(apiUrl("/api/admin/contact-messages"), {
+        credentials: "include",
+      });
       if (response.ok) {
         const data = await response.json();
         const filteredMessages = statusFilter === "all" 
@@ -97,7 +99,9 @@ export default function AdminContactMessages() {
   const fetchMessageDetail = async (id: number) => {
     try {
       setSelectedMessage(null);
-      const response = await fetch(apiUrl(`/api/admin/contact-messages/${id}`));
+      const response = await fetch(apiUrl(`/api/admin/contact-messages/${id}`), {
+        credentials: "include",
+      });
       if (response.ok) {
         const data = await response.json();
         setSelectedMessage(data.message);
@@ -116,6 +120,7 @@ export default function AdminContactMessages() {
       setUpdatingStatus(id);
       const response = await fetch(apiUrl(`/api/admin/contact-messages/${id}/status`), {
         method: "PUT",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -146,6 +151,7 @@ export default function AdminContactMessages() {
     try {
       const response = await fetch(apiUrl(`/api/admin/contact-messages/${id}`), {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (response.ok) {

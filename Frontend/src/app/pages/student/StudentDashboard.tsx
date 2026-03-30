@@ -46,7 +46,7 @@ export default function StudentDashboard() {
       const auth = getCurrentAuth();
       if (!auth) return;
       formData.append('email', auth.email);
-      const response = await fetch(apiUrl("/api/profile/photo"), { method: 'POST', body: formData });
+      const response = await fetch(apiUrl("/api/profile/photo"), { method: 'POST', body: formData, credentials: "include" });
       if (response.ok) { 
         const data = await response.json(); 
         setStudentInfo((prev: any) => prev ? { ...prev, photo: data.photo } : null); 
@@ -77,33 +77,33 @@ export default function StudentDashboard() {
       };
 
       // Load essential data (profile) always, and others based on active tab
-      const profileRes = await fetch(endpoints.profile);
+      const profileRes = await fetch(endpoints.profile, { credentials: "include" });
       if (profileRes.ok) setStudentInfo(await profileRes.json());
 
       // Load specific tab data
       if (activeTab === "overview") {
-        const res = await fetch(endpoints.overview);
+        const res = await fetch(endpoints.overview, { credentials: "include" });
         if (res.ok) setOverview(await res.json());
       } else if (activeTab === "formations") {
-        const res = await fetch(endpoints.formations);
+        const res = await fetch(endpoints.formations, { credentials: "include" });
         if (res.ok) setFormations(await res.json());
       } else if (activeTab === "paiements") {
-        const res = await fetch(endpoints.paiements);
+        const res = await fetch(endpoints.paiements, { credentials: "include" });
         if (res.ok) setPaiements(await res.json());
       } else if (activeTab === "calendrier") {
-        const res = await fetch(endpoints.calendrier);
+        const res = await fetch(endpoints.calendrier, { credentials: "include" });
         if (res.ok) setCalendrier(await res.json());
       } else if (activeTab === "documents") {
-        const res = await fetch(endpoints.documents);
+        const res = await fetch(endpoints.documents, { credentials: "include" });
         if (res.ok) setDocuments(await res.json());
       } else if (activeTab === "notifications") {
-        const res = await fetch(endpoints.notifications);
+        const res = await fetch(endpoints.notifications, { credentials: "include" });
         if (res.ok) setNotifications(await res.json());
       }
       
       // Always load notes for stats if in overview
       if (activeTab === "overview") {
-        const res = await fetch(endpoints.notes);
+        const res = await fetch(endpoints.notes, { credentials: "include" });
         if (res.ok) setNotes(await res.json());
       }
 

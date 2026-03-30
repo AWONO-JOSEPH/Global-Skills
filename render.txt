@@ -1,1 +1,22 @@
-index-DW3Bo8xu.js:505  POST https://global-skills.onrender.com/api/login 419
+index-DW3Bo8xu.js:457 
+ GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
+
+index-DW3Bo8xu.js:591 
+ GET https://global-skills.onrender.com/api/admin/overview 401 (Unauthorized)
+index-DW3Bo8xu.js:591 
+ GET https://global-skills.onrender.com/api/admin/students 401 (Unauthorized)
+index-DW3Bo8xu.js:457 
+ GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
+index-DW3Bo8xu.js:594 
+ GET https://global-skills.onrender.com/api/profile 401 (Unauthorized)
+index-DW3Bo8xu.js:594 
+ PUT https://global-skills.onrender.com/api/profile 401 (Unauthorized)
+index-DW3Bo8xu.js:594 
+ PUT https://global-skills.onrender.com/api/profile 401 (Unauthorized)
+﻿
+
+Press ctrl i to turn on code suggestions. Press ctrl x to disable code suggestions.
+ctrl
+i
+ to turn on code suggestions. Don't show again NEW
+

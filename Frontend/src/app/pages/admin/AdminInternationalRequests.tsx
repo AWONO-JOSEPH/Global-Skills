@@ -86,7 +86,9 @@ export default function AdminInternationalRequests() {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      const response = await fetch(apiUrl("/api/admin/international-requests"));
+      const response = await fetch(apiUrl("/api/admin/international-requests"), {
+        credentials: "include",
+      });
       if (response.ok) {
         const data = await response.json();
         const filteredRequests = statusFilter === "all"
@@ -106,7 +108,9 @@ export default function AdminInternationalRequests() {
   const fetchRequestDetail = async (id: number) => {
     try {
       setSelectedRequest(null);
-      const response = await fetch(apiUrl(`/api/admin/international-requests/${id}`));
+      const response = await fetch(apiUrl(`/api/admin/international-requests/${id}`), {
+        credentials: "include",
+      });
       if (response.ok) {
         const data = await response.json();
         setSelectedRequest(data.request);
@@ -123,6 +127,7 @@ export default function AdminInternationalRequests() {
       setUpdatingStatus(id);
       const response = await fetch(apiUrl(`/api/admin/international-requests/${id}/status`), {
         method: "PUT",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -147,6 +152,7 @@ export default function AdminInternationalRequests() {
     try {
       const response = await fetch(apiUrl(`/api/admin/international-requests/${id}`), {
         method: "DELETE",
+        credentials: "include",
       });
       if (response.ok) {
         toast.success("Demande supprimée avec succès");

@@ -52,6 +52,7 @@ export default function ChangePassword() {
     try {
       const response = await fetch(apiUrl("/api/change-password"), {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
