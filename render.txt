@@ -1,13 +1,10 @@
-In Connection.php line 838:
-Menu
-                                                                               
-  SQLSTATE[42P07]: Duplicate table: 7 ERROR:  relation "sessions" already exi  
-  sts (Connection: pgsql, Host: dpg-d719mq94tr6s73e8kpv0-a, Port: 5432, Datab  
-  ase: globalskillsdb_wt3x, SQL: create table "sessions" ("id" varchar(255) n  
-  ot null, "user_id" bigint null, "ip_address" varchar(45) null, "user_agent"  
-   text null, "payload" text not null, "last_activity" integer not null))      
-                                                                               
-In Connection.php line 584:
-                                                                               
-  SQLSTATE[42P07]: Duplicate table: 7 ERROR:  relation "sessions" already exi  
-  sts          
+Access to fetch at 'https://global-skills.onrender.com/sanctum/csrf-cookie' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
+global-skills.onrender.com/sanctum/csrf-cookie:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
+login:1 Access to fetch at 'https://global-skills.onrender.com/api/profile' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
+global-skills.onrender.com/api/profile:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
+login:1 Access to fetch at 'https://global-skills.onrender.com/api/news' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
+global-skills.onrender.com/api/news:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
+login:1 Access to fetch at 'https://global-skills.onrender.com/api/news' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
+global-skills.onrender.com/api/news:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
+login:1 Access to fetch at 'https://global-skills.onrender.com/api/profile' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
+global-skills.onrender.com/api/profile:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
