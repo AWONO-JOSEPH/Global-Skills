@@ -1,10 +1,5 @@
-Access to fetch at 'https://global-skills.onrender.com/sanctum/csrf-cookie' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
-global-skills.onrender.com/sanctum/csrf-cookie:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
-login:1 Access to fetch at 'https://global-skills.onrender.com/api/profile' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
-global-skills.onrender.com/api/profile:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
-login:1 Access to fetch at 'https://global-skills.onrender.com/api/news' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
-global-skills.onrender.com/api/news:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
-login:1 Access to fetch at 'https://global-skills.onrender.com/api/news' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
-global-skills.onrender.com/api/news:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
-login:1 Access to fetch at 'https://global-skills.onrender.com/api/profile' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The 'Access-Control-Allow-Origin' header contains multiple values 'https://global-skills.vercel.app, https://global-skills.vercel.app', but only one is allowed. Have the server send the header with a valid value.Understand this error
-global-skills.onrender.com/api/profile:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
+index-DW3Bo8xu.js:505 
+ POST https://global-skills.onrender.com/api/login 419
+
+﻿
+CSRF token mismatch
