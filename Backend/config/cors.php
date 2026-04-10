@@ -8,6 +8,8 @@ return [
     'allowed_origins' => [
         'http://localhost:5173',
         'http://localhost:3000',
+        'https://globalskillsacademy.net',
+        'https://www.globalskillsacademy.net',
         env('FRONTEND_URL', 'https://global-skills.vercel.app'),
     ],
 

@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+zimport { Link } from "react-router";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
@@ -149,7 +149,7 @@ export default function Home() {
             </div>
             <div className="hidden lg:block">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1744809482817-9a9d4fc280af?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZnJpY2FuJTIwc3R1ZGVudHMlMjBjbGFzc3Jvb20lMjBsZWFybmluZ3xlbnwxfHx8fDE3NzI1MzA2ODl8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                src="/assets/images/background/20260410_1232_Image Generation_remix.png"
                 alt="Étudiants en formation"
                 className="rounded-lg shadow-2xl w-full h-auto"
               />
