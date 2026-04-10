@@ -7,17 +7,47 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
+    private function toAbsoluteAssetUrl(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+        if (Str::startsWith($value, ['http://', 'https://'])) {
+            return $value;
+        }
+        return url($value);
+    }
+
+    private function normalizeAvatarInput(?string $value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+        // Only accept local storage paths. This prevents storing absolute URLs that later get double-prefixed.
+        if (Str::startsWith($value, ['http://', 'https://'])) {
+            $parts = parse_url($value);
+            $path = $parts['path'] ?? null;
+            return $path && Str::startsWith($path, '/storage/') ? $path : null;
+        }
+        if (Str::startsWith($value, '/storage/')) {
+            return $value;
+        }
+        if (Str::startsWith($value, 'storage/')) {
+            return '/' . $value;
+        }
+        return null;
+    }
+
     public function show(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if ($user->avatar_url) {
-            $user->avatar_url = url($user->avatar_url);
-        }
+        $user->avatar_url = $this->toAbsoluteAssetUrl($user->avatar_url);
 
         return response()->json($user);
     }
@@ -40,13 +70,13 @@ class ProfileController extends Controller
             'last_name' => $validated['last_name'] ?? $user->last_name,
             'email' => $validated['email'] ?? $user->email,
             'phone' => $validated['phone'] ?? $user->phone,
-            'avatar_url' => $validated['avatar_url'] ?? $user->avatar_url,
+            'avatar_url' => array_key_exists('avatar_url', $validated)
+                ? $this->normalizeAvatarInput($validated['avatar_url'])
+                : $user->avatar_url,
             'name' => trim(($validated['first_name'] ?? $user->first_name) . ' ' . ($validated['last_name'] ?? $user->last_name)) ?: $user->name,
         ])->save();
 
-        if ($user->avatar_url) {
-            $user->avatar_url = url($user->avatar_url);
-        }
+        $user->avatar_url = $this->toAbsoluteAssetUrl($user->avatar_url);
 
         return response()->json($user);
     }
@@ -78,10 +108,7 @@ class ProfileController extends Controller
             $user->save();
 
             // S'assurer de retourner une URL absolue
-            $photoUrl = $user->avatar_url;
-            if (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
-                $photoUrl = url($photoUrl);
-            }
+            $photoUrl = $this->toAbsoluteAssetUrl($user->avatar_url);
 
             return response()->json([
                 'message' => 'Photo mise à jour',

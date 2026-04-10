@@ -7,9 +7,17 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class StudentControllerSimple extends Controller
 {
+    private function toAbsoluteAssetUrl(?string $value): ?string
+    {
+        if (!$value) return null;
+        if (Str::startsWith($value, ['http://', 'https://'])) return $value;
+        return url($value);
+    }
+
     private function getStudent(Request $request)
     {
         $user = Auth::user();
@@ -29,7 +37,7 @@ class StudentControllerSimple extends Controller
             'matricule' => $user->student?->matricule,
             'formation' => $user->formation?->name,
             'niveau' => $user->student?->level ?? 'N/A',
-            'photo' => $user->avatar_url ? url($user->avatar_url) : null,
+            'photo' => $this->toAbsoluteAssetUrl($user->avatar_url),
             'email' => $user->email,
         ]);
     }
@@ -268,10 +276,7 @@ class StudentControllerSimple extends Controller
             $user->avatar_url = Storage::url($path);
             $user->save();
 
-            $photoUrl = $user->avatar_url;
-            if (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
-                $photoUrl = url($photoUrl);
-            }
+            $photoUrl = $this->toAbsoluteAssetUrl($user->avatar_url);
 
             return response()->json([
                 'message' => 'Profile picture uploaded successfully', 

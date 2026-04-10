@@ -110,7 +110,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/contact-messages/{contactMessage}/status', [ContactMessageController::class, 'updateStatus']);
         Route::delete('/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy']);
 
+        // Backward-compat for existing frontend paths
         Route::apiResource('news', NewsController::class)->only(['store', 'update', 'destroy']);
+    });
+
+    // News write endpoints (teacher/admin)
+    // The public `/api/news` resource is read-only; writes were previously only under `/api/admin/news`.
+    // Expose write routes at `/api/news` too so both admin & teacher can publish.
+    Route::middleware('role:teacher,admin')->group(function () {
+        Route::post('/news', [NewsController::class, 'store']);
+        Route::match(['put', 'patch'], '/news/{news}', [NewsController::class, 'update']);
+        Route::delete('/news/{news}', [NewsController::class, 'destroy']);
     });
 });
 

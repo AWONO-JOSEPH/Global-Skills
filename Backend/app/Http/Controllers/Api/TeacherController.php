@@ -9,9 +9,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TeacherController extends Controller
 {
+    private function toAbsoluteAssetUrl(?string $value): ?string
+    {
+        if (!$value) return null;
+        if (Str::startsWith($value, ['http://', 'https://'])) return $value;
+        return url($value);
+    }
+
     private function getTeacher(Request $request)
     {
         $user = Auth::user();
@@ -31,7 +39,7 @@ class TeacherController extends Controller
             'name' => $teacher->name,
             'email' => $teacher->email,
             'specialite' => $teacher->specialite ?? null,
-            'photo' => $teacher->avatar_url ? url($teacher->avatar_url) : null,
+            'photo' => $this->toAbsoluteAssetUrl($teacher->avatar_url),
         ]);
     }
 
@@ -241,10 +249,7 @@ class TeacherController extends Controller
             $user->avatar_url = Storage::url($path);
             $user->save();
 
-            $photoUrl = $user->avatar_url;
-            if (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
-                $photoUrl = url($photoUrl);
-            }
+            $photoUrl = $this->toAbsoluteAssetUrl($user->avatar_url);
 
             return response()->json([
                 'message' => 'Profile picture uploaded successfully', 

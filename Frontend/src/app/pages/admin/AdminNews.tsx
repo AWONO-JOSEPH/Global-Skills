@@ -114,7 +114,10 @@ export default function AdminNews() {
         data.append('_method', 'PUT');
       }
 
-      const url = editingId ? `/api/admin/news/${editingId}` : "/api/admin/news";
+      // Use the shared `/api/news` write endpoints (teacher/admin).
+      // `/api/admin/news` still exists for backward-compat, but `/api/news`
+      // avoids role/prefix confusion and matches read endpoints.
+      const url = editingId ? `/api/news/${editingId}` : "/api/news";
       const response = await apiFetch(url, {
         method: "POST", // On utilise POST avec _method=PUT pour Laravel si editingId existe
         body: data,
@@ -160,7 +163,7 @@ export default function AdminNews() {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette actualité ?")) return;
     
     try {
-      const response = await apiFetch(`/api/admin/news/${id}`, {
+      const response = await apiFetch(`/api/news/${id}`, {
         method: "DELETE",
       });
 
