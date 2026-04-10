@@ -19,7 +19,7 @@ import {
   EyeOff
 } from "lucide-react";
 import { toast } from "sonner";
-import { getCurrentAuth, logout } from "../auth";
+import { getCurrentAuth, logout, getCookie, setCookie } from "../auth";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ export default function Settings() {
     confirmPassword: ""
   });
 
-  const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string>(getCookie("gs_profile_photo") || "");
   const [isLoading, setIsLoading] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -70,13 +70,17 @@ export default function Settings() {
           phone: user.phone ?? "",
         });
 
+        let photoUrl = "";
         if (user.avatar_url) {
-          setAvatarUrl(user.avatar_url);
+          photoUrl = user.avatar_url;
         } else if (user.photo) {
-          setAvatarUrl(user.photo);
+          photoUrl = user.photo;
         } else {
-          setAvatarUrl(`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=f97316&color=fff`);
+          photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}&background=f97316&color=fff`;
         }
+        
+        setAvatarUrl(photoUrl);
+        setCookie("gs_profile_photo", photoUrl);
       } catch (error) {
         toast.error("Impossible de charger votre profil.");
       }
@@ -97,6 +101,7 @@ export default function Settings() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarUrl(reader.result as string);
+        // On ne met pas en cookie le base64 pour éviter de dépasser la limite de 4Ko
       };
       reader.readAsDataURL(file);
       
@@ -122,6 +127,7 @@ export default function Settings() {
       if (response.ok) {
         const data = await response.json();
         setAvatarUrl(data.photo);
+        setCookie("gs_profile_photo", data.photo);
         toast.success("Photo de profil mise à jour avec succès");
       } else {
         toast.error("Erreur lors du téléchargement de la photo");
@@ -149,15 +155,14 @@ export default function Settings() {
       if (response.ok) {
         toast.success("Informations personnelles mises à jour avec succès");
         // Mettre à jour les informations dans le localStorage
-        const auth = getCurrentAuth();
-        if (auth) {
-          const updatedAuth = {
-            ...auth,
-            name: `${personalInfo.firstName} ${personalInfo.lastName}`.trim(),
-            email: personalInfo.email,
-          };
-          localStorage.setItem('auth', JSON.stringify(updatedAuth));
-        }
+        const user = JSON.parse(localStorage.getItem('gs_user') || '{}');
+        const updatedUser = {
+          ...user,
+          name: `${personalInfo.firstName} ${personalInfo.lastName}`.trim(),
+          email: personalInfo.email,
+        };
+        localStorage.setItem('gs_user', JSON.stringify(updatedUser));
+        localStorage.setItem('gs_email', personalInfo.email);
       } else {
         toast.error("Erreur lors de la mise à jour des informations");
       }

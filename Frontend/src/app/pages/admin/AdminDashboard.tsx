@@ -47,7 +47,7 @@ import {
   Camera,
 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Line, LineChart } from "recharts";
-import { getCurrentAuth, logout } from "../../auth";
+import { getCurrentAuth, logout, getCookie, setCookie } from "../../auth";
 import { toast } from "sonner";
 
 type OverviewStats = {
@@ -119,7 +119,10 @@ export default function AdminDashboard() {
     localStorage.setItem("admin_tab", tab);
   };
 
-  const [stats, setStats] = useState<OverviewStats | null>(null);
+  const [stats, setStats] = useState<OverviewStats | null>(() => {
+    const cachedPhoto = getCookie("gs_profile_photo");
+    return cachedPhoto ? { photo: cachedPhoto } as any : null;
+  });
   const [enrollmentData, setEnrollmentData] = useState<EnrollmentPoint[]>([]);
   const [revenueData, setRevenueData] = useState<RevenuePoint[]>([]);
   const [recentStudents, setRecentStudents] = useState<any[]>([]);
@@ -154,7 +157,8 @@ export default function AdminDashboard() {
       const response = await apiFetch("/api/profile/photo", { method: 'POST', body: formData });
       if (response.ok) { 
         const data = await response.json(); 
-        setStats((prev: any) => prev ? { ...prev, photo: data.photo } : null); 
+        setStats((prev: any) => prev ? { ...prev, photo: data.photo } : { photo: data.photo }); 
+        setCookie("gs_profile_photo", data.photo);
         toast.success("Photo de profil mise à jour avec succès"); 
       }
       else toast.error("Erreur lors du téléchargement de la photo");
@@ -168,6 +172,9 @@ export default function AdminDashboard() {
       if (!response.ok) throw new Error("Erreur");
       const data = await response.json();
       setStats(data.stats);
+      if (data.stats?.photo) {
+        setCookie("gs_profile_photo", data.stats.photo);
+      }
       setEnrollmentData(data.enrollmentData ?? []);
       setRevenueData(data.revenueData ?? []);
       setRecentStudents(data.recentStudents ?? []);

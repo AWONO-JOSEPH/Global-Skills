@@ -221,22 +221,35 @@ class TeacherController extends Controller
 
         $request->validate([
             'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        if ($request->hasFile('profile_picture')) {
+        $file = $request->file('profile_picture') ?? $request->file('photo');
+
+        if ($file) {
             if ($user->avatar_url) {
-                // Remove /storage/ prefix for deletion
-                $oldPath = str_replace('/storage/', '', $user->avatar_url);
-                Storage::disk('public')->delete($oldPath);
+                // Extraire le chemin relatif pour la suppression
+                $pathToDelete = $user->avatar_url;
+                if (str_contains($pathToDelete, '/storage/')) {
+                    $parts = explode('/storage/', $pathToDelete);
+                    $pathToDelete = end($parts);
+                }
+                Storage::disk('public')->delete($pathToDelete);
             }
 
-            $path = $request->file('profile_picture')->store('profile-pictures', 'public');
+            $path = $file->store('profile-pictures', 'public');
             $user->avatar_url = Storage::url($path);
             $user->save();
 
+            $photoUrl = $user->avatar_url;
+            if (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
+                $photoUrl = url($photoUrl);
+            }
+
             return response()->json([
                 'message' => 'Profile picture uploaded successfully', 
-                'avatar_url' => url($user->avatar_url)
+                'photo' => $photoUrl,
+                'avatar_url' => $photoUrl
             ]);
         }
 

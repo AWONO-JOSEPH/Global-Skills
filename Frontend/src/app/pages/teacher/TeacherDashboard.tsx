@@ -12,7 +12,7 @@ import {
   Plus, Camera, ClipboardList, CheckCircle, User, Menu,
 } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { getCurrentAuth, logout } from "../../auth";
+import { getCurrentAuth, logout, getCookie, setCookie } from "../../auth";
 import { toast } from "sonner";
 
 type TeacherInfo = {
@@ -44,7 +44,10 @@ export default function TeacherDashboard() {
     localStorage.setItem("teacher_tab", tab);
   };
 
-  const [teacherInfo, setTeacherInfo] = useState<TeacherInfo | null>(null);
+  const [teacherInfo, setTeacherInfo] = useState<TeacherInfo | null>(() => {
+    const cachedPhoto = getCookie("gs_profile_photo");
+    return cachedPhoto ? { photo: cachedPhoto } as TeacherInfo : null;
+  });
   const [formations, setFormations] = useState<Formation[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,7 +75,13 @@ export default function TeacherDashboard() {
       
       // Toujours charger le profil
       const teacherResponse = await apiFetch(`/api/teacher/profile`);
-      if (teacherResponse.ok) setTeacherInfo(await teacherResponse.json());
+      if (teacherResponse.ok) {
+        const data = await teacherResponse.json();
+        setTeacherInfo(data);
+        if (data.photo) {
+          setCookie("gs_profile_photo", data.photo);
+        }
+      }
 
       // Chargement conditionnel par onglet
       if (activeTab === "students" || activeTab === "presence" || activeTab === "notes" || activeTab === "courses") {
@@ -198,7 +207,8 @@ export default function TeacherDashboard() {
       const response = await apiFetch("/api/profile/photo", { method: 'POST', body: formData });
       if (response.ok) { 
         const data = await response.json(); 
-        setTeacherInfo(prev => prev ? { ...prev, photo: data.photo } : null); 
+        setTeacherInfo(prev => prev ? { ...prev, photo: data.photo } : { photo: data.photo } as TeacherInfo); 
+        setCookie("gs_profile_photo", data.photo);
         toast.success("Photo de profil mise à jour avec succès"); 
       }
       else toast.error("Erreur lors du téléchargement de la photo");

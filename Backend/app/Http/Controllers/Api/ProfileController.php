@@ -62,19 +62,31 @@ class ProfileController extends Controller
 
         if ($request->hasFile('photo')) {
             if ($user->avatar_url) {
-                // Nettoyer l'URL pour obtenir le chemin relatif au disque 'public'
-                $oldPath = str_replace('/storage/', '', $user->avatar_url);
-                Storage::disk('public')->delete($oldPath);
+                // Extraire le chemin relatif pour la suppression
+                // L'URL peut être /storage/avatars/xxx.jpg ou http://domain/storage/avatars/xxx.jpg
+                $pathToDelete = $user->avatar_url;
+                if (str_contains($pathToDelete, '/storage/')) {
+                    $parts = explode('/storage/', $pathToDelete);
+                    $pathToDelete = end($parts);
+                }
+                Storage::disk('public')->delete($pathToDelete);
             }
 
             $path = $request->file('photo')->store('avatars', 'public');
+            // Storage::url($path) retourne /storage/avatars/xxx.jpg ou l'URL complète selon la config
             $user->avatar_url = Storage::url($path);
             $user->save();
 
+            // S'assurer de retourner une URL absolue
+            $photoUrl = $user->avatar_url;
+            if (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
+                $photoUrl = url($photoUrl);
+            }
+
             return response()->json([
-            'message' => 'Photo mise à jour',
-            'photo' => $user->avatar_url ? url($user->avatar_url) : null
-        ]);
+                'message' => 'Photo mise à jour',
+                'photo' => $photoUrl
+            ]);
         }
 
         return response()->json(['message' => 'Aucun fichier'], 400);

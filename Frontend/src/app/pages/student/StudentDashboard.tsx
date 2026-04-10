@@ -13,7 +13,7 @@ import {
   Bell, BookOpen, Award, LogOut, User, CheckCircle, Clock, Settings, Menu, X, Camera,
 } from "lucide-react";
 import logo from "../../../assets/84498a56cb9356abc2f9404869c93b519e727718.png";
-import { getCurrentAuth, logout } from "../../auth";
+import { getCurrentAuth, logout, getCookie, setCookie } from "../../auth";
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -26,7 +26,10 @@ export default function StudentDashboard() {
 
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [studentInfo, setStudentInfo] = useState<any>(null);
+  const [studentInfo, setStudentInfo] = useState<any>(() => {
+    const cachedPhoto = getCookie("gs_profile_photo");
+    return cachedPhoto ? { photo: cachedPhoto } : null;
+  });
   const [formations, setFormations] = useState<any[]>([]);
   const [paiements, setPaiements] = useState<any[]>([]);
   const [calendrier, setCalendrier] = useState<any[]>([]);
@@ -49,7 +52,8 @@ export default function StudentDashboard() {
       const response = await apiFetch("/api/profile/photo", { method: 'POST', body: formData });
       if (response.ok) { 
         const data = await response.json(); 
-        setStudentInfo((prev: any) => prev ? { ...prev, photo: data.photo } : null); 
+        setStudentInfo((prev: any) => prev ? { ...prev, photo: data.photo } : { photo: data.photo }); 
+        setCookie("gs_profile_photo", data.photo);
         toast.success("Photo de profil mise à jour avec succès"); 
       }
       else toast.error("Erreur lors du téléchargement de la photo");
@@ -78,7 +82,13 @@ export default function StudentDashboard() {
 
       // Load essential data (profile) always, and others based on active tab
       const profileRes = await apiFetch(endpoints.profile);
-      if (profileRes.ok) setStudentInfo(await profileRes.json());
+      if (profileRes.ok) {
+        const data = await profileRes.json();
+        setStudentInfo(data);
+        if (data.photo) {
+          setCookie("gs_profile_photo", data.photo);
+        }
+      }
 
       // Load specific tab data
       if (activeTab === "overview") {
