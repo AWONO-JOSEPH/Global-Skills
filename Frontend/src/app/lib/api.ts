@@ -1,9 +1,15 @@
 const rawBase = (import.meta as any).env?.VITE_API_BASE_URL as string | undefined;
+const defaultProdBase = ((import.meta as any).env?.VITE_DEFAULT_API_BASE_URL as string | undefined)
+  || "https://global-skills.onrender.com";
 
 export function apiUrl(pathname: string): string {
-  // In production, relying on a hardcoded backend URL easily breaks when you
-  // switch domains. Prefer `VITE_API_BASE_URL`, otherwise use same-origin (relative).
-  const base = (rawBase || "").trim().replace(/\/+$/, "");
+  // Prefer `VITE_API_BASE_URL`. If not set:
+  // - Local dev: relative paths (proxy / same host)
+  // - Prod: use a safe default backend base (overrideable via `VITE_DEFAULT_API_BASE_URL`)
+  const isLocalhost = typeof window !== "undefined"
+    && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+  const base = (rawBase || (isLocalhost ? "" : defaultProdBase)).trim().replace(/\/+$/, "");
   const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
   return base ? `${base}${path}` : path;
 }
