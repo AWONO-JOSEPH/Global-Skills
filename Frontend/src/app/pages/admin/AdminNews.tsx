@@ -103,12 +103,20 @@ export default function AdminNews() {
       data.append('description', formData.description);
       data.append('category', formData.category);
       if (mediaFile) {
-        data.append('media', mediaFile);
+        if (mediaType === 'image') {
+          data.append('image', mediaFile);
+        } else if (mediaType === 'video') {
+          data.append('video', mediaFile);
+        }
       }
 
-      const url = editingId ? `/api/news/${editingId}` : "/api/news";
+      if (editingId) {
+        data.append('_method', 'PUT');
+      }
+
+      const url = editingId ? `/api/admin/news/${editingId}` : "/api/admin/news";
       const response = await apiFetch(url, {
-        method: "POST", // Laravel uses POST for updates with files (sometimes with _method=PUT)
+        method: "POST", // On utilise POST avec _method=PUT pour Laravel si editingId existe
         body: data,
       });
 
@@ -152,7 +160,7 @@ export default function AdminNews() {
     if (!confirm("Êtes-vous sûr de vouloir supprimer cette actualité ?")) return;
     
     try {
-      const response = await apiFetch(`/api/news/${id}`, {
+      const response = await apiFetch(`/api/admin/news/${id}`, {
         method: "DELETE",
       });
 

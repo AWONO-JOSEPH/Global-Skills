@@ -210,7 +210,7 @@ export default function Home() {
             </div>
             <div>
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080"
+                src="/assets/images/background/20260410_1232_Image Generation_remix.png"
                 alt="Formation professionnelle"
                 className="rounded-lg shadow-lg w-full h-auto"
               />
