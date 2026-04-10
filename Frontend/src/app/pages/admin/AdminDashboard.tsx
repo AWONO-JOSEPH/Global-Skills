@@ -405,14 +405,12 @@ export default function AdminDashboard() {
       const response = await apiFetch(url, {
         method: editingId ? "PUT" : "POST",
         body: JSON.stringify({
+          // Backend `formations` schema currently supports only these fields.
+          // The UI collects more details, but the API will reject missing required fields (422),
+          // notably `capacity`.
           name: formData.title,
-          description: formData.description,
-          price: formData.price,
-          registration_fee: formData.registration_fee || 25000,
-          duration: formData.duration,
-          category: formData.category,
-          level: formData.level,
-          certification: formData.certification,
+          price: formData.price ? Number(formData.price) : 0,
+          capacity: 0,
         }),
       });
       if (response.ok) {
