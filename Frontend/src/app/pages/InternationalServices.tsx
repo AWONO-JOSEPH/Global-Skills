@@ -196,7 +196,7 @@ export default function InternationalServices() {
                   asChild
                 >
                   <a
-                    href="https://www.google.com/url?sa=t&source=web&rct=j&url=https://www.africau.edu/images/default/sample.pdf"
+                    href="/assets/images/background/20260410_1921_Image Generation_remix_01knw6fp2ffcmtny1qee6q7g1y.png"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
