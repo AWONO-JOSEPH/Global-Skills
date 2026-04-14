@@ -208,7 +208,7 @@ export default function InternationalServices() {
             </div>
             <div className="hidden lg:block">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1630569265403-9f38855679fa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbnRlcm5hdGlvbmFsJTIwc3R1ZGVudHMlMjBzdHVkeWluZyUyMGFicm9hZHxlbnwxfHx8fDE3NzI1MjYzODN8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                src="/assets/images/background/20260410_1921_Image Generation_remix_01knw6fp2ffcmtny1qee6q7g1y.png"
                 alt="Étudiants internationaux"
                 className="rounded-lg shadow-2xl w-full h-auto"
               />
