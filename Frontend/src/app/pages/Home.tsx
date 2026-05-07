@@ -109,6 +109,46 @@ export default function Home() {
     },
   ];
 
+  const teamMembers = [
+ {
+      name: " Mlle Laura",
+      role: "Directrice du centre",
+      description: "Dirige les opérations quotidiennes du centre et supervise l'ensemble des activités pédagogiques.",
+      image: "/assets/images/Team/Laura.JPG",
+    },
+
+    {
+      name: " Mlle Maeva",
+      role: "Secretaire de direction",
+      description: "Assure le support administratif et organisationnel auprès de la direction pour un fonctionnement optimal.",
+      image: "/assets/images/Team/Maeva.jpeg",
+    },
+
+    {
+      name: "Mr Joseph",
+      role: "Informaticien",
+      description: "Expert en technologies de l'information, il gère l'infrastructure technique et les systèmes informatiques.",
+      image: "/assets/images/Team/joseph.jpeg",
+    },
+    {
+      name: " Mr Richy",
+      role: "Collaborateur",
+      description: "Apporte son soutien polyvalent dans diverses tâches opérationnelles et pédagogiques.",
+      image: "/assets/images/Team/richield.jpeg",
+    },
+    {
+      name: "Mme Sandra",
+      role: "Collaboratrice",
+      description: "Contribue activement aux missions de l'équipe avec son expertise et son engagement.",
+      image: "/assets/images/Team/sandra.jpeg",
+    },
+    {
+      name: "Mr Josue",
+      role: "Comptable",
+      description: "Gère les aspects financiers et comptables de l'institut pour assurer une gestion saine.",
+      image: "/assets/images/Team/WhatsApp Image 2026-05-06 at 21.01.44.jpeg",
+    },
+  ];
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -210,7 +250,7 @@ export default function Home() {
             </div>
             <div>
               <ImageWithFallback
-                src="/assets/images/background/20260410_1232_Image Generation_remix.png"
+                src="/assets/images/background/acceuil.jpg"
                 alt="Formation professionnelle"
                 className="rounded-lg shadow-lg w-full h-auto"
               />
@@ -304,6 +344,43 @@ export default function Home() {
                   <p className="text-muted-foreground">{item.description}</p>
                 </CardContent>
               </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team Section - NOUVELLE SECTION */}
+      <section className="py-16 md:py-24 bg-muted/50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary">
+              Notre Équipe
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Des professionnels passionnés qui vous accompagnent vers l'excellence académique et professionnelle
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {teamMembers.map((member, index) => (
+              <div key={index} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-border/50">
+                <div className="aspect-square overflow-hidden relative">
+                  <ImageWithFallback
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover md:grayscale md:group-hover:grayscale-0 transition-all duration-500 transform group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                    <p className="text-white text-sm italic font-light leading-relaxed">
+                      "{member.description}"
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4 text-center">
+                  <h3 className="text-lg font-bold text-primary mb-1">{member.name}</h3>
+                  <p className="text-accent font-semibold text-xs uppercase tracking-wider">{member.role}</p>
+                </div>
+              </div>
             ))}
           </div>
         </div>

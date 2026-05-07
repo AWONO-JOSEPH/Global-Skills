@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -34,6 +35,17 @@ import {
   BookMarked
 } from "lucide-react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+
+// --- Variantes d'animation ---
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 }
+};
+
+const staggerContainer = {
+  animate: { transition: { staggerChildren: 0.1 } }
+};
 
 export default function Formations() {
   const [selectedCategory, setSelectedCategoryState] = useState(localStorage.getItem("formations_category") || "all");
@@ -335,30 +347,34 @@ export default function Formations() {
   return (
     <div className="flex flex-col">
       {/* ── Hero ── */}
-      <section className="bg-gradient-to-br from-primary to-secondary text-white py-16 md:py-24">
-        <div className="container mx-auto px-4">
+      <section className="bg-gradient-to-br from-primary to-secondary text-white py-16 md:py-24 overflow-hidden">
+        <motion.div 
+          className="container mx-auto px-4"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+        >
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Nos Formations</h1>
             <p className="text-lg md:text-xl text-white/90">
               Découvrez nos programmes de formation professionnelle conçus pour développer vos compétences et booster votre carrière
             </p>
             {/* Stats rapides */}
-            <div className="grid grid-cols-3 gap-4 mt-10 max-w-xl mx-auto">
-              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-2xl font-bold">{allFormations.length}</p>
-                <p className="text-xs text-white/70 mt-0.5">Formations</p>
-              </div>
-              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-2xl font-bold">8</p>
-                <p className="text-xs text-white/70 mt-0.5">Langues</p>
-              </div>
-              <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-2xl font-bold">DQP</p>
-                <p className="text-xs text-white/70 mt-0.5">Diplôme reconnu</p>
-              </div>
-            </div>
+            <motion.div 
+              className="grid grid-cols-3 gap-4 mt-10 max-w-xl mx-auto"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              {[{ val: allFormations.length, label: "Formations" }, { val: "8", label: "Langues" }, { val: "DQP", label: "Diplôme reconnu" }].map((stat, i) => (
+                <motion.div key={i} variants={fadeIn} className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                  <p className="text-2xl font-bold">{stat.val}</p>
+                  <p className="text-xs text-white/70 mt-0.5">{stat.label}</p>
+                </motion.div>
+              ))}
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ── Récap tarifaire ── */}
@@ -406,12 +422,14 @@ export default function Formations() {
           {/* Filtres de catégorie */}
           <div className="flex flex-wrap gap-2 justify-center mb-10">
             {categories.map((cat) => (
-              <button
+              <motion.button
                 key={cat.value}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedCategory(cat.value)}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 border
                   ${selectedCategory === cat.value
-                    ? "bg-primary text-white border-primary shadow-md scale-105"
+                    ? "bg-primary text-white border-primary shadow-md"
                     : "bg-white text-muted-foreground border-border hover:border-primary hover:text-primary"
                   }`}
               >
@@ -420,7 +438,7 @@ export default function Formations() {
                 <span className={`text-xs px-1.5 py-0.5 rounded-full ${selectedCategory === cat.value ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"}`}>
                   {cat.count}
                 </span>
-              </button>
+              </motion.button>
             ))}
           </div>
 
@@ -482,8 +500,9 @@ export default function Formations() {
 
           {/* Grille de formations */}
           {/* Grouper par sous-catégorie si "all" */}
-          {selectedCategory === "all" ? (
-            <div className="space-y-12">
+          <motion.div layout>
+            {selectedCategory === "all" ? (
+              <div className="space-y-12">
               <FormationGroup
                 title="Formations Générales"
                 subtitle="350 000 FCFA · 12 mois · Inscription : 25 000 FCFA"
@@ -510,12 +529,18 @@ export default function Formations() {
               />
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredFormations.map((formation) => (
-                <FormationCard key={formation.id} formation={formation} />
-              ))}
-            </div>
+            <motion.div 
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              <AnimatePresence mode="popLayout">
+                {filteredFormations.map((formation) => (
+                  <FormationCard key={formation.id} formation={formation} />
+                ))}
+              </AnimatePresence>
+            </motion.div>
           )}
+        </motion.div>
         </div>
       </section>
 
@@ -546,7 +571,7 @@ function FormationGroup({ title, subtitle, icon: Icon, formations }: {
   formations: any[];
 }) {
   return (
-    <div>
+    <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <div className="flex items-center gap-3 mb-5">
         <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
           <Icon className="h-5 w-5 text-primary" />
@@ -562,14 +587,21 @@ function FormationGroup({ title, subtitle, icon: Icon, formations }: {
           <FormationCard key={formation.id} formation={formation} />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 // ── Carte formation ──────────────────────────────────────────────────────────
 function FormationCard({ formation }: { formation: any }) {
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5 group">
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card className="overflow-hidden h-full hover:shadow-xl transition-shadow duration-300 group border-border/60">
       <div className="relative h-44">
         <ImageWithFallback
           src={formation.image}
@@ -588,8 +620,8 @@ function FormationCard({ formation }: { formation: any }) {
         )}
       </div>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-base">
-          <formation.icon className="h-4 w-4 text-accent flex-shrink-0" />
+        <CardTitle className="flex items-center gap-2 text-base group-hover:text-primary transition-colors">
+          <formation.icon className="h-4 w-4 text-accent" />
           <span className="line-clamp-1">{formation.title}</span>
         </CardTitle>
         <CardDescription className="line-clamp-2 text-xs">
@@ -647,11 +679,17 @@ function FormationCard({ formation }: { formation: any }) {
           <Link to={`/formations/${formation.id}`}>
             <Button className="w-full bg-primary hover:bg-primary/90 mt-1 h-9 text-sm">
               Voir détails
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <motion.span
+                animate={{ x: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </motion.span>
             </Button>
           </Link>
         </div>
       </CardContent>
     </Card>
+    </motion.div>
   );
 }

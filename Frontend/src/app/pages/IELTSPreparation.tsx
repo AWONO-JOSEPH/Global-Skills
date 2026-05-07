@@ -149,9 +149,15 @@ export default function IELTSPreparation() {
                     S'inscrire Maintenant
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="border-white text-gray-500 hover:bg-white hover:text-primary w-full sm:w-auto">
-                  <FileText className="mr-2 h-5 w-5" />
-                  Télécharger le Programme
+                <Button size="lg" variant="outline" className="border-white text-gray-500 hover:bg-white hover:text-primary w-full sm:w-auto" asChild>
+                  <a
+                    href="/assets/images/flyers/ielts.JPG"
+                    download="Programme_IELTS_Global_Skills.JPG"
+                    rel="noopener noreferrer"
+                  >
+                    <FileText className="mr-2 h-5 w-5" />
+                    Télécharger le Programme
+                  </a>
                 </Button>
               </div>
             </div>

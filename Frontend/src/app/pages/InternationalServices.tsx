@@ -196,8 +196,8 @@ export default function InternationalServices() {
                   asChild
                 >
                   <a
-                    href="/assets/images/background/20260410_1921_Image Generation_remix_01knw6fp2ffcmtny1qee6q7g1y.png"
-                    target="_blank"
+                    href="/assets/images/flyers/etudierefrance.JPG"
+                    download="etudierefrance.JPG"
                     rel="noopener noreferrer"
                   >
                     <FileText className="mr-2 h-5 w-5" />
@@ -263,7 +263,7 @@ export default function InternationalServices() {
             {destinations.map((destination, index) => (
               <Card
                 key={index}
-                className="relative overflow-hidden text-center hover:shadow-lg transition-shadow cursor-pointer"
+                className="relative overflow-hidden text-center shadow-md md:shadow-none md:border hover:shadow-lg transition-shadow cursor-pointer border-none"
               >
                 {/* Drapeau en arrière-plan, très grand et transparent */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -274,7 +274,7 @@ export default function InternationalServices() {
 
                 <CardHeader className="relative z-10">
                   {/* Drapeau normal au-dessus */}
-                  <div className="text-3xl mb-2">{destination.flag}</div>
+                  <div className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl mb-2 leading-none">{destination.flag}</div>
                   <CardTitle className="text-lg">{destination.name}</CardTitle>
                   <CardDescription>{destination.programmes} programmes</CardDescription>
                 </CardHeader>
