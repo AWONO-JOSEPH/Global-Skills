@@ -111,33 +111,33 @@ export default function Home() {
 
   const teamMembers = [
  {
-      name: " Mlle Laura",
+      name: " Mlle ESSOMBA Hortense Laura",
       role: "Directrice du centre",
       description: "Dirige les opérations quotidiennes du centre et supervise l'ensemble des activités pédagogiques.",
       image: "/assets/images/Team/Laura.JPG",
     },
 
     {
-      name: " Mlle Maeva",
+      name: " Mlle DJOUFACK Maeva",
       role: "Secretaire de direction",
       description: "Assure le support administratif et organisationnel auprès de la direction pour un fonctionnement optimal.",
       image: "/assets/images/Team/Maeva.jpeg",
     },
 
     {
-      name: "Mr Joseph",
+      name: "Mr AWONO Joseph",
       role: "Informaticien",
-      description: "Expert en technologies de l'information, il gère l'infrastructure technique et les systèmes informatiques.",
+      description: "Expert en technologies de l'information, Responsable de l'infrastructure technique et des systèmes informatiques.",
       image: "/assets/images/Team/joseph.jpeg",
     },
     {
-      name: " Mr Richy",
+      name: " Mr MIATCHOP Richy",
       role: "Collaborateur",
       description: "Apporte son soutien polyvalent dans diverses tâches opérationnelles et pédagogiques.",
       image: "/assets/images/Team/richield.jpeg",
     },
     {
-      name: "Mme Sandra",
+      name: "Mme Sandra 237",
       role: "Collaboratrice",
       description: "Contribue activement aux missions de l'équipe avec son expertise et son engagement.",
       image: "/assets/images/Team/sandra.jpeg",
@@ -145,7 +145,7 @@ export default function Home() {
     {
       name: "Mr Josue",
       role: "Comptable",
-      description: "Gère les aspects financiers et comptables de l'institut pour assurer une gestion saine.",
+      description: "Rsponsabele des aspects financiers et comptables de l'institut pour assurer une gestion saine.",
       image: "/assets/images/Team/WhatsApp Image 2026-05-06 at 21.01.44.jpeg",
     },
   ];
