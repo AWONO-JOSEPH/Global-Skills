@@ -124,6 +124,13 @@ export default function Home() {
       image: "/assets/images/Team/Maeva.jpeg",
     },
 
+      {
+      name: "Mr NGANDEU Didier",
+      role: "Chargé Pédagogique",
+      description: "Responsable de l'organisation pédagogique, de la qualité des formations et du suivi des apprenants tout au long de leur parcours.",
+      image: "/assets/images/Team/didier.jpg",
+    },
+
     {
       name: "Mr AWONO Joseph",
       role: "Informaticien",
