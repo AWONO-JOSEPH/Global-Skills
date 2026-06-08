@@ -1,6 +1,0 @@
-Access to fetch at 'https://global-skills.onrender.com/api/profile' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The value of the 'Access-Control-Allow-Credentials' header in the response is '' which must be 'true' when the request's credentials mode is 'include'.Understand this error
-global-skills.onrender.com/api/profile:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
-admin:1 Access to fetch at 'https://global-skills.onrender.com/api/profile' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The value of the 'Access-Control-Allow-Credentials' header in the response is '' which must be 'true' when the request's credentials mode is 'include'.Understand this error
-global-skills.onrender.com/api/profile:1  Failed to load resource: net::ERR_FAILEDUnderstand this error
-settings:1 Access to fetch at 'https://global-skills.onrender.com/api/profile' from origin 'https://global-skills.vercel.app' has been blocked by CORS policy: The value of the 'Access-Control-Allow-Credentials' header in the response is '' which must be 'true' when the request's credentials mode is 'include'.Understand this error
-index-BMZ7ypu7.js:457  GET https://global-skills.onrender.com/api/profile net::ERR_FAILED 401 (Unauthorized)

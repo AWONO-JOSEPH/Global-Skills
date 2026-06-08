@@ -70,7 +70,7 @@ export default function Formations() {
       icon: Shield,
       description: "Qualité, Hygiène, Sécurité et Environnement",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/QHSE.jpg",
     },
     {
       id: 2,
@@ -85,7 +85,7 @@ export default function Formations() {
       icon: Package,
       description: "Gestion des opérations douanières et de transit",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/douane et transit .jpg",
     },
     {
       id: 3,
@@ -100,7 +100,7 @@ export default function Formations() {
       icon: Truck,
       description: "Gestion de la chaîne logistique et transport",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/logistique-transport.webp",
     },
     {
       id: 4,
@@ -115,7 +115,7 @@ export default function Formations() {
       icon: Briefcase,
       description: "Création et gestion d'entreprise",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/Entrepreunariat.png",
     },
     {
       id: 5,
@@ -130,7 +130,7 @@ export default function Formations() {
       icon: BarChart,
       description: "Management et gestion de projets",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/gestion des projets.jpg",
     },
     {
       id: 7,
@@ -145,7 +145,7 @@ export default function Formations() {
       icon: FileText,
       description: "Gestion fiscale et déclarations",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/fiscalite.jpg",
     },
     {
       id: 11,
@@ -160,7 +160,7 @@ export default function Formations() {
       icon: Users,
       description: "Assistant de direction et gestion administrative",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/secretariat de direction.jpg",
     },
   ];
 
@@ -194,7 +194,7 @@ export default function Formations() {
       icon: BookOpen,
       description: "Gestion administrative et bureautique",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/secretariat bureatique .png",
     },
     {
       id: 10,
@@ -209,7 +209,7 @@ export default function Formations() {
       icon: Calculator,
       description: "Secrétariat spécialisé en comptabilité",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/secrétariat comptable.jpeg",
     },
     {
       id: 6,
@@ -224,7 +224,7 @@ export default function Formations() {
       icon: Calculator,
       description: "Comptabilité avec logiciels spécialisés",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1761250246894-ee2314939662?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0cmFpbmluZyUyMHdvcmtzaG9wfGVufDF8fHx8MTc3MjU0OTY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/Comptabilité Informatisée et Gestion.jpg",
     },
     {
       id: 13,
@@ -239,7 +239,7 @@ export default function Formations() {
       icon: Image,
       description: "Design graphique et production visuelle",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1569653402334-2e98fbaa80ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nJTIwZGlnaXRhbCUyMHNraWxsc3xlbnwxfHx8fDE3NzI1MzAxNDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/Graphisme de Production.webp",
     },
   ];
 
@@ -258,7 +258,7 @@ export default function Formations() {
       icon: Code,
       description: "Développement d'applications web et mobile",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1569653402334-2e98fbaa80ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nJTIwZGlnaXRhbCUyMHNraWxsc3xlbnwxfHx8fDE3NzI1MzAxNDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/DEVELOPPEMENT-APPLICATION.jpg",
     },
     {
       id: 14,
@@ -273,7 +273,7 @@ export default function Formations() {
       icon: Wifi,
       description: "Maintenance et administration réseaux",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1569653402334-2e98fbaa80ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nJTIwZGlnaXRhbCUyMHNraWxsc3xlbnwxfHx8fDE3NzI1MzAxNDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/Maintenance des Réseaux Informatiques.jpg",
     },
     {
       id: 15,
@@ -288,7 +288,7 @@ export default function Formations() {
       icon: Video,
       description: "Montage vidéo et production audiovisuelle",
       diplome: "DQP / CQP",
-      image: "https://images.unsplash.com/photo-1569653402334-2e98fbaa80ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nJTIwZGlnaXRhbCUyMHNraWxsc3xlbnwxfHx8fDE3NzI1MzAxNDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/Montage Audio Visuel.webp",
     },
   ];
 

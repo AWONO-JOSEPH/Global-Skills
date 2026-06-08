@@ -63,7 +63,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/QHSE.jpg",
     description:
       "Maîtrisez les systèmes de management Qualité, Hygiène, Sécurité et Environnement pour garantir la conformité et la performance des organisations.",
     objectifs: [
@@ -109,7 +109,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/douane et transit .jpg",
     description:
       "Acquérez les compétences nécessaires pour gérer les opérations douanières, le transit international et la réglementation du commerce extérieur.",
     objectifs: [
@@ -155,7 +155,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/logistique-transport.webp",
     description:
       "Formez-vous à la gestion de la chaîne logistique, du transport de marchandises et de l'optimisation des flux pour les entreprises.",
     objectifs: [
@@ -201,7 +201,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/Entrepreunariat.png",
     description:
       "Développez les compétences essentielles pour créer, lancer et gérer votre propre entreprise avec succès.",
     objectifs: [
@@ -247,7 +247,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/gestion des projets.jpg",
     description:
       "Maîtrisez les méthodes et outils de gestion de projets pour planifier, exécuter et livrer des projets dans les délais et budgets impartis.",
     objectifs: [
@@ -293,7 +293,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/Comptabilité Informatisée et Gestion.jpg",
     description:
       "Maîtrisez la comptabilité générale et analytique avec les logiciels spécialisés utilisés par les entreprises modernes.",
     objectifs: [
@@ -339,7 +339,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/fiscalite.jpg",
     description:
       "Acquérez une expertise en droit fiscal, gestion des impôts et déclarations fiscales pour accompagner les entreprises dans leurs obligations.",
     objectifs: [
@@ -440,7 +440,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/secretariat bureatique .png",
     description:
       "Formez-vous aux métiers du secrétariat et de la bureautique pour assurer la gestion administrative et organisationnelle des entreprises.",
     objectifs: [
@@ -486,7 +486,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/secrétariat comptable.jpeg",
     description:
       "Combinez les compétences de secrétariat et de comptabilité pour assurer la gestion administrative et financière des entreprises.",
     objectifs: [
@@ -532,7 +532,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_PRO,
+    image: "/assets/images/formations/secretariat de direction.jpg",
     description:
       "Devenez un assistant de direction efficace, capable de gérer les activités d'un dirigeant et de coordonner les équipes.",
     objectifs: [
@@ -573,12 +573,12 @@ export const formationsDetail: FormationDetailItem[] = [
   },
   {
     id: 12,
-    title: "Développeur d'Application",
+    title: "Développeur d'Applications",
     category: "Formation Professionnelle 12 mois",
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_DIGITAL,
+    image: "/assets/images/formations/DEVELOPPEMENT-APPLICATION.jpg",
     description:
       "Apprenez à concevoir et développer des applications web et mobiles modernes adaptées aux besoins des entreprises.",
     objectifs: [
@@ -633,7 +633,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_DIGITAL,
+    image: "/assets/images/formations/Graphisme de Production.webp",
     description:
       "Maîtrisez les outils de design graphique et de production visuelle pour créer des supports de communication percutants.",
     objectifs: [
@@ -679,7 +679,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_DIGITAL,
+    image: "/assets/images/formations/Maintenance des Réseaux Informatiques.jpg",
     description:
       "Formez-vous à l'installation, la configuration et la maintenance des réseaux informatiques et des systèmes d'information.",
     objectifs: [
@@ -725,7 +725,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_DIGITAL,
+    image: "/assets/images/formations/Montage Audio Visuel.webp",
     description:
       "Maîtrisez les techniques de montage vidéo et de production audiovisuelle pour créer des contenus professionnels de qualité.",
     objectifs: [
@@ -771,7 +771,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "Voir détails par langue",
     level: "baccalaureat/GCE A level",
-    image: IMG_LANG,
+    image: "/assets/images/formations/Langues Internationales.jpg",
     description:
       "Perfectionnez votre niveau de langues étrangères pour booster votre carrière à l'international avec des certifications reconnues.",
     objectifs: [
