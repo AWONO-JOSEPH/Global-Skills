@@ -48,7 +48,7 @@ export default function Home() {
       duration: "12 mois",
       level: "Tous niveaux",
       icon: TrendingUp,
-      image: "https://images.unsplash.com/photo-1569653402334-2e98fbaa80ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nJTIwZGlnaXRhbCUyMHNraWxsc3xlbnwxfHx8fDE3NzI1MzAxNDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/marketing digital.png",
     },
     {
       id: 2,
@@ -57,7 +57,7 @@ export default function Home() {
       duration: "12 mois",
       level: "Tous niveaux",
       icon: Laptop,
-      image: "https://images.unsplash.com/photo-1569653402334-2e98fbaa80ee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb21wdXRlciUyMHRyYWluaW5nJTIwZGlnaXRhbCUyMHNraWxsc3xlbnwxfHx8fDE3NzI1MzAxNDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/DEVELOPPEMENT-APPLICATION.jpg",
     },
     {
       id: 3,
@@ -66,7 +66,7 @@ export default function Home() {
       duration: "3 mois",
       level: "Tous niveaux",
       icon: Languages,
-      image: "https://images.unsplash.com/photo-1558443957-d056622df610?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsYW5ndWFnZSUyMGxlYXJuaW5nJTIwY2xhc3Nyb29tfGVufDF8fHx8MTc3MjUzMDE0Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/langues internationales.jpg",
     },
     {
       id: 4,
@@ -75,7 +75,7 @@ export default function Home() {
       duration: "3 mois",
       level: "Débutant",
       icon: Car,
-      image: "https://images.unsplash.com/photo-1764547169175-9b7d2736324e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkcml2aW5nJTIwc2Nob29sJTIwaW5zdHJ1Y3RvcnxlbnwxfHx8fDE3NzI2MTU2MDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "/assets/images/formations/Auto ecole.jpeg",
     },
   ];
 

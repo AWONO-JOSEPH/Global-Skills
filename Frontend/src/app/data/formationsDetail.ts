@@ -385,7 +385,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: IMG_DIGITAL,
+    image: "/assets/images/formations/marketing digital.png",
     description:
       "Maîtrisez les stratégies et outils du marketing digital pour développer la présence en ligne des entreprises et booster leur croissance.",
     objectifs: [
@@ -725,7 +725,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "À partir de 150,000 FCFA",
     level: "baccalaureat/GCE A level",
-    image: "/assets/images/formations/Montage Audio Visuel.webp",
+    image: "/assets/images/formations/Montage Audio Visue.webp",
     description:
       "Maîtrisez les techniques de montage vidéo et de production audiovisuelle pour créer des contenus professionnels de qualité.",
     objectifs: [
@@ -771,7 +771,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "Voir détails par langue",
     level: "baccalaureat/GCE A level",
-    image: "/assets/images/formations/Langues Internationales.jpg",
+    image: "/assets/images/formations/langues internationales.jpg",
     description:
       "Perfectionnez votre niveau de langues étrangères pour booster votre carrière à l'international avec des certifications reconnues.",
     objectifs: [
@@ -860,7 +860,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "110 000 FCFA au total",
     level: "baccalaureat/GCE A level",
-    image: IMG_CAR,
+    image: "/assets/images/formations/Auto ecole.jpeg",
     description:
       "Préparez-vous efficacement à l'examen du permis de conduire avec des cours théoriques et pratiques dispensés par des moniteurs expérimentés.",
     objectifs: [
