@@ -107,7 +107,18 @@ export default function News() {
           };
         });
 
-        setItems(mapped);
+        // Ajouter l'actualité Vacances Utiles 2026 en tête de liste
+        const specialItem: NewsItem = {
+          id: 2026,
+          title: "Vacances Utiles 2026 : Inscriptions Ouvertes !",
+          category: "Événement",
+          date: "16 Juin 2026",
+          excerpt: "Apprenez une compétence en seulement 2 à 3 mois ! Global Skills Academy lance son programme de vacances avec des packs Découverte, Bureautique, Digital et Pro. Inscriptions ouvertes à Yaoundé Ngousso, places limitées !",
+          image: "/assets/news/2026.jpg",
+          validity: "Promotion en cours"
+        };
+
+        setItems([specialItem, ...mapped]);
       } catch (error) {
         toast({
           title: "Erreur",
@@ -152,7 +163,7 @@ export default function News() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {isLoading && items.length === 0 && (
               <div className="col-span-full text-center">
                 <p className="text-muted-foreground">
@@ -170,17 +181,16 @@ export default function News() {
             {items.map((item) => (
               <Card
                 key={item.id}
-                className="group hover:shadow-xl transition-all duration-300 overflow-hidden bg-white border-0 shadow-lg hover:scale-105"
-                style={{ minHeight: '400px' }}
+                className="group hover:shadow-xl transition-all duration-300 overflow-hidden bg-white border-0 shadow-lg flex flex-col md:flex-row h-full md:h-80"
               >
                 {/* Media Section */}
-                <div className="relative h-64 overflow-hidden bg-gradient-to-br from-primary/10 to-secondary/10">
+                <div className="relative w-full md:w-1/3 h-64 md:h-full overflow-hidden bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center p-2">
                   {item.video ? (
                     <div className="relative w-full h-full">
                       <video
                         ref={(el: HTMLVideoElement | null) => { videoRefs.current[item.id] = el }}
                         src={item.video}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         muted={isMuted[item.id] || false}
                         loop
                         playsInline
@@ -218,7 +228,7 @@ export default function News() {
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-contain transition-transform duration-500"
                       onError={(e) => {
                         console.warn('Image failed to load:', item.image);
                         e.currentTarget.style.display = 'none';
@@ -239,15 +249,18 @@ export default function News() {
                 </div>
 
                 {/* Content Section */}
-                <CardContent className="p-6 flex-1">
-                  <div className="flex flex-col h-full">
+                <CardContent className="p-6 flex-1 flex flex-col">
+                  <div className="flex flex-col h-full justify-between">
                     {/* Header */}
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                    <div>
+                      <div className="flex flex-col gap-2 mb-3">
+                        <Badge variant="secondary" className="w-fit text-xs">
+                          {item.category}
+                        </Badge>
+                        <h3 className="text-xl font-bold line-clamp-2 group-hover:text-primary transition-colors">
                           {item.title}
                         </h3>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
                           <span className="inline-flex items-center gap-1">
                             <CalendarDays className="h-4 w-4 text-accent" />
                             {item.date || "Date à venir"}
@@ -264,19 +277,16 @@ export default function News() {
                             </Badge>
                           )}
                         </div>
-                        <Badge variant="secondary" className="text-xs whitespace-nowrap">
-                          {item.category}
-                        </Badge>
                       </div>
+
+                      {/* Excerpt */}
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+                        {item.excerpt}
+                      </p>
                     </div>
 
-                    {/* Excerpt */}
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-3 flex-1">
-                      {item.excerpt}
-                    </p>
-
                     {/* Actions */}
-                    <div className="flex flex-wrap gap-3 mt-auto">
+                    <div className="flex flex-wrap gap-3 mt-4">
                       <Link to={`/news/${item.id}`}>
                         <Button variant="outline" size="sm" className="text-sm group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                           En savoir plus

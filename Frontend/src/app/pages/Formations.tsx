@@ -308,7 +308,7 @@ export default function Formations() {
       description: "Allemand, Anglais, Arabe, Chinois, Français, Espagnol, Italien, Russe",
       languages: ["Allemand", "Anglais", "Arabe", "Chinois", "Français", "Espagnol", "Italien", "Russe"],
       diplome: "Attestation + Certification internationale",
-      image: "/assets/images/formations/langues internationales.jpg",
+      image: "/assets/images/formations/Langues Internationales.jpg",
     },
     {
       id: 102,

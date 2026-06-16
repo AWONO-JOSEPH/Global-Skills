@@ -66,7 +66,7 @@ export default function Home() {
       duration: "3 mois",
       level: "Tous niveaux",
       icon: Languages,
-      image: "/assets/images/formations/langues internationales.jpg",
+      image: "/assets/images/formations/Langues Internationales.jpg",
     },
     {
       id: 4,

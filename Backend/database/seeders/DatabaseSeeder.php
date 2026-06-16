@@ -38,6 +38,11 @@ class DatabaseSeeder extends Seeder
             role: 'student'
         );
 
+        // Appel du seeder des actualités
+        $this->call([
+            NewsSeeder::class,
+        ]);
+
         // Création d'une formation de test
         $formation = \App\Models\Formation::updateOrCreate(
             ['name' => 'Formation Marketing Digital'],

@@ -19,21 +19,21 @@ export function apiUrl(pathname: string): string {
  * from localStorage and handles common headers.
  */
 export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
-  const token = localStorage.getItem('auth_token');
-
-  const headers: HeadersInit = {
-    'Accept': 'application/json',
-    ...(options.headers || {}),
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-  };
-
-  // If it's not FormData, default to JSON content type
-  if (!(options.body instanceof FormData) && !headers.hasOwnProperty('Content-Type')) {
-    (headers as any)['Content-Type'] = 'application/json';
+  // Déconnexion du backend : retourne des données simulées au lieu de faire un fetch réel
+  console.log(`API Fetch simulé pour : ${path}`);
+  
+  let data: any = [];
+  
+  if (path.includes("/api/news")) {
+    data = []; // Les actualités sont gérées localement dans news.tsx si nécessaire
+  } else if (path.includes("/api/profile")) {
+    data = { first_name: "Visiteur", last_name: "", role: "guest" };
+  } else if (path.includes("/api/formations")) {
+    data = []; // Les formations sont déjà dans src/app/data/formations.ts
   }
 
-  return fetch(apiUrl(path), {
-    ...options,
-    headers,
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' }
   });
 }

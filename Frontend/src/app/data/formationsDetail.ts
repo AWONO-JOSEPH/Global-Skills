@@ -771,7 +771,7 @@ export const formationsDetail: FormationDetailItem[] = [
     duration: "12 mois",
     price: "Voir détails par langue",
     level: "baccalaureat/GCE A level",
-    image: "/assets/images/formations/langues internationales.jpg",
+    image: "/assets/images/formations/Langues Internationales.jpg",
     description:
       "Perfectionnez votre niveau de langues étrangères pour booster votre carrière à l'international avec des certifications reconnues.",
     objectifs: [

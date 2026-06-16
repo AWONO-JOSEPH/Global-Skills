@@ -35,6 +35,23 @@ export default function NewsDetail() {
       if (!id) return;
 
       setIsLoading(true);
+      
+      // Fallback local pour l'actualité Vacances Utiles 2026
+      if (id === "2026") {
+        setNews({
+          id: 2026,
+          title: "Vacances Utiles 2026 : Inscriptions Ouvertes !",
+          category: "Événement",
+          date: "16 Juin 2026",
+          excerpt: "Apprenez une compétence en seulement 2 à 3 mois !",
+          description: "Global Skills Academy a le plaisir d'annoncer le lancement de son programme annuel 'Vacances Utiles 2026'. Ce programme est conçu pour offrir aux élèves, étudiants, chercheurs d'emploi et professionnels une opportunité unique d'acquérir des compétences opérationnelles en un temps record (2 à 3 mois).\n\nQuatre packs de formation sont proposés pour répondre à tous les besoins :\n\n- **Pack Découverte (50 000 FCFA)** : Idéal pour les débutants (Informatique de base, réseaux sociaux, internet, anglais).\n- **Pack Bureautique (75 000 FCFA)** : Maîtrisez Word, Excel et PowerPoint.\n- **Pack Digital (90 000 FCFA)** : Graphisme, Marketing Digital, Création de contenu et Web.\n- **Pack Pro (120 000 FCFA)** : Le pack le plus complet incluant comptabilité informatisée et développement d'applications.\n\nUne promotion spéciale Auto-école est également disponible à 100 000 FCFA tout compris. Les inscriptions sont déjà ouvertes dans nos locaux à Yaoundé Ngousso (3e étage Immeuble MEZA CLUB). Les places sont limitées, inscrivez-vous dès maintenant !",
+          image: "/assets/news/2026.jpg",
+          validity: "Promotion en cours"
+        });
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const response = await apiFetch(`/api/news/${id}`);
 
@@ -212,70 +229,73 @@ export default function NewsDetail() {
               {/* ── Main column ── */}
               <div className="lg:col-span-2 space-y-6">
 
-                {/* Media card */}
-                {(news.image || news.video) && (
-                  <div className="rounded-2xl overflow-hidden shadow-sm bg-white">
-                    <div className="relative aspect-video">
-                      {news.video ? (
-                        <div className="relative w-full h-full">
-                          <video
-                            ref={videoRef}
-                            src={news.video}
-                            className="w-full h-full object-cover"
-                            muted={isMuted}
-                            loop
-                            playsInline
-                          />
-                          {/* Video controls overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent flex items-end justify-start p-4">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={togglePlay}
-                                className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white text-[#1e3a8a] transition-colors duration-150 shadow"
-                              >
-                                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                              </button>
-                              <button
-                                onClick={toggleMute}
-                                className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white text-[#1e3a8a] transition-colors duration-150 shadow"
-                              >
-                                {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                              </button>
+                {/* Media and Description Flex Container */}
+                <div className="flex flex-col gap-6">
+                  {/* Media card */}
+                  {(news.image || news.video) && (
+                    <div className="rounded-2xl overflow-hidden shadow-sm bg-white flex items-center justify-center p-4 bg-muted/10">
+                      <div className="relative w-full max-h-[500px] flex items-center justify-center">
+                        {news.video ? (
+                          <div className="relative w-full aspect-video">
+                            <video
+                              ref={videoRef}
+                              src={news.video}
+                              className="w-full h-full object-contain"
+                              muted={isMuted}
+                              loop
+                              playsInline
+                            />
+                            {/* Video controls overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent flex items-end justify-start p-4">
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={togglePlay}
+                                  className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white text-[#1e3a8a] transition-colors duration-150 shadow"
+                                >
+                                  {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                                </button>
+                                <button
+                                  onClick={toggleMute}
+                                  className="flex items-center justify-center w-9 h-9 rounded-full bg-white/90 hover:bg-white text-[#1e3a8a] transition-colors duration-150 shadow"
+                                >
+                                  {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                                </button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ) : news.image ? (
-                        <img
-                          src={news.image}
-                          alt={news.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : null}
-                    </div>
-                  </div>
-                )}
-
-                {/* Description card */}
-                <div className="rounded-2xl bg-white shadow-sm p-8">
-                  <h2 className="text-lg font-semibold text-[#1e3a8a] mb-5 pb-3 border-b border-[#f1f5f9]">
-                    Détails de l'actualité
-                  </h2>
-                  <div className="prose prose-slate max-w-none text-[#1a1a1a] leading-relaxed">
-                    {news.description ? (
-                      <div dangerouslySetInnerHTML={{ __html: news.description }} />
-                    ) : (
-                      <p className="text-[#64748b]">{news.excerpt}</p>
-                    )}
-                  </div>
-
-                  {news.highlight && (
-                    <div className="mt-7 flex gap-4 p-5 rounded-xl bg-[#fff7ed] border-l-4 border-[#f97316]">
-                      <div className="flex-1">
-                        <p className="text-xs font-semibold text-[#f97316] uppercase tracking-wider mb-1">Point clé</p>
-                        <p className="text-sm text-[#1a1a1a] leading-relaxed">{news.highlight}</p>
+                        ) : news.image ? (
+                          <img
+                            src={news.image}
+                            alt={news.title}
+                            className="max-w-full max-h-[500px] object-contain rounded-lg shadow-sm"
+                          />
+                        ) : null}
                       </div>
                     </div>
                   )}
+
+                  {/* Description card */}
+                  <div className="rounded-2xl bg-white shadow-sm p-8 flex flex-col">
+                    <h2 className="text-lg font-semibold text-[#1e3a8a] mb-5 pb-3 border-b border-[#f1f5f9]">
+                      Détails de l'actualité
+                    </h2>
+                    <div className="prose prose-slate max-w-none text-[#1a1a1a] leading-relaxed">
+                      {news.description ? (
+                        <div dangerouslySetInnerHTML={{ __html: news.description }} />
+                      ) : (
+                        <p className="text-[#64748b]">{news.excerpt}</p>
+                      )}
+                    </div>
+
+                    {news.highlight && (
+                      <div className="mt-7 flex gap-4 p-5 rounded-xl bg-[#fff7ed] border-l-4 border-[#f97316]">
+                        <div className="flex-1">
+                          <p className="text-xs font-semibold text-[#f97316] uppercase tracking-wider mb-1">Point clé</p>
+                          <p className="text-sm text-[#1a1a1a] leading-relaxed">{news.highlight}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Actions card */}
